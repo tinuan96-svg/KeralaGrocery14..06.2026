@@ -1,0 +1,51 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[2123],{65531:function(e,t,r){"use strict";r.d(t,{Z:function(){return l}});var s=r(2265);/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let a=e=>e.replace(/([a-z0-9])([A-Z])/g,"$1-$2").toLowerCase(),n=(...e)=>e.filter((e,t,r)=>!!e&&r.indexOf(e)===t).join(" ");/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */var i={xmlns:"http://www.w3.org/2000/svg",width:24,height:24,viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round"};/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let c=(0,s.forwardRef)(({color:e="currentColor",size:t=24,strokeWidth:r=2,absoluteStrokeWidth:a,className:c="",children:l,iconNode:o,...d},u)=>(0,s.createElement)("svg",{ref:u,...i,width:t,height:t,stroke:e,strokeWidth:a?24*Number(r)/Number(t):r,className:n("lucide",c),...d},[...o.map(([e,t])=>(0,s.createElement)(e,t)),...Array.isArray(l)?l:[l]])),l=(e,t)=>{let r=(0,s.forwardRef)(({className:r,...i},l)=>(0,s.createElement)(c,{ref:l,iconNode:t,className:n(`lucide-${a(e)}`,r),...i}));return r.displayName=`${e}`,r}},28203:function(e,t,r){"use strict";r.d(t,{Z:function(){return a}});var s=r(65531);/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let a=(0,s.Z)("Calendar",[["path",{d:"M8 2v4",key:"1cmpym"}],["path",{d:"M16 2v4",key:"4m81vk"}],["rect",{width:"18",height:"18",x:"3",y:"4",rx:"2",key:"1hopcy"}],["path",{d:"M3 10h18",key:"8toen8"}]])},1295:function(e,t,r){"use strict";r.d(t,{Z:function(){return a}});var s=r(65531);/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let a=(0,s.Z)("Mail",[["rect",{width:"20",height:"16",x:"2",y:"4",rx:"2",key:"18n3k1"}],["path",{d:"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7",key:"1ocrg3"}]])},96142:function(e,t,r){"use strict";r.d(t,{Z:function(){return a}});var s=r(65531);/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let a=(0,s.Z)("MapPin",[["path",{d:"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0",key:"1r0f0z"}],["circle",{cx:"12",cy:"10",r:"3",key:"ilqhr7"}]])},12741:function(e,t,r){"use strict";r.d(t,{Z:function(){return a}});var s=r(65531);/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let a=(0,s.Z)("Phone",[["path",{d:"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z",key:"foiqr5"}]])},64280:function(e,t,r){"use strict";r.d(t,{Z:function(){return a}});var s=r(65531);/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let a=(0,s.Z)("RefreshCw",[["path",{d:"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8",key:"v9h5vc"}],["path",{d:"M21 3v5h-5",key:"1q7to0"}],["path",{d:"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16",key:"3uifl3"}],["path",{d:"M8 16H3v5",key:"1cv678"}]])},25750:function(e,t,r){"use strict";r.d(t,{Z:function(){return a}});var s=r(65531);/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let a=(0,s.Z)("Users",[["path",{d:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2",key:"1yyitq"}],["circle",{cx:"9",cy:"7",r:"4",key:"nufk8"}],["path",{d:"M22 21v-2a4 4 0 0 0-3-3.87",key:"kshegd"}],["path",{d:"M16 3.13a4 4 0 0 1 0 7.75",key:"1da9ce"}]])},63307:function(e,t,r){Promise.resolve().then(r.bind(r,15063))},15063:function(e,t,r){"use strict";r.r(t),r.d(t,{default:function(){return v}});var s=r(16687),a=r(24670),n=r(50044),i=r(57437),c=r(2265),l=r(25750),o=r(64280),d=r(65531);/**
+ * @license lucide-react v0.446.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let u=(0,d.Z)("CircleUser",[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["circle",{cx:"12",cy:"10",r:"3",key:"ilqhr7"}],["path",{d:"M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662",key:"154egf"}]]);var h=r(1295),m=r(12741),x=r(96142),y=r(28203),f=r(27855);function p(e){var t=e.className;return(0,i.jsx)("div",{className:"animate-pulse bg-gray-800 rounded-lg ".concat(void 0===t?"":t)})}function v(){var e,t=(0,a._)((0,c.useState)([]),2),r=t[0],d=t[1],v=(0,a._)((0,c.useState)(!0),2),g=v[0],k=v[1],w=(0,a._)((0,c.useState)(""),2),b=w[0],N=w[1],j=(e=(0,s._)(function(){var e;return(0,n.Jh)(this,function(t){switch(t.label){case 0:return k(!0),[4,(0,f.S)().from("user_profiles").select("id, email, name, phone, city, postcode, created_at").order("created_at",{ascending:!1}).limit(200)];case 1:return d(null!=(e=t.sent().data)?e:[]),k(!1),[2]}})}),function(){return e.apply(this,arguments)});(0,c.useEffect)(function(){j()},[]);var Z=r.filter(function(e){if(!b)return!0;var t,r,s,a,n=b.toLowerCase();return(null===(t=e.name)||void 0===t?void 0:t.toLowerCase().includes(n))||(null===(r=e.email)||void 0===r?void 0:r.toLowerCase().includes(n))||(null===(s=e.phone)||void 0===s?void 0:s.includes(n))||(null===(a=e.city)||void 0===a?void 0:a.toLowerCase().includes(n))});return(0,i.jsxs)("div",{className:"bg-gray-950 min-h-screen text-white",children:[(0,i.jsxs)("div",{className:"sticky top-0 z-10 bg-gray-950/95 backdrop-blur border-b border-gray-800",children:[(0,i.jsxs)("div",{className:"px-6 py-4 flex items-center justify-between",children:[(0,i.jsxs)("div",{className:"flex items-center gap-2.5",children:[(0,i.jsx)(l.Z,{className:"w-5 h-5 text-emerald-500"}),(0,i.jsx)("h1",{className:"text-base font-bold text-white",children:"Customers"}),!g&&(0,i.jsx)("span",{className:"text-xs font-semibold bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full",children:r.length})]}),(0,i.jsx)("button",{onClick:j,disabled:g,className:"w-9 h-9 flex items-center justify-center rounded-xl bg-gray-900 border border-gray-800 text-gray-400 hover:text-white disabled:opacity-40 transition-colors",children:(0,i.jsx)(o.Z,{className:"w-4 h-4 ".concat(g?"animate-spin":"")})})]}),(0,i.jsx)("div",{className:"px-6 pb-3",children:(0,i.jsx)("input",{type:"text",placeholder:"Search by name, email, phone, city…",value:b,onChange:function(e){return N(e.target.value)},className:"w-full max-w-sm bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"})})]}),(0,i.jsxs)("div",{className:"p-6",children:[g&&(0,i.jsx)("div",{className:"space-y-3",children:[1,2,3,4,5].map(function(e){return(0,i.jsx)(p,{className:"h-20 w-full"},e)})}),!g&&0===Z.length&&(0,i.jsxs)("div",{className:"flex flex-col items-center justify-center py-24 gap-3",children:[(0,i.jsx)(u,{className:"w-12 h-12 text-gray-700"}),(0,i.jsx)("p",{className:"text-sm font-semibold text-gray-500",children:b?"No customers match your search":"No customers yet"})]}),!g&&Z.length>0&&(0,i.jsx)("div",{className:"bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden",children:(0,i.jsx)("div",{className:"divide-y divide-gray-800",children:Z.map(function(e){return(0,i.jsxs)("div",{className:"flex items-start gap-4 px-5 py-4 hover:bg-gray-800/40 transition-colors",children:[(0,i.jsx)("div",{className:"w-9 h-9 rounded-xl bg-gray-800 flex items-center justify-center flex-shrink-0 mt-0.5",children:(0,i.jsx)(u,{className:"w-5 h-5 text-gray-500"})}),(0,i.jsxs)("div",{className:"flex-1 min-w-0 space-y-1",children:[(0,i.jsx)("p",{className:"text-sm font-semibold text-white",children:e.name||"Unknown"}),e.email&&(0,i.jsxs)("p",{className:"flex items-center gap-1.5 text-xs text-gray-400",children:[(0,i.jsx)(h.Z,{className:"w-3 h-3 flex-shrink-0"})," ",e.email]}),e.phone&&(0,i.jsxs)("p",{className:"flex items-center gap-1.5 text-xs text-gray-500",children:[(0,i.jsx)(m.Z,{className:"w-3 h-3 flex-shrink-0"})," ",e.phone]}),(e.city||e.postcode)&&(0,i.jsxs)("p",{className:"flex items-center gap-1.5 text-xs text-gray-600",children:[(0,i.jsx)(x.Z,{className:"w-3 h-3 flex-shrink-0"})," ",[e.city,e.postcode].filter(Boolean).join(", ")]})]}),(0,i.jsxs)("p",{className:"flex items-center gap-1 text-xs text-gray-600 flex-shrink-0 mt-0.5",children:[(0,i.jsx)(y.Z,{className:"w-3 h-3"}),new Date(e.created_at).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})]})]},e.id)})})})]})]})}},27855:function(e,t,r){"use strict";r.d(t,{S:function(){return n}});var s,a=r(5257);function n(){if(s)return s;var e="https://vnqjqopzoeunojomssmq.supabase.co",t="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucWpxb3B6b2V1bm9qb21zc21xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMTU5ODYsImV4cCI6MjA5NTU5MTk4Nn0.Nvayw0O0rgdFzADjb-BOzG74mlBViLynnd480ImkXPk";if(!e||!t)throw Error("Missing Supabase environment variables");return s=(0,a.eI)(e,t,{auth:{persistSession:!0,autoRefreshToken:!0,detectSessionInUrl:!0,flowType:"pkce",storageKey:"kerala-grocery-auth",storage:window.localStorage},realtime:{params:{eventsPerSecond:0}},global:{headers:{"X-Client-Info":"kerala-grocery-web"}}})}}},function(e){e.O(0,[9849,2971,7864,1744],function(){return e(e.s=63307)}),_N_E=e.O()}]);
