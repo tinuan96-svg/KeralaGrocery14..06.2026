@@ -13,7 +13,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         APP_ID: "com.keralagrocery.app"
-      node: 18
+      node: 22
       xcode: latest
       cocoapods: default
     triggering:
