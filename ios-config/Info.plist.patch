@@ -125,5 +125,9 @@
     <dict/>
   </dict>
 
+  <!-- ── Export Compliance (bypasses App Store Connect encryption popup) ── -->
+  <key>ITSAppUsesNonExemptEncryption</key>
+  <false/>
+
 </dict>
 </plist>
