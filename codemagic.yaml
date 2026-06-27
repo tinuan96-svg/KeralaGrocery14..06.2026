@@ -51,21 +51,19 @@ workflows:
           git push origin KeralaGrocery.com || echo "Push failed, but continuing..."
       - name: Build iOS IPA
         script: |
-          # Initialize keychain with the files selected in the Codemagic UI
           keychain initialize
+          # 1. Fetch and create signing files specifically for App Store
+          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
-          # Force Manual signing in the project to match the UI settings
-          find . -name "project.pbxproj" -exec sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' {} +
+          # 2. Apply profiles for App Store (Forcing the method)
+          xcode-project use-profiles --archive-method app-store
           
-          # Apply the profiles selected in the Codemagic UI
-          xcode-project use-profiles
-          
-          # Build the IPA
+          # 3. Build IPA with explicit flags
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags="ENABLE_USER_SCRIPT_SANDBOXING=NO DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual"
+            --archive-flags="ENABLE_USER_SCRIPT_SANDBOXING=NO DEVELOPMENT_TEAM=$TEAM_ID"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
