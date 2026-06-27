@@ -63,12 +63,14 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          # Fetch and create App Store signing files for the specific team and bundle ID
+          # Fetch and create App Store signing files
+          # Using --create ensures that if no certificate/profile exists, Codemagic will make them
           app-store-connect fetch-signing-files "com.keralagrocery.app" --type IOS_APP_STORE --create
           keychain add-certificates
           # Set up profiles specifically for App Store distribution
-          xcode-project use-profiles --export-type app-store
-          # Build the IPA using the generated export_options.plist
+          # Correct flag is --archive-method
+          xcode-project use-profiles --archive-method app-store
+          # Build the IPA
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
