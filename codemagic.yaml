@@ -43,6 +43,8 @@ workflows:
           # Apply our custom Podfile patch which pins versions and fixes dependencies
           cp ios-config/Podfile.patch ios/App/Podfile
           npx cap sync ios
+          # Ensure CocoaPods are installed and workspace is created
+          cd ios/App && pod install
       - name: Set build number
         script: |
           cd ios/App
