@@ -15,7 +15,7 @@ workflows:
         APP_ID: "com.keralagrocery.app"
       node: 22
       xcode: latest
-      cocoapods: default
+      # CocoaPods is not used in this project (SPM-based)
     triggering:
       events:
         - push
@@ -35,12 +35,10 @@ workflows:
           npm run build
       - name: Sync Capacitor
         script: |
-          # Ensure ios platform and Podfile exist
-          if [ ! -f "ios/App/Podfile" ]; then
-            rm -rf ios
+          # If ios directory is missing, add it
+          if [ ! -d "ios" ]; then
             npx cap add ios
             node scripts/patch-info-plist.js
-            cp ios-config/Podfile.patch ios/App/Podfile
           fi
           npx cap sync ios
       - name: Set build number
@@ -48,16 +46,14 @@ workflows:
           cd ios/App
           # Start from 2 to ensure it's higher than the rejected build
           agvtool new-version -all $((2 + $BUILD_NUMBER))
-      - name: Install CocoaPods
-        script: |
-          cd ios/App && pod install
       - name: Build iOS IPA
         script: |
           keychain initialize
           app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
           keychain add-certificates
+          # Build using the Xcode project (SPM handles dependencies automatically)
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
+            --project "ios/App/App.xcodeproj" \
             --scheme "$XCODE_SCHEME" \
             --archive-flags "-allowProvisioningUpdates"
     artifacts:
