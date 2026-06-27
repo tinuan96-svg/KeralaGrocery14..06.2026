@@ -5,6 +5,9 @@
 /App/App/public
 /App/DerivedData
 *.xcworkspace
+<<<<<<< HEAD
 
 # Ensure directory is tracked
 .keep
+=======
+>>>>>>> 7bc1c11791e73ca7b2bfe08bbba2b9335a6d9c67
