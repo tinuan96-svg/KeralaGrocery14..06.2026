@@ -1,7 +1,0 @@
-# Capacitor ios gitignore
-/App/Pods
-/App/Podfile.lock
-/App/public
-/App/App/public
-/App/DerivedData
-*.xcworkspace
