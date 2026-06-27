@@ -3,8 +3,7 @@ workflows:
     name: Kerala Grocery iOS Release
     max_build_duration: 60
     instance_type: mac_mini_m2
-    integrations:
-      app_store_connect: apple_developer_portal
+    # Removed explicit integrations block to use default connected account
     environment:
       groups:
         - supabase
@@ -42,7 +41,7 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          # This command fetches and installs everything needed
+          # Fetch signing files using the default connected App Store Connect account
           app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
