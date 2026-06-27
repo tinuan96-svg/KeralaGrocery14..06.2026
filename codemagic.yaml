@@ -5,7 +5,7 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       groups:
-        - supabase_config # Create this group in Codemagic UI and add your NEXT_PUBLIC vars
+        - supabase # Matches the group name you created in the UI
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
