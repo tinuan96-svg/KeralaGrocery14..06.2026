@@ -37,7 +37,7 @@ workflows:
         script: |
           # Ensure ios platform and Podfile exist
           if [ ! -f "ios/App/Podfile" ]; then
-            rm -rf ios/App
+            rm -rf ios
             npx cap add ios
             node scripts/patch-info-plist.js
             cp ios-config/Podfile.patch ios/App/Podfile
