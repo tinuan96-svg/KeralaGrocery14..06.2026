@@ -1,0 +1,29 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.com.keralagrocery.app",
+        "paths": [
+          "/products/*",
+          "/categories/*",
+          "/brands/*",
+          "/cart",
+          "/checkout",
+          "/orders",
+          "/orders/*",
+          "/account",
+          "/account/*",
+          "/wallet",
+          "/offers",
+          "/auth/callback"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAMID.com.keralagrocery.app"
+    ]
+  }
+}
