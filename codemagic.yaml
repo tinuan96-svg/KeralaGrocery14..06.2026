@@ -63,19 +63,15 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          # Fetch and create App Store signing files for the specific team and bundle ID
-          # Team ID PDZ7779Q9J from your Apple Developer screenshot
-          app-store-connect fetch-signing-files "com.keralagrocery.app" --type IOS_APP_STORE --create
+          # Fetch and create App Store signing files
+          # Force Team ID PDZ7779Q9J from your screenshot
+          app-store-connect fetch-signing-files "com.keralagrocery.app" --type IOS_APP_STORE --create --team-id PDZ7779Q9J
           keychain add-certificates
           
-          # Debug: List what's in the keychain
-          security find-identity -v -p codesigning
-          
-          # Set up profiles for the build
-          xcode-project use-profiles --archive-method app-store
+          # Force manual signing and App Store export
+          xcode-project use-profiles --archive-method app-store --warn-only
           
           # Build the IPA
-          # Added -allowProvisioningUpdates to archive flags
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
