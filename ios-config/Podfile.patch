@@ -9,6 +9,12 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 platform :ios, '15.0'
 use_frameworks!
 
+# Define capacitor_pods to include core Capacitor libraries
+def capacitor_pods
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+end
+
 # Workaround to avoid Xcode 14 error: xcodebuild: error: "Debug" is not a valid
 # configuration. Remove when capacitor-community/sqlite ships a fix.
 post_install do |installer|
