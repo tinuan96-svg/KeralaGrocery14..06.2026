@@ -26,10 +26,9 @@ const nextConfig = {
     ],
   },
   experimental: {
-    // Re-enabling serverActions to allow compilation, though they won't
-    // work as true "Server Actions" in a static export. The code will
-    // fall back to standard client-side execution if refactored correctly.
-    serverActions: true,
+    // serverActions MUST be disabled for 'output: export'.
+    // The build will fail if this is set to true.
+    serverActions: false,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   webpack: (config, { dev }) => {
