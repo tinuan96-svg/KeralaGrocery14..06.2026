@@ -63,11 +63,11 @@ workflows:
           keychain initialize
           app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
           keychain add-certificates
-          # Build using the Xcode project (SPM handles dependencies automatically)
+          # Build using the Xcode workspace (Workspace is required for CocoaPods)
           xcode-project build-ipa \
-            --project "ios/App/App.xcodeproj" \
+            --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "-allowProvisioningUpdates"
+            --archive-flags="-allowProvisioningUpdates"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
