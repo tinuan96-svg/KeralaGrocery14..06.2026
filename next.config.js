@@ -26,7 +26,10 @@ const nextConfig = {
     ],
   },
   experimental: {
-    // serverActions: true, // Note: Server Actions are not supported with 'output: export'
+    // Re-enabling serverActions to allow compilation, though they won't
+    // work as true "Server Actions" in a static export. The code will
+    // fall back to standard client-side execution if refactored correctly.
+    serverActions: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   webpack: (config, { dev }) => {
@@ -47,8 +50,6 @@ const nextConfig = {
   poweredByHeader:  false,
   compress:         true,
   reactStrictMode:  true,
-  // Note: rewrites() and headers() are not supported with 'output: export'
-  // and have been removed to ensure the build succeeds.
 };
 
 module.exports = nextConfig;

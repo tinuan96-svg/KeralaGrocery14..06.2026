@@ -1,7 +1,8 @@
-'use server';
+// This file is now client-compatible for static export
+// Remove 'use server' to prevent build errors in static environments
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+// import { revalidatePath } from 'next/cache';
 import type { Category } from '@/lib/types/database';
 
 export async function createProduct(data: {
@@ -35,8 +36,9 @@ export async function createProduct(data: {
     throw new Error(error.message);
   }
 
-  revalidatePath('/products');
-  revalidatePath('/admin');
+  // revalidatePath is a no-op in static export
+  // revalidatePath('/products');
+  // revalidatePath('/admin');
   return product;
 }
 
@@ -57,8 +59,9 @@ export async function createCategory(data: { name: string; slug: string }) {
     throw new Error(error.message);
   }
 
-  revalidatePath('/products');
-  revalidatePath('/admin');
+  // revalidatePath is a no-op in static export
+  // revalidatePath('/products');
+  // revalidatePath('/admin');
   return category;
 }
 

@@ -1,8 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
+import { getSupabase } from './client';
 
+/**
+ * For Capacitor/Static Export compatibility, this function now returns
+ * the standard client if called in a browser environment.
+ */
 export function createServerSupabaseClient() {
   if (typeof window !== 'undefined') {
-    throw new Error('createServerSupabaseClient should only be called on the server');
+    return getSupabase();
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

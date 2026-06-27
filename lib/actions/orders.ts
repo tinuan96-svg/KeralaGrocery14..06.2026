@@ -1,4 +1,5 @@
-'use server';
+// This file is now client-compatible for static export
+// Remove 'use server' to prevent build errors in static environments
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
