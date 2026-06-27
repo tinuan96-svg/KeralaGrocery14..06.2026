@@ -1,10 +1,13 @@
-# Capacitor ios gitignore
-/App/Pods
-/App/Podfile.lock
-/App/public
-/App/App/public
-/App/DerivedData
-*.xcworkspace
+App/build
+App/Pods
+App/output
+App/App/public
+DerivedData
+xcuserdata
 
-# Ensure directory is tracked
-.keep
+# Cordova plugins for Capacitor
+capacitor-cordova-ios-plugins
+
+# Generated Config files
+App/App/capacitor.config.json
+App/App/config.xml
