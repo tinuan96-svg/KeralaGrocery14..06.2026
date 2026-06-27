@@ -35,8 +35,8 @@ workflows:
           npm run build
       - name: Sync Capacitor
         script: |
-          # If ios platform is missing, add it and apply project patches
-          if [ ! -d "ios" ]; then
+          # If ios/App directory is missing, add it and apply project patches
+          if [ ! -d "ios/App" ]; then
             npx cap add ios
             node scripts/patch-info-plist.js
             cp ios-config/Podfile.patch ios/App/Podfile
