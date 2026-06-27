@@ -28,9 +28,13 @@ workflows:
         script: |
           # Skip type checking and linting to ensure build succeeds
           export NEXT_TELEMETRY_DISABLED=1
-          npx next build
+          # Clear previous builds
+          rm -rf .next out
+          # Perform static export build
+          npm run build
       - name: Sync Capacitor
         script: |
+          # Ensure Capacitor syncs the freshly generated 'out' folder
           npx cap sync ios
       - name: Set build number
         script: |

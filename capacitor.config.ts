@@ -5,29 +5,15 @@ const config: CapacitorConfig = {
   appName: 'KeralaGrocery',
   webDir: 'out',
 
-  // Load the live production site inside WKWebView so SSR and API routes
-  // continue to work. Capacitor still injects its native bridge, making all
-  // plugins available (haptics, push, network, share, etc.).
-  server: {
-    url: 'https://keralagrocery.com',
-    cleartext: false,
-    // Note: Do NOT set androidScheme/iosScheme to 'https' when using a remote
-    // server.url, as it can cause asset loading issues in some Capacitor versions.
-    allowNavigation: [
-      'keralagrocery.com',
-      '*.keralagrocery.com',
-      '*.supabase.co',
-      '*.google.com',
-      '*.googleapis.com',
-      '*.gstatic.com',
-    ],
-  },
+  // We are now using a static export (output: 'export' in next.config.js).
+  // This bundles the entire UI into the app binary, making it much more
+  // reliable, faster, and compliant with App Store guidelines.
+  // The 'server' block with a 'url' has been removed so the app loads
+  // the bundled static files from the 'out' directory.
 
   ios: {
     contentInset: 'automatic',
     backgroundColor: '#0B5D3B',
-    // appendUserAgent preserves the standard WKWebView/Safari UA so the server
-    // can still detect iOS correctly.
     appendUserAgent: 'KeralaGroceryApp',
     limitsNavigationsToAppBoundDomains: false,
     allowsLinkPreview: false,
@@ -37,9 +23,6 @@ const config: CapacitorConfig = {
 
   plugins: {
     SplashScreen: {
-      // launchAutoHide is true for App Store compliance: the splash will
-      // disappear after a timeout even if the remote site fails to load.
-      // We still call hide() programmatically for a faster transition.
       launchAutoHide: true,
       launchShowDuration: 8000,
       backgroundColor: '#0B5D3B',

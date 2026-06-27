@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // output: 'export' is required for Capacitor. This ensures the app
+  // is bundled into a set of static files that can be run natively on iOS.
+  output: 'export',
+  // trailingSlash ensures that navigation works correctly in the local file system.
+  trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -19,12 +24,9 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.keralagrocery.com' },
       { protocol: 'https', hostname: '**.webcontainer-api.io' },
     ],
-    deviceSizes: [640, 750, 828, 1080, 1200],
-    imageSizes:  [16, 32, 48, 64, 96, 128, 256],
-    minimumCacheTTL: 60,
   },
   experimental: {
-    serverActions: true,
+    // serverActions: true, // Note: Server Actions are not supported with 'output: export'
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   webpack: (config, { dev }) => {
@@ -45,68 +47,8 @@ const nextConfig = {
   poweredByHeader:  false,
   compress:         true,
   reactStrictMode:  true,
-  async rewrites() {
-    return [
-      {
-        source:      '/supabase-api/:path*',
-        destination: 'https://vnqjqopzoeunojomssmq.supabase.co/:path*',
-      },
-    ];
-  },
-  async headers() {
-    return [
-      // ── Service worker: no cache, served from root scope ──────────────────
-      {
-        source: '/sw.js',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
-          { key: 'Service-Worker-Allowed', value: '/' },
-          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
-        ],
-      },
-      // ── Web manifest ──────────────────────────────────────────────────────
-      {
-        source: '/manifest.json',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=3600' },
-          { key: 'Content-Type', value: 'application/manifest+json' },
-        ],
-      },
-      // ── Apple App Site Association (Universal Links) ──────────────────────
-      {
-        source: '/.well-known/apple-app-site-association',
-        headers: [
-          { key: 'Cache-Control',  value: 'public, max-age=3600' },
-          { key: 'Content-Type',   value: 'application/json' },
-        ],
-      },
-      // ── Digital Asset Links (TWA verification) ────────────────────────────
-      {
-        source: '/.well-known/assetlinks.json',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=3600' },
-          { key: 'Content-Type', value: 'application/json' },
-        ],
-      },
-      // ── Icons and static assets: long-lived cache ─────────────────────────
-      {
-        source: '/icons/:path*',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
-      // ── Global security headers ────────────────────────────────────────────
-      {
-        source: '/(.*)',
-        headers: [
-          { key: 'X-Frame-Options',           value: 'ALLOWALL' },
-          { key: 'Content-Security-Policy',   value: "frame-ancestors *" },
-          { key: 'Referrer-Policy',           value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy',        value: 'camera=(), microphone=(), geolocation=()' },
-        ],
-      },
-    ];
-  },
+  // Note: rewrites() and headers() are not supported with 'output: export'
+  // and have been removed to ensure the build succeeds.
 };
 
 module.exports = nextConfig;
