@@ -18,7 +18,8 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = 'force-dynamic';
+// In static export, we don't use force-dynamic
+// export const dynamic = 'force-dynamic';
 
 async function getBrands(): Promise<BrandEntry[]> {
   const supabase = createServerSupabaseClient();

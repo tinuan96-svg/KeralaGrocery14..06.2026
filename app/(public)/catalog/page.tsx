@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import CatalogListing from '@/components/catalog/CatalogListing';
 
-export const dynamic = 'force-dynamic';
+// In static export, we don't use force-dynamic
+// export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Product Catalog | Kerala Groceries',

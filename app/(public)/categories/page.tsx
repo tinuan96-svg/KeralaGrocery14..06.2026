@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = 'force-dynamic';
+// In static export, we don't use force-dynamic
+// export const dynamic = 'force-dynamic';
 
 interface CategoryConfig {
   emoji: string;

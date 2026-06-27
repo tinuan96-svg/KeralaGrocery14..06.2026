@@ -40,6 +40,19 @@ async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
   return (data as unknown as ProductRow) ?? null;
 }
 
+export async function generateStaticParams() {
+  const supabase = createServerSupabaseClient();
+  const { data: products } = await supabase
+    .from('products')
+    .select('slug')
+    .eq('approval_status', 'approved')
+    .eq('visibility_status', true);
+
+  return (products || []).map((p) => ({
+    slug: p.slug,
+  }));
+}
+
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const p = await fetchProductBySlug(params.slug);
 

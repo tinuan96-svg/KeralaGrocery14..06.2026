@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import ProductListingPage from '@/components/product/RpcProductListingPage';
 
-export const dynamic = 'force-dynamic';
+// In static export, we don't use force-dynamic
+// export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Buy Kerala & Indian Groceries Online UK | All Products',

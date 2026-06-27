@@ -1,4 +1,5 @@
-export const dynamic = 'force-dynamic';
+// In static export, we don't use force-dynamic
+// export const dynamic = 'force-dynamic';
 
 export default function HealthCheck() {
   const envVars = {
