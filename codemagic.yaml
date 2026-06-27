@@ -40,12 +40,22 @@ workflows:
             npx cap add ios
             node scripts/patch-info-plist.js
           fi
+          # Apply our custom Podfile patch which pins versions and fixes dependencies
+          cp ios-config/Podfile.patch ios/App/Podfile
           npx cap sync ios
       - name: Set build number
         script: |
           cd ios/App
           # Start from 2 to ensure it's higher than the rejected build
-          agvtool new-version -all $((2 + $BUILD_NUMBER))
+          NEW_BUILD_NUMBER=$((2 + $BUILD_NUMBER))
+          agvtool new-version -all $NEW_BUILD_NUMBER
+          
+          # Auto push version bump back to git
+          git config --global user.email "builder@codemagic.io"
+          git config --global user.name "Codemagic Builder"
+          git add .
+          git commit -m "chore: bump build number to $NEW_BUILD_NUMBER [skip ci]"
+          git push origin KeralaGrocery.com
       - name: Build iOS IPA
         script: |
           keychain initialize
