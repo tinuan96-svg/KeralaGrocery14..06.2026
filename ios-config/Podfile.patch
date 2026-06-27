@@ -7,7 +7,7 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
-use_frameworks!
+use_frameworks! :linkage => :static
 
 # Explicitly specify the project
 project 'App.xcodeproj'
