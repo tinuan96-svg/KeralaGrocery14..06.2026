@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "75115921613",
+    "project_id": "pocketgrocery-5fd1f",
+    "storage_bucket": "pocketgrocery-5fd1f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75115921613:android:8e76e08b3c3f927dcb2984",
+        "android_client_info": {
+          "package_name": "com.pocketgrocery.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3RnrytUJj0ENZUjb7O2BWhA65PxZmwjQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
