@@ -42,13 +42,15 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
+          # Fetch and install certificates/profiles
           app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
+          # Build IPA with explicit export method
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "-allowProvisioningUpdates"
+            --export-method app-store
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
