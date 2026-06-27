@@ -9,6 +9,9 @@ require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 platform :ios, '15.0'
 use_frameworks!
 
+# Explicitly specify the project
+project 'App.xcodeproj'
+
 # Define capacitor_pods to include core Capacitor libraries
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
