@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[252],{252:function(i,t,n){n.r(t),n.d(t,{PushNotifications:function(){return u}});var s=n(33103);let u=(0,s.registerPlugin)("PushNotifications",{})}}]);
