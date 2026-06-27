@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "TEAMID.com.keralagrocery.app",
+        "appID": "PDZ7779Q9J.com.keralagrocery.app",
         "paths": [
           "/products/*",
           "/categories/*",
@@ -23,7 +23,7 @@
   },
   "webcredentials": {
     "apps": [
-      "TEAMID.com.keralagrocery.app"
+      "PDZ7779Q9J.com.keralagrocery.app"
     ]
   }
 }
