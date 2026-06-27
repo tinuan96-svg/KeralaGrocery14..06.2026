@@ -63,8 +63,9 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          # Fetch the signing files we just created in the UI/Portal
-          app-store-connect fetch-signing-files "com.keralagrocery.app" --type IOS_APP_STORE
+          # Fetch and create App Store signing files
+          # We use --create so the script generates its own certificate and private key
+          app-store-connect fetch-signing-files "com.keralagrocery.app" --type IOS_APP_STORE --create
           keychain add-certificates
           
           # Apply the provisioning profiles
