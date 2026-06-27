@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[3795],{63795:function(e,n,r){r.r(n),r.d(n,{SplashScreen:function(){return t}});var s=r(33103);let t=(0,s.registerPlugin)("SplashScreen",{web:()=>r.e(4046).then(r.bind(r,64046)).then(e=>new e.SplashScreenWeb)})}}]);
