@@ -12,7 +12,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         APP_ID: "com.keralagrocery.app"
-        TEAM_ID: "PDZ7779Q9J" # Added your Team ID from the screenshot
+        TEAM_ID: "PDZ7779Q9J"
       node: 22
       xcode: latest
     triggering:
@@ -44,14 +44,10 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          
-          # Use the integration to fetch signing files (matches your uploaded ones)
-          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
-          
+          # We use the UI-uploaded certificates and profiles
           keychain add-certificates
-          xcode-project use-profiles
+          xcode-project use-profiles --archive-method app-store
           
-          # Build with flags to fix signing and duplicate framework errors
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
