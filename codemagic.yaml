@@ -3,8 +3,7 @@ workflows:
     name: Kerala Grocery iOS Release
     max_build_duration: 60
     instance_type: mac_mini_m2
-    integrations:
-      app_store_connect: Codemagic
+    # Removed app_store_connect integration from here to use manually uploaded files
     environment:
       groups:
         - supabase
@@ -28,7 +27,6 @@ workflows:
         script: |
           export NEXT_TELEMETRY_DISABLED=1
           npm run build
-          # Ensure webDir exists for Capacitor sync (required even for remote URL apps)
           mkdir -p out
           echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
       - name: Sync Capacitor
@@ -44,8 +42,9 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
+          # This command will use the .p12 and .mobileprovision you upload to the Codemagic UI
           keychain add-certificates
+          xcode-project use-profiles
           
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
