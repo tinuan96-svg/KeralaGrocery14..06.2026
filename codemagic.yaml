@@ -39,11 +39,11 @@ workflows:
           # 1. Sync Capacitor
           npx cap sync ios
           
-          # 2. Apply our custom patches (CRITICAL for App Store approval)
+          # 2. Apply custom patches
           node scripts/patch-info-plist.js
           cp ios-config/Podfile.patch ios/App/Podfile
           
-          # 3. Generate App Icons (Flattened alpha channel for Apple compliance)
+          # 3. Generate Flattened App Icons (No alpha channel)
           node scripts/generate-ios-icons.js
           
           # 4. Install Pods
@@ -54,14 +54,17 @@ workflows:
       - name: Set build number
         script: |
           cd ios/App
-          agvtool new-version -all $((40 + $BUILD_NUMBER))
+          # Using 50 as a safe starting point to clear all previous failed uploads
+          agvtool new-version -all $((50 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
           keychain initialize
           keychain add-certificates
-          xcode-project use-profiles
           
-          # Build IPA with fixes for duplicate frameworks and signing
+          # Use the profile reference name we set in the UI
+          xcode-project use-profiles --profile keralagrocery_app_store --archive-method app-store
+          
+          # Final fix for export error and duplicate frameworks
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
