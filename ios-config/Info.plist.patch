@@ -44,10 +44,14 @@
   <key>UISupportedInterfaceOrientations</key>
   <array>
     <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
   </array>
   <key>UISupportedInterfaceOrientations~ipad</key>
   <array>
     <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
     <string>UIInterfaceOrientationLandscapeLeft</string>
     <string>UIInterfaceOrientationLandscapeRight</string>
   </array>
@@ -58,7 +62,7 @@
     <!-- Main app scheme -->
     <dict>
       <key>CFBundleURLName</key>
-      <string>com.keralagroceries.app</string>
+      <string>com.keralagrocery.app</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>kgapp</string>
@@ -70,7 +74,7 @@
       <string>google-signin</string>
       <key>CFBundleURLSchemes</key>
       <array>
-        <string>com.googleusercontent.apps.GOOGLE_CLIENT_ID</string>
+        <string>com.googleusercontent.apps.554533696420-3c8ae5cca91fdff26e4731</string>
       </array>
     </dict>
   </array>
