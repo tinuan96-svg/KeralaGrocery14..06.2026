@@ -7,7 +7,10 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
-use_frameworks! :linkage => :static
+use_frameworks!
+
+# Fix for "Multiple commands produce" error in Xcode 15+
+install! 'cocoapods', :disable_input_output_paths => true
 
 # Explicitly specify the project
 project 'App.xcodeproj'
@@ -18,16 +21,13 @@ def capacitor_pods
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
 end
 
-# Workaround to avoid Xcode 14 error: xcodebuild: error: "Debug" is not a valid
-# configuration. Remove when capacitor-community/sqlite ships a fix.
 post_install do |installer|
-  # assertDeploymentTarget(installer) # Removed to avoid potential script conflicts
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
-      # Fix for "duplicate output file" and "sandbox" errors in Xcode 15+
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+      # Fix for arm64 simulator issues if any
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
     end
   end
 end
