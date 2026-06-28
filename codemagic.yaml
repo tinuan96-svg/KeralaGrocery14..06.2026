@@ -34,19 +34,19 @@ workflows:
           npm run build
           mkdir -p out
           echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
-      - name: Sync Capacitor and Patch Podfile
+      - name: Sync Capacitor and Patch Configs
         script: |
+          # 1. Sync Capacitor
           npx cap sync ios
+          
+          # 2. Apply our custom patches (CRITICAL for App Store approval)
           node scripts/patch-info-plist.js
           cp ios-config/Podfile.patch ios/App/Podfile
           
-          # 3. Generate App Icons to ensure they are full-bleed (no white space)
+          # 3. Generate App Icons (Flattened alpha channel for Apple compliance)
           node scripts/generate-ios-icons.js
           
-          # Copy Icons specifically during the build
-          cp -R ios-assets/AppIcon.appiconset/*.png ios/App/App/Assets.xcassets/AppIcon.appiconset/
-          cp -R ios-assets/AppIcon.appiconset/Contents.json ios/App/App/Assets.xcassets/AppIcon.appiconset/
-          
+          # 4. Install Pods
           cd ios/App
           rm -rf Pods
           rm -rf Podfile.lock
@@ -54,21 +54,19 @@ workflows:
       - name: Set build number
         script: |
           cd ios/App
-          agvtool new-version -all $((2 + $BUILD_NUMBER))
+          agvtool new-version -all $((40 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
           keychain initialize
           keychain add-certificates
+          xcode-project use-profiles
           
-          # Force generating the correct export options for App Store
-          xcode-project use-profiles --archive-method app-store
-          
-          # Build IPA using the generated options
+          # Build IPA with fixes for duplicate frameworks and signing
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID ENABLE_USER_SCRIPT_SANDBOXING=NO" \
-            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
+            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO SKIP_INSTALL=NO"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:

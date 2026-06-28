@@ -5,11 +5,20 @@ const config: CapacitorConfig = {
   appName: 'KeralaGrocery',
   webDir: 'out',
 
-  // We are now using a static export (output: 'export' in next.config.js).
-  // This bundles the entire UI into the app binary, making it much more
-  // reliable, faster, and compliant with App Store guidelines.
-  // The 'server' block with a 'url' has been removed so the app loads
-  // the bundled static files from the 'out' directory.
+  // Load the live production site inside WKWebView.
+  // Capacitor still injects its native bridge.
+  server: {
+    url: 'https://keralagrocery.com',
+    cleartext: false,
+    allowNavigation: [
+      'keralagrocery.com',
+      '*.keralagrocery.com',
+      '*.supabase.co',
+      '*.google.com',
+      '*.googleapis.com',
+      '*.gstatic.com',
+    ],
+  },
 
   ios: {
     contentInset: 'automatic',

@@ -1,17 +1,15 @@
 #!/usr/bin/env node
 /**
+ * scripts/generate-ios-icons.js
+ * ────────────────────────────
  * Generates all required iOS app icon sizes from public/KG_LOGO.png.
- * Requires: npm install -D sharp
- * Run:      node scripts/generate-ios-icons.js
- * Output:   ios-assets/AppIcon.appiconset/icon-*.png
- *           ios/App/App/Assets.xcassets/AppIcon.appiconset/   (after cap add ios)
+ * Removes alpha channel (transparency) as required by Apple.
  */
 
 const sharp = require('sharp');
 const path  = require('path');
 const fs    = require('fs');
 
-// Using KG_LOGO.png which is likely the solid version
 const SOURCE = path.join(__dirname, '../public/KG_LOGO.png');
 const OUTDIR = path.join(__dirname, '../ios-assets/AppIcon.appiconset');
 const IOS_XCASSET_DIR = path.join(
@@ -24,17 +22,18 @@ const sizes = [
 ];
 
 async function generate(outDir) {
-  fs.mkdirSync(outDir, { recursive: true });
+  if (!fs.existsSync(outDir)) {
+    fs.mkdirSync(outDir, { recursive: true });
+  }
 
   for (const size of sizes) {
     const outPath = path.join(outDir, `icon-${size}.png`);
     await sharp(SOURCE)
-      .trim() // Remove any transparent or white border in the source
+      .flatten({ background: { r: 11, g: 93, b: 59 } }) // #0B5D3B brand green, removes alpha
       .resize(size, size, {
-        fit: 'cover', // Fill the entire square, cropping if necessary
-        background: { r: 11, g: 93, b: 59, alpha: 1 }, // #0B5D3B brand green
+        fit: 'cover',
       })
-      .png()
+      .png({ compressionLevel: 9, adaptiveFiltering: true, force: true })
       .toFile(outPath);
     console.log(`  icon-${size}.png`);
   }
@@ -46,7 +45,7 @@ async function generate(outDir) {
     process.exit(1);
   }
 
-  console.log('Generating iOS icons from', SOURCE);
+  console.log('Generating iOS icons (flattened) from', SOURCE);
   await generate(OUTDIR);
   console.log('Icons written to', OUTDIR);
 
