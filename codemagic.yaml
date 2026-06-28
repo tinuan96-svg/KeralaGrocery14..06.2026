@@ -3,7 +3,8 @@ workflows:
     name: Kerala Grocery iOS Release
     max_build_duration: 60
     instance_type: mac_mini_m2
-    # Removed app_store_connect integration from here to use manually uploaded files
+    integrations:
+      app_store_connect: Codemagic # Matches the name in your UI integrations
     environment:
       groups:
         - supabase
@@ -42,7 +43,6 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          # This command will use the .p12 and .mobileprovision you upload to the Codemagic UI
           keychain add-certificates
           xcode-project use-profiles
           
