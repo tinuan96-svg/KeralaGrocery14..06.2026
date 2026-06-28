@@ -1,15 +1,14 @@
-/*
-  # Add FCM Token to User Profiles
+-- ── Add FCM Token column to user_profiles ────────────────────────────────────
 
-  1. New Columns
-    - `fcm_token` (text) - Firebase Cloud Messaging token for push notifications
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'user_profiles' AND column_name = 'fcm_token'
+    ) THEN
+        ALTER TABLE public.user_profiles ADD COLUMN fcm_token text;
 
-  2. Security
-    - Existing RLS policies on `user_profiles` already allow users to update their own rows, so no new policies are needed.
-*/
-
-ALTER TABLE user_profiles
-ADD COLUMN IF NOT EXISTS fcm_token text;
-
--- Index for faster lookup when sending notifications
-CREATE INDEX IF NOT EXISTS idx_user_profiles_fcm_token ON user_profiles(fcm_token);
+        COMMENT ON COLUMN public.user_profiles.fcm_token IS 'Firebase Cloud Messaging token for native push notifications.';
+    END IF;
+END $$;

@@ -40,6 +40,9 @@ workflows:
           node scripts/patch-info-plist.js
           cp ios-config/Podfile.patch ios/App/Podfile
           
+          # 3. Generate App Icons to ensure they are full-bleed (no white space)
+          node scripts/generate-ios-icons.js
+          
           # Copy Icons specifically during the build
           cp -R ios-assets/AppIcon.appiconset/*.png ios/App/App/Assets.xcassets/AppIcon.appiconset/
           cp -R ios-assets/AppIcon.appiconset/Contents.json ios/App/App/Assets.xcassets/AppIcon.appiconset/

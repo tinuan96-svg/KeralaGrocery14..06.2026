@@ -1,7 +1,9 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useNetworkStatus } from '@/hooks/useNative';
+import { useNetworkStatus, usePushNotifications } from '@/hooks/useNative';
+import { useAuth } from '@/lib/context/AuthContext';
+import { getSupabase } from '@/lib/supabase/client';
 
 interface CapacitorContextValue {
   isNative: boolean;
@@ -25,7 +27,10 @@ export function CapacitorProvider({ children }: { children: ReactNode }) {
   const [isNative, setIsNative] = useState(false);
   const [platform, setPlatform] = useState<'ios' | 'android' | 'web'>('web');
   const { isOnline, connectionType } = useNetworkStatus();
+  const { token, requestPermission } = usePushNotifications();
+  const { user } = useAuth();
 
+  // ── 1. App initialization ──────────────────────────────────────────────────
   useEffect(() => {
     async function init() {
       try {
@@ -79,6 +84,34 @@ export function CapacitorProvider({ children }: { children: ReactNode }) {
 
     init();
   }, []);
+
+  // ── 2. Handle Push Token registration ──────────────────────────────────────
+  useEffect(() => {
+    if (!isNative || !user || !token) return;
+
+    const syncToken = async () => {
+      const supabase = getSupabase();
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ fcm_token: token })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('[Push] Token sync failed:', error.message);
+      } else {
+        console.log('[Push] Token synced to profile successfully');
+      }
+    };
+
+    syncToken();
+  }, [isNative, user, token]);
+
+  // Prompt for push permissions on first native launch after login
+  useEffect(() => {
+    if (isNative && user) {
+      requestPermission();
+    }
+  }, [isNative, user, requestPermission]);
 
   return (
     <CapacitorContext.Provider value={{ isNative, platform, isOnline, connectionType }}>

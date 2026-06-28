@@ -11,7 +11,8 @@ const sharp = require('sharp');
 const path  = require('path');
 const fs    = require('fs');
 
-const SOURCE = path.join(__dirname, '../public/logo_KG_Trans.png');
+// Using KG_LOGO.png which is likely the solid version
+const SOURCE = path.join(__dirname, '../public/KG_LOGO.png');
 const OUTDIR = path.join(__dirname, '../ios-assets/AppIcon.appiconset');
 const IOS_XCASSET_DIR = path.join(
   __dirname,
@@ -28,8 +29,9 @@ async function generate(outDir) {
   for (const size of sizes) {
     const outPath = path.join(outDir, `icon-${size}.png`);
     await sharp(SOURCE)
+      .trim() // Remove any transparent or white border in the source
       .resize(size, size, {
-        fit: 'contain',
+        fit: 'cover', // Fill the entire square, cropping if necessary
         background: { r: 11, g: 93, b: 59, alpha: 1 }, // #0B5D3B brand green
       })
       .png()
@@ -39,6 +41,11 @@ async function generate(outDir) {
 }
 
 (async () => {
+  if (!fs.existsSync(SOURCE)) {
+    console.error('Source file not found:', SOURCE);
+    process.exit(1);
+  }
+
   console.log('Generating iOS icons from', SOURCE);
   await generate(OUTDIR);
   console.log('Icons written to', OUTDIR);
