@@ -1,10 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'export' is required for Capacitor. This ensures the app
-  // is bundled into a set of static files that can be run natively on iOS.
-  output: 'export',
-  // trailingSlash ensures that navigation works correctly in the local file system.
-  trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -24,11 +19,12 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.keralagrocery.com' },
       { protocol: 'https', hostname: '**.webcontainer-api.io' },
     ],
+    deviceSizes: [640, 750, 828, 1080, 1200],
+    imageSizes:  [16, 32, 48, 64, 96, 128, 256],
+    minimumCacheTTL: 60,
   },
   experimental: {
-    // serverActions MUST be disabled for 'output: export'.
-    // The build will fail if this is set to true.
-    serverActions: false,
+    serverActions: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   webpack: (config, { dev }) => {
@@ -49,6 +45,54 @@ const nextConfig = {
   poweredByHeader:  false,
   compress:         true,
   reactStrictMode:  true,
+  async headers() {
+    return [
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600' },
+          { key: 'Content-Type', value: 'application/manifest+json' },
+        ],
+      },
+      {
+        source: '/.well-known/apple-app-site-association',
+        headers: [
+          { key: 'Cache-Control',  value: 'public, max-age=3600' },
+          { key: 'Content-Type',   value: 'application/json' },
+        ],
+      },
+      {
+        source: '/.well-known/assetlinks.json',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600' },
+          { key: 'Content-Type', value: 'application/json' },
+        ],
+      },
+      {
+        source: '/icons/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options',           value: 'ALLOWALL' },
+          { key: 'Content-Security-Policy',   value: "frame-ancestors *" },
+          { key: 'Referrer-Policy',           value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy',        value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
