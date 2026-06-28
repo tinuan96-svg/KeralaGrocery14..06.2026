@@ -43,18 +43,25 @@ workflows:
           cd ios/App && pod install
       - name: Build iOS IPA
         script: |
+          # 1. Initialize keychain
           keychain initialize
+          
+          # 2. Fetch and install certificates/profiles from Apple
+          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
+          
+          # 3. Add certificates to keychain
           keychain add-certificates
           
-          # This command picks up the profile you named in the UI
-          xcode-project use-profiles
+          # 4. Configure project to use the fetched profiles
+          xcode-project use-profiles --archive-method app-store
           
-          # Build using the new certificate and profile
+          # 5. Build IPA with fixes for duplicate frameworks and signing
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --archive-flags "ENABLE_USER_SCRIPT_SANDBOXING=NO DEVELOPMENT_TEAM=$TEAM_ID" \
-            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID ENABLE_USER_SCRIPT_SANDBOXING=NO" \
+            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO" \
+            --export-method app-store
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
