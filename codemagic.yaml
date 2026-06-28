@@ -27,14 +27,16 @@ workflows:
       - name: Build Next.js project
         script: |
           export NEXT_TELEMETRY_DISABLED=1
-          npx next build
+          npm run build
+          # Ensure webDir exists for Capacitor sync (required even for remote URL apps)
+          mkdir -p out
+          echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
       - name: Sync Capacitor
         script: |
           npx cap sync ios
       - name: Set build number
         script: |
           cd ios/App
-          # Offset to ensure we are above build 1
           agvtool new-version -all $((2 + $BUILD_NUMBER))
       - name: Install CocoaPods
         script: |
@@ -42,7 +44,6 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          # Fetch and install everything
           app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --create
           keychain add-certificates
           
