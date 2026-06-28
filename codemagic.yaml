@@ -44,9 +44,12 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          # We use the UI-uploaded certificates and profiles
+          
+          # Explicitly adding the certificate and profile by the names you set in the UI
           keychain add-certificates
-          xcode-project use-profiles --archive-method app-store
+          
+          # This matches the 'nickname' you gave the profile in Codemagic
+          xcode-project use-profiles --profile keralagrocery_app_store
           
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
