@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: Codemagic # Matches the name in your UI integrations
+      app_store_connect: Codemagic
     environment:
       groups:
         - supabase
@@ -43,13 +43,17 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
+          # Fetch specifically using the ID to force manual profile matching
+          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --install-certificate
           keychain add-certificates
+          
+          # Force the project to use the profile by passing it directly
           xcode-project use-profiles
           
+          # Fixed build command syntax
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --export-method app-store
+            --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
