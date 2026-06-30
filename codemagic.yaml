@@ -38,38 +38,15 @@ workflows:
       - name: Sync Capacitor and Apply Fixes
         script: |
           npx cap sync ios
-          
           node scripts/patch-info-plist.js || true
           
-          # Write a clean Podfile directly to avoid multiple post_install errors
-          # This version forces static linkage to resolve the launch crash.
-          cat > ios/App/Podfile <<'EOF'
-require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
-
-platform :ios, '15.0'
-use_frameworks! :linkage => :static
-
-install! 'cocoapods', :disable_input_output_paths => true
-
-target 'App' do
-  capacitor_pods
-end
-
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-    end
-  end
-end
-EOF
-
+          # Use printf to write a clean Podfile with correct linkage (Fixes Launch Crash)
           cd ios/App
+          printf "require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'\n\nplatform :ios, '15.0'\nuse_frameworks! :linkage => :static\n\ninstall! 'cocoapods', :disable_input_output_paths => true\n\ntarget 'App' do\n  capacitor_pods\nend\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'\n      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'\n    end\n  end\nend\n" > Podfile
+          
           rm -rf Pods Podfile.lock
           pod install
           cd ../..
-          
           node scripts/generate-ios-icons.js
           
           if [ ! -d "ios/App/App.xcworkspace" ]; then
