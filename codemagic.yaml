@@ -36,47 +36,40 @@ workflows:
           echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
       - name: Sync Capacitor and Apply Fixes
         script: |
-          # 1. Sync Capacitor (generates the native project and default Podfile)
+          # 1. Ensure the ios platform exists
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
+          
+          # 2. Sync Capacitor (populates the ios folder)
           npx cap sync ios
           
-          # 2. Patch Info.plist
+          # 3. Apply Info.plist and Podfile modifications
           node scripts/patch-info-plist.js || true
           
-          # 3. Patch Podfile via sed (Surgical Edit)
-          # We don't overwrite the file, we only change the linkage and add the sandbox fix
-          # to the file Capacitor just generated.
+          # Force Static Linkage and fix sandbox in Podfile (Fixes Launch Crash)
           cd ios/App
-          
-          # Set static linkage (REQUIRED to fix launch crash)
           sed -i '' 's/use_frameworks!/use_frameworks! :linkage => :static/g' Podfile
           
-          # Add the CocoaPods fix for duplicate framework paths at the top
-          echo "install! 'cocoapods', :disable_input_output_paths => true" | cat - Podfile > temp && mv temp Podfile
+          # Add CocoaPods fix for duplicate framework paths
+          if ! grep -q "disable_input_output_paths" Podfile; then
+            echo "install! 'cocoapods', :disable_input_output_paths => true" | cat - Podfile > temp && mv temp Podfile
+          fi
           
-          # Ensure sandbox is disabled in the post_install block
-          # This replaces the default post_install or appends to it
-          echo "
-          post_install do |installer|
-            installer.pods_project.targets.each do |target|
-              target.build_configurations.each do |config|
-                config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
-                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-              end
-            end
-          end" >> Podfile
-          
-          # 4. Clean and Install Pods
+          # 4. Clean and Install Pods (This creates App.xcworkspace)
           rm -rf Pods
           rm -rf Podfile.lock
           pod install
           cd ../..
           
-          # 5. Generate Flattened App Icons (No alpha channel)
+          # 5. Generate Icons (Alpha removal)
           node scripts/generate-ios-icons.js
           
-          # 6. Force copy icons into Xcode assets
-          mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
-          cp -af ios-assets/AppIcon.appiconset/* ios/App/App/Assets.xcassets/AppIcon.appiconset/
+          # 6. Verify workspace existence
+          if [ ! -d "ios/App/App.xcworkspace" ]; then
+            echo "Error: ios/App/App.xcworkspace was not created by pod install."
+            exit 1
+          fi
       - name: Set build number
         script: |
           cd ios/App
