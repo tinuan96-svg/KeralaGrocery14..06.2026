@@ -36,40 +36,25 @@ workflows:
           echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
       - name: Sync Capacitor and Apply Fixes
         script: |
-          # 1. Ensure the ios platform exists
-          if [ ! -d "ios" ]; then
-            npx cap add ios
-          fi
-          
-          # 2. Sync Capacitor (populates the ios folder)
+          # 1. Sync Capacitor
           npx cap sync ios
           
-          # 3. Apply Info.plist and Podfile modifications
+          # 2. Patch Info.plist
           node scripts/patch-info-plist.js || true
           
-          # Force Static Linkage and fix sandbox in Podfile (Fixes Launch Crash)
+          # 3. Patch Podfile
           cd ios/App
-          sed -i '' 's/use_frameworks!/use_frameworks! :linkage => :static/g' Podfile
+          # Disable sandbox and set deployment target
+          printf "\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'\n      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'\n    end\n  end\nend\n" >> Podfile
+          # Fix for duplicate framework output paths
+          echo "install! 'cocoapods', :disable_input_output_paths => true" | cat - Podfile > temp && mv temp Podfile
           
-          # Add CocoaPods fix for duplicate framework paths
-          if ! grep -q "disable_input_output_paths" Podfile; then
-            echo "install! 'cocoapods', :disable_input_output_paths => true" | cat - Podfile > temp && mv temp Podfile
-          fi
-          
-          # 4. Clean and Install Pods (This creates App.xcworkspace)
-          rm -rf Pods
-          rm -rf Podfile.lock
+          # 4. Install Pods
           pod install
           cd ../..
           
-          # 5. Generate Icons (Alpha removal)
+          # 5. Generate icons
           node scripts/generate-ios-icons.js
-          
-          # 6. Verify workspace existence
-          if [ ! -d "ios/App/App.xcworkspace" ]; then
-            echo "Error: ios/App/App.xcworkspace was not created by pod install."
-            exit 1
-          fi
       - name: Set build number
         script: |
           cd ios/App
@@ -84,7 +69,7 @@ workflows:
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID ENABLE_USER_SCRIPT_SANDBOXING=NO" \
-            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO SKIP_INSTALL=NO"
+            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
