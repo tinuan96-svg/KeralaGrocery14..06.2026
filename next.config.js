@@ -19,9 +19,6 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.keralagrocery.com' },
       { protocol: 'https', hostname: '**.webcontainer-api.io' },
     ],
-    deviceSizes: [640, 750, 828, 1080, 1200],
-    imageSizes:  [16, 32, 48, 64, 96, 128, 256],
-    minimumCacheTTL: 60,
   },
   experimental: {
     serverActions: true,
@@ -41,58 +38,8 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  swcMinify:        true,
-  poweredByHeader:  false,
-  compress:         true,
-  reactStrictMode:  true,
-  async headers() {
-    return [
-      {
-        source: '/sw.js',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
-          { key: 'Service-Worker-Allowed', value: '/' },
-          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
-        ],
-      },
-      {
-        source: '/manifest.json',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=3600' },
-          { key: 'Content-Type', value: 'application/manifest+json' },
-        ],
-      },
-      {
-        source: '/.well-known/apple-app-site-association',
-        headers: [
-          { key: 'Cache-Control',  value: 'public, max-age=3600' },
-          { key: 'Content-Type',   value: 'application/json' },
-        ],
-      },
-      {
-        source: '/.well-known/assetlinks.json',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=3600' },
-          { key: 'Content-Type', value: 'application/json' },
-        ],
-      },
-      {
-        source: '/icons/:path*',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
-      {
-        source: '/(.*)',
-        headers: [
-          { key: 'X-Frame-Options',           value: 'ALLOWALL' },
-          { key: 'Content-Security-Policy',   value: "frame-ancestors *" },
-          { key: 'Referrer-Policy',           value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy',        value: 'camera=(), microphone=(), geolocation=()' },
-        ],
-      },
-    ];
-  },
+  swcMinify: true,
+  reactStrictMode: false, // Disabled for Bolt performance
 };
 
 module.exports = nextConfig;
