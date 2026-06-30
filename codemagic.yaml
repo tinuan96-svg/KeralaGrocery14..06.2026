@@ -40,10 +40,10 @@ workflows:
           npx cap sync ios
           node scripts/patch-info-plist.js || true
           
-          # Use printf to write a clean Podfile with correct linkage (Fixes Launch Crash)
+          # Use a unified approach to write the Podfile that doesn't break YAML parsing
+          printf "platform :ios, '15.0'\nuse_frameworks! :linkage => :static\n\ninstall! 'cocoapods', :disable_input_output_paths => true\n\ntarget 'App' do\nend\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'\n      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'\n    end\n  end\nend\n" > ios/App/Podfile
+
           cd ios/App
-          printf "require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'\n\nplatform :ios, '15.0'\nuse_frameworks! :linkage => :static\n\ninstall! 'cocoapods', :disable_input_output_paths => true\n\ntarget 'App' do\n  capacitor_pods\nend\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'\n      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'\n    end\n  end\nend\n" > Podfile
-          
           rm -rf Pods Podfile.lock
           pod install
           cd ../..
