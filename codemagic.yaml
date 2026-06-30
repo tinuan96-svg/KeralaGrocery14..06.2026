@@ -34,30 +34,49 @@ workflows:
           npm run build
           mkdir -p out
           echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
-      - name: Sync Capacitor and Patch Configs
+      - name: Sync Capacitor and Apply Fixes
         script: |
-          # 1. Sync Capacitor
+          # 1. Sync Capacitor (generates the native project and default Podfile)
           npx cap sync ios
           
-          # 2. Patch Podfile (Fixes the Launch Crash and duplicate symbols)
-          # Overwrite with our clean, tested Podfile that uses static linkage
-          cp ios-config/Podfile.patch ios/App/Podfile
-          
-          # 3. Patch Info.plist (Standardize metadata)
-          # Install plist specifically here if the global install failed
-          npm install plist
+          # 2. Patch Info.plist
           node scripts/patch-info-plist.js || true
           
-          # 4. Generate Flattened App Icons (No alpha channel)
+          # 3. Patch Podfile via sed (Surgical Edit)
+          # We don't overwrite the file, we only change the linkage and add the sandbox fix
+          # to the file Capacitor just generated.
+          cd ios/App
+          
+          # Set static linkage (REQUIRED to fix launch crash)
+          sed -i '' 's/use_frameworks!/use_frameworks! :linkage => :static/g' Podfile
+          
+          # Add the CocoaPods fix for duplicate framework paths at the top
+          echo "install! 'cocoapods', :disable_input_output_paths => true" | cat - Podfile > temp && mv temp Podfile
+          
+          # Ensure sandbox is disabled in the post_install block
+          # This replaces the default post_install or appends to it
+          echo "
+          post_install do |installer|
+            installer.pods_project.targets.each do |target|
+              target.build_configurations.each do |config|
+                config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+              end
+            end
+          end" >> Podfile
+          
+          # 4. Clean and Install Pods
+          rm -rf Pods
+          rm -rf Podfile.lock
+          pod install
+          cd ../..
+          
+          # 5. Generate Flattened App Icons (No alpha channel)
           node scripts/generate-ios-icons.js
           
-          # 5. Force copy icons into Xcode assets
+          # 6. Force copy icons into Xcode assets
           mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
           cp -af ios-assets/AppIcon.appiconset/* ios/App/App/Assets.xcassets/AppIcon.appiconset/
-          
-          # 6. Install Pods
-          cd ios/App
-          pod install
       - name: Set build number
         script: |
           cd ios/App
