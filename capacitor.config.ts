@@ -23,7 +23,9 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     backgroundColor: '#0B5D3B',
-    appendUserAgent: 'KeralaGroceryApp',
+    // Versioned UserAgent for mandatory update checks.
+    // Increment this with every major release.
+    appendUserAgent: 'KeralaGroceryApp/1.0.0',
     limitsNavigationsToAppBoundDomains: false,
     allowsLinkPreview: false,
   },

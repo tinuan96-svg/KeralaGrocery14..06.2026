@@ -10,6 +10,7 @@ import { OrganizationSchema, WebSiteSchema } from '@/components/seo/StructuredDa
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import ServiceWorkerRegistration from '@/components/layout/ServiceWorkerRegistration';
 import { CapacitorProvider } from '@/components/native/CapacitorProvider';
+import { AppUpdateGuard } from '@/components/native/AppUpdateGuard';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { OfflineBanner } from '@/components/layout/OfflineBanner';
 
@@ -201,6 +202,7 @@ export default function RootLayout({
               <WishlistProvider>
                 <RealtimeSyncProvider>
                   <CapacitorProvider>
+                    <AppUpdateGuard />
                     {children}
                     <Toaster />
                   </CapacitorProvider>
