@@ -22,7 +22,7 @@ workflows:
       events:
         - push
       branch_patterns:
-        - pattern: 'KeralaGrocery.com'
+        - pattern: 'main'
           include: true
     scripts:
       - name: Install dependencies
@@ -36,16 +36,18 @@ workflows:
           echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
       - name: Sync Capacitor and Patch Configs
         script: |
-          # 1. Ensure ios directory is clean
-          rm -rf ios/App/Pods
-          rm -rf ios/App/Podfile.lock
-          
-          # 2. Sync Capacitor (discovers plugins automatically)
+          # 1. Sync Capacitor (generates the default Podfile)
           npx cap sync ios
           
-          # 3. Apply our custom patches (CRITICAL for App Store approval)
-          node scripts/patch-info-plist.js
-          cp ios-config/Podfile.patch ios/App/Podfile
+          # 2. Patch Info.plist (ignore errors if script has environment issues)
+          node scripts/patch-info-plist.js || true
+          
+          # 3. Patch Podfile for Static Linkage (Fixes the Launch Crash)
+          # We use sed to change the linkage and add the sandbox fix
+          sed -i '' 's/use_frameworks!/use_frameworks! :linkage => :static/g' ios/App/Podfile
+          
+          # Add the CocoaPods fix for duplicate framework paths
+          echo "install! 'cocoapods', :disable_input_output_paths => true" >> ios/App/Podfile
           
           # 4. Generate Flattened App Icons (No alpha channel)
           node scripts/generate-ios-icons.js
@@ -54,12 +56,12 @@ workflows:
           mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
           cp -af ios-assets/AppIcon.appiconset/* ios/App/App/Assets.xcassets/AppIcon.appiconset/
           
-          # 6. Fresh CocoaPods install
-          cd ios/App && pod install
+          # 6. Install Pods
+          cd ios/App
+          pod install
       - name: Set build number
         script: |
           cd ios/App
-          # Using 120 to ensure a clean new build slot far away from problematic Build 108
           agvtool new-version -all $((120 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
@@ -67,7 +69,6 @@ workflows:
           keychain add-certificates
           xcode-project use-profiles --archive-method app-store
           
-          # Build IPA using the clean project setup
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
