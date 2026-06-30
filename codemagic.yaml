@@ -43,13 +43,12 @@ workflows:
           # 2. Patch Info.plist
           node scripts/patch-info-plist.js || true
           
-          # 3. Generate Flattened App Icons and Contents.json (CRITICAL for KG Logo)
-          node scripts/generate-ios-icons.js
-          
-          # 4. Patch Podfile (Fixes Launch Crash)
-          cd ios/App
-          printf "platform :ios, '15.0'\nuse_frameworks! :linkage => :static\n\ninstall! 'cocoapods', :disable_input_output_paths => true\n\ntarget 'App' do\nend\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'\n      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'\n    end\n  end\nend\n" > Podfile
+          # 3. Write clean Podfile with Static Linkage (Fixes Launch Crash)
+          # We use a very clean version without capacitor_pods which is for older Capacitor versions.
+          # Capacitor 6+ uses SPM for plugins by default, but Podfile is still needed for core.
+          printf "platform :ios, '15.0'\nuse_frameworks! :linkage => :static\n\ninstall! 'cocoapods', :disable_input_output_paths => true\n\ntarget 'App' do\nend\n\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'\n      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'\n    end\n  end\nend\n" > ios/App/Podfile
 
+          cd ios/App
           rm -rf Pods Podfile.lock
           pod install
           cd ../..
@@ -58,27 +57,34 @@ workflows:
             echo "ERROR: App.xcworkspace not found."
             exit 1
           fi
+          
+          # 4. Generate Flattened App Icons (No alpha channel)
+          node scripts/generate-ios-icons.js
       - name: Set build number
         script: |
           cd ios/App
-          # Jumping to 200 to clear any cached states on Apple's servers
-          agvtool new-version -all $((200 + $BUILD_NUMBER))
+          # Jumping to 300 to clear any cached states on Apple's servers and previous failed attempts
+          agvtool new-version -all $((300 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
           keychain initialize
           keychain add-certificates
+          
+          # This command matches the profiles and handles the export_options.plist creation.
+          # We use --archive-method app-store to match the distribution type.
           xcode-project use-profiles --archive-method app-store
           
+          # Build IPA
+          # We use a simpler command and let Codemagic handle the complexities.
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID ENABLE_USER_SCRIPT_SANDBOXING=NO" \
-            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO SKIP_INSTALL=NO"
+            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
         auth: integration
-        # Set to false to avoid "Beta Description" error; build will still upload
         submit_to_testflight: false
         submit_to_app_store: false
