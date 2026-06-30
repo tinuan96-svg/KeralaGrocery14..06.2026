@@ -36,18 +36,17 @@ workflows:
           echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
       - name: Sync Capacitor and Patch Configs
         script: |
-          # 1. Sync Capacitor (generates the default Podfile)
+          # 1. Sync Capacitor
           npx cap sync ios
           
-          # 2. Patch Info.plist (ignore errors if script has environment issues)
+          # 2. Patch Podfile (Fixes the Launch Crash and duplicate symbols)
+          # Overwrite with our clean, tested Podfile that uses static linkage
+          cp ios-config/Podfile.patch ios/App/Podfile
+          
+          # 3. Patch Info.plist (Standardize metadata)
+          # Install plist specifically here if the global install failed
+          npm install plist
           node scripts/patch-info-plist.js || true
-          
-          # 3. Patch Podfile for Static Linkage (Fixes the Launch Crash)
-          # We use sed to change the linkage and add the sandbox fix
-          sed -i '' 's/use_frameworks!/use_frameworks! :linkage => :static/g' ios/App/Podfile
-          
-          # Add the CocoaPods fix for duplicate framework paths
-          echo "install! 'cocoapods', :disable_input_output_paths => true" >> ios/App/Podfile
           
           # 4. Generate Flattened App Icons (No alpha channel)
           node scripts/generate-ios-icons.js
