@@ -51,66 +51,48 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Prepare the Private Key
-          # Use a more robust way to handle the key
-          printf "%s" "$KG_STORE_PRIVATE_KEY" > /tmp/apple_key.raw
+          # 1. Handle Private Key (expand \n if present)
+          printf "%b" "$KG_STORE_PRIVATE_KEY" > /tmp/apple_key.p8
           
-          python3 -c "
-          import base64
-          import os
-          import re
-          
-          key_path = '/tmp/apple_key.raw'
-          with open(key_path, 'r') as f:
-              key = f.read().strip()
-          
-          # Remove any quotes that might have been added by environment variable injection
-          key = key.strip('\"').strip(\"'\")
-          
-          # Check if it's PEM or Base64
-          if 'BEGIN PRIVATE KEY' in key:
-              # It's already PEM, just ensure it has correct line endings if it was flattened
-              content = key.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
-              content = re.sub(r'\s+', '', content) # remove any existing whitespace
-              formatted_content = '\n'.join(content[i:i+64] for i in range(0, len(content), 64))
-              out = '-----BEGIN PRIVATE KEY-----\n' + formatted_content + '\n-----END PRIVATE KEY-----\n'
-          else:
-              # Try decoding as base64
-              try:
-                  decoded = base64.b64decode(key).decode('utf-8')
-                  if 'BEGIN PRIVATE KEY' in decoded:
-                      out = decoded
-                  else:
-                      raise ValueError('Base64 decoded but not PEM')
-              except:
-                  # Fallback: assume it's the raw base64-like content of a PEM without headers
-                  content = re.sub(r'\s+', '', key)
-                  formatted_content = '\n'.join(content[i:i+64] for i in range(0, len(content), 64))
-                  out = '-----BEGIN PRIVATE KEY-----\n' + formatted_content + '\n-----END PRIVATE KEY-----\n'
-          
-          with open('/tmp/apple_key.p8', 'w') as f:
-              f.write(out)
-          "
-          
+          # 2. Initialize keychain and signing
           keychain initialize
-          
-          # 2. Fetch signing files
           app-store-connect fetch-signing-files "$APP_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --private-key /tmp/apple_key.p8 \
             --create
-            
           keychain add-certificates
           
-          # 3. Use profiles and build
+          # 3. Use profiles
           xcode-project use-profiles
           
+          # 4. Generate Export Options
+          cat <<EOF > /tmp/export_options.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$APP_ID</key>
+              <string>KeralaGrocery_App_Store</string>
+            </dict>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>teamID</key>
+            <string>$TEAM_ID</string>
+          </dict>
+          </plist>
+          EOF
+          
+          # 5. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
-            --export-method app-store \
+            --export-options-plist /tmp/export_options.plist \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
             --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
     artifacts:
