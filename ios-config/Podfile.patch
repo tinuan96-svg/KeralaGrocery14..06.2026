@@ -1,17 +1,17 @@
-require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
-
 platform :ios, '15.0'
 use_frameworks! :linkage => :static
 
 # Fix for Xcode 15+ resource issues
 install! 'cocoapods', :disable_input_output_paths => true
 
+project 'App.xcodeproj'
+
 target 'App' do
-  # Inlined core pods to avoid helper load failures in CI
+  # Core Capacitor Pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
 
-  # Capacitor Plugins
+  # Plugins
   pod 'CapacitorApp',               :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorBrowser',           :path => '../../node_modules/@capacitor/browser'
   pod 'CapacitorHaptics',           :path => '../../node_modules/@capacitor/haptics'
@@ -24,7 +24,6 @@ target 'App' do
 end
 
 post_install do |installer|
-  assertDeploymentTarget(installer)
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
