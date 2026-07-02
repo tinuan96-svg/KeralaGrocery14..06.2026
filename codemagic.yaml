@@ -65,11 +65,6 @@ workflows:
       email:
         recipients:
           - tinuan96@gmail.com
-      app_store_connect:
-        # Removed auth: integration to fix validation error. 
-        # To enable auto-upload, configure App Store Connect integration in Codemagic UI.
-        submit_to_testflight: false
-        submit_to_app_store: false
 
   simulator-workflow:
     name: Kerala Grocery iOS Simulator
