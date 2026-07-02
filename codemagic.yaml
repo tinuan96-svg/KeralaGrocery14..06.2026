@@ -1,3 +1,4 @@
+# Updated: July 02, 2026 - Fixed Guideline 2.3.10 (Google Play references)
 workflows:
   ios-release:
     name: Kerala Grocery iOS Release

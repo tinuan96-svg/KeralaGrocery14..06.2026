@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, ShieldCheck, Truck, Star, RotateCcw, Leaf, Award } from 'lucide-react';
+import { usePlatform } from '@/hooks/useNative';
 
 const SHOP_LINKS = [
   ['/products', 'All Products'],
@@ -36,6 +37,8 @@ const TRUST_ITEMS = [
 ];
 
 export default function Footer() {
+  const platform = usePlatform();
+
   return (
     <footer className="bg-[#071f12] text-gray-300">
 
@@ -149,18 +152,22 @@ export default function Footer() {
 
           {/* App + payment */}
           <div>
-            <h4 className="text-white font-bold text-sm mb-4">Get The App</h4>
-            <p className="text-xs text-gray-400 mb-3">Shop on the go with our Android app.</p>
-            <a
-              href="#"
-              className="inline-flex items-center gap-2.5 bg-white/8 hover:bg-[#0B5D3B]/60 border border-white/15 hover:border-[#6FDB2F]/30 rounded-2xl px-4 py-2.5 transition-all duration-200 mb-5 group"
-            >
-              <span className="text-xl leading-none">🤖</span>
-              <div>
-                <p className="text-[9px] text-gray-400 leading-none mb-0.5">Get it on</p>
-                <p className="text-sm font-bold text-white leading-tight">Google Play</p>
+            {platform !== 'ios' && (
+              <div className="kg-google-play-section">
+                <h4 className="text-white font-bold text-sm mb-4">Get The App</h4>
+                <p className="text-xs text-gray-400 mb-3">Shop on the go with our Android app.</p>
+                <a
+                  href="#"
+                  className="inline-flex items-center gap-2.5 bg-white/8 hover:bg-[#0B5D3B]/60 border border-white/15 hover:border-[#6FDB2F]/30 rounded-2xl px-4 py-2.5 transition-all duration-200 mb-5 group"
+                >
+                  <span className="text-xl leading-none">🤖</span>
+                  <div>
+                    <p className="text-[9px] text-gray-400 leading-none mb-0.5">Get it on</p>
+                    <p className="text-sm font-bold text-white leading-tight">Google Play</p>
+                  </div>
+                </a>
               </div>
-            </a>
+            )}
 
             <h4 className="text-white font-bold text-xs mb-2">We Accept</h4>
             <div className="flex flex-wrap gap-1.5">

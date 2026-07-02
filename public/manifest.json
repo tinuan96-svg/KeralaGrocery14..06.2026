@@ -13,14 +13,7 @@
   "dir": "ltr",
   "categories": ["shopping", "food"],
   "iarc_rating_id": "",
-  "prefer_related_applications": true,
-  "related_applications": [
-    {
-      "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=com.keralagroceries.store",
-      "id": "com.keralagroceries.store"
-    }
-  ],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
