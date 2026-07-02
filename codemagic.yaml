@@ -75,30 +75,23 @@ workflows:
               f.write(raw)
           "
           
-          # Validate PEM key format
-          if grep -q "BEGIN PRIVATE KEY" /tmp/apple_key.p8; then
-            echo "Key file format validated."
-          else
-            echo "Error: Key file reconstruction failed!"
-            exit 1
-          fi
+          # 2. Export environment variable for the CLI tool to use
+          export APP_STORE_CONNECT_PRIVATE_KEY=$(cat /tmp/apple_key.p8)
           
           keychain initialize
           
-          # 2. Fetch signing files
-          # Passing the content of the key to ensure it is read correctly
+          # 3. Fetch signing files
           app-store-connect fetch-signing-files "$APP_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key "$(cat /tmp/apple_key.p8)" \
             --create
           keychain add-certificates
           
-          # 3. Use profiles
+          # 4. Use profiles
           xcode-project use-profiles
           
-          # 4. Custom Export Options
+          # 5. Custom Export Options
           cat <<EOF > /tmp/export_options.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -119,13 +112,9 @@ workflows:
           </plist>
           EOF
           
-          # 5. Build IPA
-          # Using find to ensure we get the correct workspace path
-          WORKSPACE_PATH=$(find . -name "*.xcworkspace" | head -n 1)
-          echo "Using workspace at: $WORKSPACE_PATH"
-          
+          # 6. Build IPA
           xcode-project build-ipa \
-            --workspace "$WORKSPACE_PATH" \
+            --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
             --export-options-plist /tmp/export_options.plist \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
