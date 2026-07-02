@@ -53,7 +53,9 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --install
+          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE
+          keychain add-certificates
+          xcode-project use-profiles
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
