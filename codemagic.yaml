@@ -51,11 +51,23 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Handle Private Key (expand \n if present)
-          printf "%b" "$KG_STORE_PRIVATE_KEY" > /tmp/apple_key.p8
+          # 1. Reconstruct Private Key PEM file
+          python3 -c "
+          import os, re
+          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '')
+          # Expand literal \n and remove quotes
+          clean = raw.replace('\\\\n', '\n').strip('\"').strip(\"'\")
+          # Extract body and re-wrap
+          body = clean.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
+          body = ''.join(body.split())
+          wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+          with open('/tmp/apple_key.p8', 'w') as f:
+              f.write(f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n')
+          "
           
-          # 2. Initialize keychain and signing
           keychain initialize
+          
+          # 2. Fetch signing files
           app-store-connect fetch-signing-files "$APP_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
@@ -67,7 +79,7 @@ workflows:
           # 3. Use profiles
           xcode-project use-profiles
           
-          # 4. Generate Export Options
+          # 4. Custom Export Options
           cat <<EOF > /tmp/export_options.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -78,7 +90,7 @@ workflows:
             <key>provisioningProfiles</key>
             <dict>
               <key>$APP_ID</key>
-              <string>KeralaGrocery_App_Store</string>
+              <string>KeralaGrocery</string>
             </dict>
             <key>signingStyle</key>
             <string>manual</string>
