@@ -51,14 +51,29 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Reconstruct Private Key PEM file
+          # 1. Reconstruct Private Key PEM file using robust Python script
           python3 -c "
-          import os, re
-          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '')
-          # Expand literal \n and remove quotes
-          clean = raw.replace('\\\\n', '\n').strip('\"').strip(\"'\")
-          # Extract body and re-wrap
-          body = clean.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
+          import os, base64, re
+          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
+          if not raw:
+              print('ERROR: KG_STORE_PRIVATE_KEY is empty'); exit(1)
+          
+          # Clean literal escapes and quotes
+          clean = raw.replace('\\\\n', '\n').replace('\\n', '\n').strip('\"').strip(\"'\")
+          
+          if 'BEGIN PRIVATE KEY' in clean:
+              body = clean.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
+          else:
+              try:
+                  decoded = base64.b64decode(clean).decode('utf-8')
+                  if 'BEGIN PRIVATE KEY' in decoded:
+                      body = decoded.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
+                  else:
+                      body = clean
+              except:
+                  body = clean
+          
+          # Remove all whitespace and re-wrap at 64 chars
           body = ''.join(body.split())
           wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
           with open('/tmp/apple_key.p8', 'w') as f:
@@ -79,7 +94,7 @@ workflows:
           # 3. Use profiles
           xcode-project use-profiles
           
-          # 4. Custom Export Options
+          # 4. Custom Export Options (Ensuring app-store method)
           cat <<EOF > /tmp/export_options.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
