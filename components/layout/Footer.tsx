@@ -156,7 +156,7 @@ export default function Footer() {
 
           {/* App + payment */}
           <div>
-            {mounted && platform !== 'ios' && process.env.NEXT_PUBLIC_SHOW_GOOGLE_PLAY !== 'false' && (
+            {mounted && platform === 'android' && (
               <div className="kg-google-play-section">
                 <h4 className="text-white font-bold text-sm mb-4">Get The App</h4>
                 <p className="text-xs text-gray-400 mb-3">Shop on the go with our Android app.</p>
@@ -167,7 +167,7 @@ export default function Footer() {
                   <span className="text-xl leading-none">🤖</span>
                   <div>
                     <p className="text-[9px] text-gray-400 leading-none mb-0.5">Get it on</p>
-                    <p className="text-sm font-bold text-white leading-tight">Google Play</p>
+                    <p className="text-sm font-bold text-white leading-tight">Play Store</p>
                   </div>
                 </a>
               </div>
