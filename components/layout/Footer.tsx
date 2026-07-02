@@ -38,6 +38,7 @@ const TRUST_ITEMS = [
 export default function Footer() {
   const platform = usePlatform();
   const [mounted, setMounted] = useState(false);
+  const showAndroidLink = process.env.NEXT_PUBLIC_SHOW_GOOGLE_PLAY === 'true';
 
   useEffect(() => {
     setMounted(true);
@@ -156,8 +157,8 @@ export default function Footer() {
 
           {/* App + payment */}
           <div>
-            {mounted && platform === 'android' && (
-              <div className="kg-google-play-section">
+            {mounted && platform === 'android' && showAndroidLink && (
+              <div className="kg-app-links-section">
                 <h4 className="text-white font-bold text-sm mb-4">Get The App</h4>
                 <p className="text-xs text-gray-400 mb-3">Shop on the go with our Android app.</p>
                 <a
