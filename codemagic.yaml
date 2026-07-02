@@ -16,7 +16,7 @@ workflows:
         # Standard variables for Codemagic CLI tools
         APP_STORE_CONNECT_ISSUER_ID: 9290b9a4-e764-43a3-a66c-7463fba41613
         APP_STORE_CONNECT_KEY_IDENTIFIER: 75R54UD497
-        APP_STORE_CONNECT_PRIVATE_KEY: $KG_STORE_PRIVATE_KEY
+        APP_STORE_CONNECT_PRIVATE_KEY: "$KG_STORE_PRIVATE_KEY"
       node: 22
       xcode: latest
     triggering:
