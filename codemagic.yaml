@@ -13,6 +13,10 @@ workflows:
         XCODE_SCHEME: "App"
         APP_ID: "com.keralagrocery.app"
         TEAM_ID: "PDZ7779Q9J"
+        # Standard variables for Codemagic CLI tools
+        APP_STORE_CONNECT_ISSUER_ID: 9290b9a4-e764-43a3-a66c-7463fba41613
+        APP_STORE_CONNECT_KEY_IDENTIFIER: 75R54UD497
+        APP_STORE_CONNECT_PRIVATE_KEY: $KG_STORE_PRIVATE_KEY
       node: 22
       xcode: latest
     triggering:
@@ -49,8 +53,7 @@ workflows:
       - name: Build iOS IPA
         script: |
           keychain initialize
-          keychain add-certificates
-          xcode-project use-profiles
+          app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE --install
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
