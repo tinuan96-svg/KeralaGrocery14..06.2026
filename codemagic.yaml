@@ -66,9 +66,10 @@ workflows:
         recipients:
           - tinuan96@gmail.com
       app_store_connect:
+        auth: manual
         issuer_id: 9290b9a4-e764-43a3-a66c-7463fba41613
         key_id: 75R54UD497
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        api_key: $KG_STORE_PRIVATE_KEY
         submit_to_testflight: true
         submit_to_app_store: false
 
