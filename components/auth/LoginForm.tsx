@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { Mail, Phone, Chrome, Clock } from 'lucide-react';
+import { Mail, Phone, Chrome, Clock, Apple } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ function toE164(raw: string): string {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function LoginForm() {
-  const { signIn, signUp, signInWithGoogle, signInWithPhoneOtp, verifyPhoneOtp, saveProfile, markPhoneVerified } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithApple, signInWithPhoneOtp, verifyPhoneOtp, saveProfile, markPhoneVerified } = useAuth();
   const { toast } = useToast();
 
   const [mode, setMode] = useState<AuthMode>('select');
@@ -76,6 +76,18 @@ export default function LoginForm() {
     try {
       const { error } = await signInWithGoogle();
       if (error) toast({ title: 'Google login failed', description: error.message, variant: 'destructive' });
+    } catch {
+      toast({ title: 'Error', description: 'Something went wrong. Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await signInWithApple();
+      if (error) toast({ title: 'Apple login failed', description: error.message, variant: 'destructive' });
     } catch {
       toast({ title: 'Error', description: 'Something went wrong. Please try again.', variant: 'destructive' });
     } finally {
@@ -253,6 +265,10 @@ export default function LoginForm() {
           <p className="text-gray-600">Sign in to Kerala Grocery UK</p>
         </div>
         <div className="space-y-3">
+          <Button onClick={handleAppleLogin} disabled={isSubmitting} variant="outline" className="w-full h-12 text-base font-medium bg-black text-white hover:bg-black/90">
+            <Apple className="mr-2 h-5 w-5 fill-current" />
+            Continue with Apple
+          </Button>
           <Button onClick={handleGoogleLogin} disabled={isSubmitting} variant="outline" className="w-full h-12 text-base font-medium">
             <Chrome className="mr-2 h-5 w-5" />
             Continue with Google

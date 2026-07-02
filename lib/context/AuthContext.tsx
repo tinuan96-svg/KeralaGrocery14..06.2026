@@ -36,6 +36,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signInWithGoogle: () => Promise<{ error: any; data: any }>;
+  signInWithApple: () => Promise<{ error: any; data: any }>;
   signInWithPhoneOtp: (phone: string) => Promise<{ error: any; data: any }>;
   verifyPhoneOtp: (phone: string, token: string) => Promise<{ error: any; data: any }>;
   /** Save/update the user's profile in user_profiles */
@@ -55,6 +56,7 @@ const AuthContext = createContext<AuthContextType>({
   signUp: async () => ({ error: null, data: null }),
   signIn: async () => ({ error: null, data: null }),
   signInWithGoogle: async () => ({ error: null, data: null }),
+  signInWithApple: async () => ({ error: null, data: null }),
   signInWithPhoneOtp: async () => ({ error: null, data: null }),
   verifyPhoneOtp: async () => ({ error: null, data: null }),
   saveProfile: async () => ({ error: null }),
@@ -193,6 +195,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { data, error };
   };
 
+  const signInWithApple = async () => {
+    const supabase = getSupabase();
+    const isApp = /KeralaGroceryApp/i.test(navigator.userAgent) || (window as any).isKGApp === true;
+    const redirectTo = isApp
+      ? 'kgapp://auth'
+      : `${window.location.origin}/auth/callback`;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: {
+        redirectTo,
+      },
+    });
+    return { data, error };
+  };
+
   const signInWithPhoneOtp = async (phone: string) => {
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-otp`;
     try {
@@ -306,7 +324,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, session, profile, loading, needsPhoneVerification,
-      signUp, signIn, signInWithGoogle,
+      signUp, signIn, signInWithGoogle, signInWithApple,
       signInWithPhoneOtp, verifyPhoneOtp,
       saveProfile, markPhoneVerified, refreshProfile,
       signOut,
