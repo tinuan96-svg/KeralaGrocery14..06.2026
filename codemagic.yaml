@@ -51,34 +51,38 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Reconstruct Private Key PEM file using robust Python script
+          # 1. Reconstruct Private Key PEM file using ultra-robust Python script
           python3 -c "
-          import os, base64, re
+          import os, re
           raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
-          if not raw:
-              print('ERROR: KG_STORE_PRIVATE_KEY is empty'); exit(1)
+          # Remove any surrounding quotes
+          raw = re.sub(r'^[\"\']|[\"\']$', '', raw)
+          # Replace literal escapes with actual characters
+          raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
           
-          # Clean literal escapes and quotes
-          clean = raw.replace('\\\\n', '\n').replace('\\n', '\n').strip('\"').strip(\"'\")
+          # If headers are missing, it's a raw base64 blob
+          if 'BEGIN PRIVATE KEY' not in raw:
+              body = ''.join(raw.split())
+              body = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+              raw = f'-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n'
+          # If headers are present but line breaks are missing (flattened PEM)
+          elif raw.count('\n') < 2:
+              parts = raw.split('-----')
+              body = ''.join(parts[2].split())
+              body = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+              raw = f'-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n'
           
-          if 'BEGIN PRIVATE KEY' in clean:
-              body = clean.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
-          else:
-              try:
-                  decoded = base64.b64decode(clean).decode('utf-8')
-                  if 'BEGIN PRIVATE KEY' in decoded:
-                      body = decoded.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
-                  else:
-                      body = clean
-              except:
-                  body = clean
-          
-          # Remove all whitespace and re-wrap at 64 chars
-          body = ''.join(body.split())
-          wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
           with open('/tmp/apple_key.p8', 'w') as f:
-              f.write(f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n')
+              f.write(raw)
           "
+          
+          # Validate PEM key format
+          if grep -q "BEGIN PRIVATE KEY" /tmp/apple_key.p8; then
+            echo "Key file format validated."
+          else
+            echo "Error: Key file reconstruction failed!"
+            exit 1
+          fi
           
           keychain initialize
           
@@ -94,7 +98,7 @@ workflows:
           # 3. Use profiles
           xcode-project use-profiles
           
-          # 4. Custom Export Options (Ensuring app-store method)
+          # 4. Custom Export Options
           cat <<EOF > /tmp/export_options.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

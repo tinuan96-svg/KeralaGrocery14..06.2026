@@ -1,15 +1,13 @@
-require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
-
 platform :ios, '15.0'
 use_frameworks! :linkage => :static
 
-# Fix for "Multiple commands produce" error in Xcode 15+
+# Fix for Xcode 15+ resource issues
 install! 'cocoapods', :disable_input_output_paths => true
 
 project 'App.xcodeproj'
 
 target 'App' do
-  # Core Capacitor Pods
+  # Inlined core pods for maximum compatibility in CI
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
 
@@ -26,7 +24,6 @@ target 'App' do
 end
 
 post_install do |installer|
-  assertDeploymentTarget(installer)
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
