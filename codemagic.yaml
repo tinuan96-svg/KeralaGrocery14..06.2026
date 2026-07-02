@@ -17,6 +17,7 @@ workflows:
         APP_STORE_CONNECT_ISSUER_ID: 9290b9a4-e764-43a3-a66c-7463fba41613
         APP_STORE_CONNECT_KEY_IDENTIFIER: 75R54UD497
         APP_STORE_CONNECT_PRIVATE_KEY: "$KG_STORE_PRIVATE_KEY"
+        NEXT_PUBLIC_SHOW_GOOGLE_PLAY: "false"
       node: 22
       xcode: latest
     triggering:
@@ -116,6 +117,8 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       node: 22
+      vars:
+        NEXT_PUBLIC_SHOW_GOOGLE_PLAY: "true"
     scripts:
       - name: Install dependencies
         script: npm install

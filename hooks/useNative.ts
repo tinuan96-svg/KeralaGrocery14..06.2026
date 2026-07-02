@@ -25,6 +25,15 @@ export function usePlatform(): 'ios' | 'android' | 'web' {
   const [platform, setPlatform] = useState<'ios' | 'android' | 'web'>('web');
 
   useEffect(() => {
+    // Immediate check via UserAgent as a fallback/initial hint
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+    const isIOSUA = /iphone|ipad|ipod/.test(ua) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroidUA = /android/.test(ua);
+
+    if (isIOSUA) setPlatform('ios');
+    else if (isAndroidUA) setPlatform('android');
+
     import('@capacitor/core').then(({ Capacitor }) => {
       setPlatform(Capacitor.getPlatform() as 'ios' | 'android' | 'web');
     });

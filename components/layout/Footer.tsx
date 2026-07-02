@@ -1,5 +1,4 @@
-'use client';
-
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, ShieldCheck, Truck, Star, RotateCcw, Leaf, Award } from 'lucide-react';
@@ -38,6 +37,11 @@ const TRUST_ITEMS = [
 
 export default function Footer() {
   const platform = usePlatform();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <footer className="bg-[#071f12] text-gray-300">
@@ -152,7 +156,7 @@ export default function Footer() {
 
           {/* App + payment */}
           <div>
-            {platform !== 'ios' && (
+            {mounted && platform !== 'ios' && process.env.NEXT_PUBLIC_SHOW_GOOGLE_PLAY !== 'false' && (
               <div className="kg-google-play-section">
                 <h4 className="text-white font-bold text-sm mb-4">Get The App</h4>
                 <p className="text-xs text-gray-400 mb-3">Shop on the go with our Android app.</p>
