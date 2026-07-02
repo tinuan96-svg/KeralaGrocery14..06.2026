@@ -65,6 +65,12 @@ workflows:
       email:
         recipients:
           - tinuan96@gmail.com
+      app_store_connect:
+        issuer_id: 9290b9a4-e764-43a3-a66c-7463fba41613
+        key_id: 75R54UD497
+        private_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        submit_to_testflight: true
+        submit_to_app_store: false
 
   simulator-workflow:
     name: Kerala Grocery iOS Simulator
