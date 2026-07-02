@@ -52,12 +52,11 @@ workflows:
       - name: Build iOS IPA
         script: |
           # 1. Decode the private key
-          echo "$KG_STORE_PRIVATE_KEY" | tr -d '\n ' > /tmp/apple_key.base64
-          python3 -c "import base64; data = open('/tmp/apple_key.base64').read(); open('/tmp/apple_key.p8', 'wb').write(base64.b64decode(data))"
+          echo "$KG_STORE_PRIVATE_KEY" | base64 --decode > /tmp/apple_key.p8
           
           keychain initialize
           
-          # 2. Fetch signing files and certificates
+          # 2. Fetch signing files
           app-store-connect fetch-signing-files "$APP_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
@@ -67,8 +66,11 @@ workflows:
             
           keychain add-certificates
           
+          # Debug: check if workspace exists
+          ls -la ios/App/App.xcworkspace || echo "Workspace not found!"
+          
           # 3. Use profiles and build
-          xcode-project use-profiles --bundle-id "$APP_ID"
+          xcode-project use-profiles
           
           xcode-project build-ipa \
             --workspace "$XCODE_WORKSPACE" \

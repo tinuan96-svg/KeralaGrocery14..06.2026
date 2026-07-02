@@ -6,6 +6,8 @@ use_frameworks! :linkage => :static
 # Fix for "Multiple commands produce" error in Xcode 15+
 install! 'cocoapods', :disable_input_output_paths => true
 
+project 'App.xcodeproj'
+
 target 'App' do
   capacitor_pods
 end
