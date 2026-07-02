@@ -52,13 +52,13 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # Clean up any existing key and decode the base64 string
-          rm -f /tmp/apple_key.p8
-          echo "$KG_STORE_PRIVATE_KEY" | tr -d '\n ' | base64 --decode > /tmp/apple_key.p8
+          # Robustly decode the private key using Python
+          echo "$KG_STORE_PRIVATE_KEY" > /tmp/apple_key.base64
+          python3 -c "import base64; data = open('/tmp/apple_key.base64').read().strip(); decoded = base64.b64decode(data); open('/tmp/apple_key.p8', 'wb').write(decoded)"
           
           keychain initialize
           
-          # Use the decoded file content for the private key
+          # Pass the decoded key content directly
           app-store-connect fetch-signing-files "$APP_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
