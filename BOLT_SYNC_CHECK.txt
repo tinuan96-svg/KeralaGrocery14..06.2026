@@ -1,0 +1,4 @@
+Sync Trigger: July 02, 2026
+Fix: Guideline 2.3.10 - Google Play references removed.
+Branches: main, KeralaGrocery.com
+Commit Hash: Latest
