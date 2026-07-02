@@ -55,9 +55,8 @@ workflows:
           python3 -c "
           import os, re
           raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
-          # Remove any surrounding quotes
+          # Remove any surrounding quotes and handles literal \n
           raw = re.sub(r'^[\"\']|[\"\']$', '', raw)
-          # Replace literal escapes with actual characters
           raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
           
           # If headers are missing, it's a raw base64 blob
@@ -87,11 +86,12 @@ workflows:
           keychain initialize
           
           # 2. Fetch signing files
+          # Passing the content of the key to ensure it is read correctly
           app-store-connect fetch-signing-files "$APP_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key /tmp/apple_key.p8 \
+            --private-key "$(cat /tmp/apple_key.p8)" \
             --create
           keychain add-certificates
           
@@ -120,8 +120,12 @@ workflows:
           EOF
           
           # 5. Build IPA
+          # Using find to ensure we get the correct workspace path
+          WORKSPACE_PATH=$(find . -name "*.xcworkspace" | head -n 1)
+          echo "Using workspace at: $WORKSPACE_PATH"
+          
           xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
+            --workspace "$WORKSPACE_PATH" \
             --scheme "$XCODE_SCHEME" \
             --export-options-plist /tmp/export_options.plist \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
