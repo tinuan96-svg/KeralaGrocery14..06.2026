@@ -51,8 +51,24 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Decode the private key
-          echo "$KG_STORE_PRIVATE_KEY" | base64 --decode > /tmp/apple_key.p8
+          # 1. Prepare the Private Key
+          # This script handles both raw PEM and base64 encoded keys
+          echo "$KG_STORE_PRIVATE_KEY" > /tmp/apple_key.raw
+          python3 -c "
+          import base64
+          import os
+          key = open('/tmp/apple_key.raw').read().strip()
+          try:
+              if 'BEGIN PRIVATE KEY' in key:
+                  out = key
+              else:
+                  out = base64.b64decode(key).decode('utf-8')
+              with open('/tmp/apple_key.p8', 'w') as f:
+                  f.write(out)
+          except:
+              with open('/tmp/apple_key.p8', 'w') as f:
+                  f.write(key)
+          "
           
           keychain initialize
           
@@ -66,14 +82,16 @@ workflows:
             
           keychain add-certificates
           
-          # Debug: check if workspace exists
-          ls -la ios/App/App.xcworkspace || echo "Workspace not found!"
+          # 3. Force rebuild workspace if missing
+          cd ios/App
+          pod install
+          cd ../..
           
-          # 3. Use profiles and build
+          # 4. Use profiles and build
           xcode-project use-profiles
           
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
+            --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
             --export-method app-store \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
