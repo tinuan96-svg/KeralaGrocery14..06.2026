@@ -16,7 +16,6 @@ workflows:
         # Standard variables for Codemagic CLI tools
         APP_STORE_CONNECT_ISSUER_ID: 9290b9a4-e764-43a3-a66c-7463fba41613
         APP_STORE_CONNECT_KEY_IDENTIFIER: 75R54UD497
-        APP_STORE_CONNECT_PRIVATE_KEY: "$KG_STORE_PRIVATE_KEY"
         NEXT_PUBLIC_SHOW_GOOGLE_PLAY: "false"
       node: 22
       xcode: latest
@@ -53,6 +52,10 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
+          # Create temporary key file
+          echo "$KG_STORE_PRIVATE_KEY" > /tmp/apple_key.p8
+          export APP_STORE_CONNECT_PRIVATE_KEY=/tmp/apple_key.p8
+
           keychain initialize
           app-store-connect fetch-signing-files "$APP_ID" --type IOS_APP_STORE
           keychain add-certificates
