@@ -56,61 +56,77 @@ workflows:
           # 1. Reconstruct Private Key
           python3 -c "
           import os, base64, re
-          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
-          if not raw:
-              print('Error: KG_STORE_PRIVATE_KEY is empty')
-              exit(1)
           
-          # Replace literal escapes with actual characters
-          raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
-          
-          # If it looks like base64, try to decode it
-          if not raw.startswith('-----') and len(raw) > 100:
-              try:
-                  decoded = base64.b64decode(raw).decode('utf-8')
-                  if 'PRIVATE KEY' in decoded:
-                      raw = decoded
-              except:
-                  pass
+          def fix_pem(raw):
+              # 1. If it's a file path, read it
+              if os.path.isfile(raw):
+                  with open(raw, 'r') as f:
+                      raw = f.read()
+              
+              raw = raw.strip()
+              # 2. Handle escaped newlines
+              raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
+              
+              # 3. If it's base64 encoded, decode it
+              if not raw.startswith('-----') and len(raw) > 64:
+                  try:
+                      decoded = base64.b64decode(raw).decode('utf-8')
+                      if 'PRIVATE KEY' in decoded:
+                          raw = decoded
+                  except:
+                      pass
+              
+              # 4. Clean and re-wrap
+              # Remove headers if present to clean the body
+              body = raw.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
+              # Remove all whitespace/newlines from body
+              body = ''.join(body.split())
+              
+              if not body:
+                  return None
+                  
+              # Wrap at 64 chars
+              wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+              return f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
 
-          # Clean body of all whitespace
-          body = raw.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
-          body = ''.join(body.split())
+          raw_key = os.environ.get('KG_STORE_PRIVATE_KEY', '')
+          final_pem = fix_pem(raw_key)
           
-          # Re-wrap at exactly 64 characters per line
-          wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
-          final_pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
+          if not final_pem:
+              print('Error: Could not reconstruct a valid PEM from KG_STORE_PRIVATE_KEY')
+              exit(1)
           
           with open('/tmp/apple_key.p8', 'w') as f:
               f.write(final_pem)
           print('Successfully reconstructed private key to /tmp/apple_key.p8')
           "
           
-          # 2. Set a custom environment variable (NOT the one the CLI tool auto-picks)
-          # This avoids global validation errors if the CLI tool has strict environment checking
-          export CUSTOM_ASC_KEY="$(cat /tmp/apple_key.p8)"
+          # 2. Clear potentially conflicting environment variables
+          unset APP_STORE_CONNECT_PRIVATE_KEY
           
+          # 3. Initialize keychain
           keychain initialize
           
-          # 3. Fetch signing files
-          # We pass the key content directly via the argument
+          # 4. Fetch signing files
+          # We pass the key content via a variable, ensuring it's quoted.
+          # We also specify the platform and team-id to be safe.
+          export KEY_CONTENT="$(cat /tmp/apple_key.p8)"
           app-store-connect fetch-signing-files \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key "$CUSTOM_ASC_KEY" \
+            --private-key "$KEY_CONTENT" \
             --type IOS_APP_STORE \
             --create \
             "$APP_ID"
             
           keychain add-certificates
           
-          # 4. Use profiles
-          # We'll explicitly tell it to use the App Store method
+          # 5. Use profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
             --export-options-plist /tmp/export_options.plist
           
-          # 5. Build IPA
+          # 6. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
