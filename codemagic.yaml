@@ -51,65 +51,52 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Reconstruct Private Key PEM file using robust Python script
+          # 1. Reconstruct Private Key
           python3 -c "
-          import os, re
+          import os, base64, re
           raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
-          # Remove any surrounding quotes and handles literal \n
+          # Remove quotes and expand escapes
           raw = re.sub(r'^[\"\']|[\"\']$', '', raw)
           raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
-          
+          try:
+              decoded = base64.b64decode(raw).decode('utf-8')
+              if 'BEGIN PRIVATE KEY' in decoded: raw = decoded
+          except: pass
           # Extract body and re-wrap at 64 chars
           body = raw.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
           body = ''.join(body.split())
           wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
-          raw_pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
-          
           with open('/tmp/apple_key.p8', 'w') as f:
-              f.write(raw_pem)
+              f.write(f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n')
           "
+          
+          # 2. Set environment for signing tools
+          export APP_STORE_CONNECT_PRIVATE_KEY=$(cat /tmp/apple_key.p8)
           
           keychain initialize
           
-          # 2. Fetch signing files
+          # 3. Fetch signing files
           app-store-connect fetch-signing-files \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key /tmp/apple_key.p8 \
             --type IOS_APP_STORE \
             --create \
             "$APP_ID"
+            
           keychain add-certificates
           
-          # 3. Use profiles
+          # 4. Use profiles
           xcode-project use-profiles
           
-          # 4. Custom Export Options
-          cat <<EOF > /tmp/export_options.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>$APP_ID</key>
-              <string>KeralaGrocery</string>
-            </dict>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>teamID</key>
-            <string>$TEAM_ID</string>
-          </dict>
-          </plist>
-          EOF
-          
           # 5. Build IPA
+          # Locate workspace and build
+          WORKSPACE=$(find . -name "*.xcworkspace" | grep -v "xcodeproj" | head -n 1)
+          echo "Building with workspace: $WORKSPACE"
+          
           xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
+            --workspace "$WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --export-options-plist /tmp/export_options.plist \
+            --export-method app-store \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
             --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
     artifacts:
