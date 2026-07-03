@@ -17,6 +17,8 @@ const config: CapacitorConfig = {
       '*.google.com',
       '*.googleapis.com',
       '*.gstatic.com',
+      '*.worldpay.com',
+      '*.google-analytics.com',
     ],
   },
 
