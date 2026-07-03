@@ -61,9 +61,6 @@ workflows:
               print('Error: KG_STORE_PRIVATE_KEY is empty')
               exit(1)
           
-          # Remove any surrounding quotes
-          raw = re.sub(r'^[\"\']|[\"\']$', '', raw)
-          
           # Replace literal escapes with actual characters
           raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
           
@@ -89,17 +86,18 @@ workflows:
           print('Successfully reconstructed private key to /tmp/apple_key.p8')
           "
           
-          # 2. Set environment for signing tools
-          # The tool will automatically pick up APP_STORE_CONNECT_PRIVATE_KEY from environment
-          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/apple_key.p8)"
+          # 2. Set a custom environment variable (NOT the one the CLI tool auto-picks)
+          # This avoids global validation errors if the CLI tool has strict environment checking
+          export CUSTOM_ASC_KEY="$(cat /tmp/apple_key.p8)"
           
           keychain initialize
           
           # 3. Fetch signing files
-          # Removed --private-key argument as it's now in the environment
+          # We pass the key content directly via the argument
           app-store-connect fetch-signing-files \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --private-key "$CUSTOM_ASC_KEY" \
             --type IOS_APP_STORE \
             --create \
             "$APP_ID"
@@ -107,7 +105,7 @@ workflows:
           keychain add-certificates
           
           # 4. Use profiles
-          # Removed unrecognized --bundle-id; it will be inferred from the project
+          # We'll explicitly tell it to use the App Store method
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
             --export-options-plist /tmp/export_options.plist
