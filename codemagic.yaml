@@ -53,80 +53,65 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Reconstruct Private Key
+          # 1. Reconstruct Private Key and Fetch Signing Files (Binary Safe)
           python3 -c "
-          import os, base64, re
+          import os, base64, re, subprocess
           
           def fix_pem(raw):
-              # 1. If it's a file path, read it
-              if os.path.isfile(raw):
-                  with open(raw, 'r') as f:
-                      raw = f.read()
-              
-              raw = raw.strip()
-              # 2. Handle escaped newlines
-              raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
-              
-              # 3. If it's base64 encoded, decode it
+              if not raw: return None
+              # Handle literal escapes
+              raw = raw.strip().replace('\\\\n', '\n').replace('\\n', '\n')
+              # Handle base64
               if not raw.startswith('-----') and len(raw) > 64:
                   try:
                       decoded = base64.b64decode(raw).decode('utf-8')
-                      if 'PRIVATE KEY' in decoded:
-                          raw = decoded
-                  except:
-                      pass
-              
-              # 4. Clean and re-wrap
-              # Remove headers if present to clean the body
+                      if 'PRIVATE KEY' in decoded: raw = decoded
+                  except: pass
+              # Clean body
               body = raw.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
-              # Remove all whitespace/newlines from body
               body = ''.join(body.split())
-              
-              if not body:
-                  return None
-                  
-              # Wrap at 64 chars
+              if not body: return None
+              # Wrap at 64
               wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
               return f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
 
-          raw_key = os.environ.get('KG_STORE_PRIVATE_KEY', '')
-          final_pem = fix_pem(raw_key)
-          
+          final_pem = fix_pem(os.environ.get('KG_STORE_PRIVATE_KEY', ''))
           if not final_pem:
-              print('Error: Could not reconstruct a valid PEM from KG_STORE_PRIVATE_KEY')
-              exit(1)
+              print('Error: Could not reconstruct a valid PEM from KG_STORE_PRIVATE_KEY'); exit(1)
           
           with open('/tmp/apple_key.p8', 'w') as f:
               f.write(final_pem)
           print('Successfully reconstructed private key to /tmp/apple_key.p8')
+
+          # Prepare environment for the CLI tool
+          env = os.environ.copy()
+          env['APP_STORE_CONNECT_PRIVATE_KEY'] = final_pem
+          
+          # Execute the fetch command directly from Python to preserve PEM formatting
+          cmd = [
+              'app-store-connect', 'fetch-signing-files',
+              '--issuer-id', os.environ['APP_STORE_CONNECT_ISSUER_ID'],
+              '--key-id', os.environ['APP_STORE_CONNECT_KEY_IDENTIFIER'],
+              '--type', 'IOS_APP_STORE',
+              '--create',
+              os.environ['APP_ID']
+          ]
+          
+          print(f'Running: {\" \".join(cmd[:-1])} [BUNDLE_ID]')
+          result = subprocess.run(cmd, env=env)
+          if result.returncode != 0:
+              exit(result.returncode)
           "
           
-          # 2. Clear potentially conflicting environment variables
-          unset APP_STORE_CONNECT_PRIVATE_KEY
-          
-          # 3. Initialize keychain
           keychain initialize
-          
-          # 4. Fetch signing files
-          # We pass the key content via a variable, ensuring it's quoted.
-          # We also specify the platform and team-id to be safe.
-          export KEY_CONTENT="$(cat /tmp/apple_key.p8)"
-          app-store-connect fetch-signing-files \
-            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key "$KEY_CONTENT" \
-            --type IOS_APP_STORE \
-            --create \
-            "$APP_ID"
-            
           keychain add-certificates
           
-          # 5. Use profiles
+          # 2. Use profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
             --export-options-plist /tmp/export_options.plist
           
-          # 6. Build IPA
+          # 3. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
