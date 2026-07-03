@@ -56,51 +56,49 @@ workflows:
           # 1. Reconstruct Private Key
           python3 -c "
           import os, re
-          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
+          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '')
           if not raw:
               print('Error: KG_STORE_PRIVATE_KEY is empty')
               exit(1)
           
-          # Aggressively extract base64 body
-          # Strip anything that looks like a PEM header/footer
-          clean = re.sub(r'-+BEGIN.*?-+', '', raw)
-          clean = re.sub(r'-+END.*?-+', '', clean)
-          # Keep only base64 valid characters
-          body = ''.join(re.findall(r'[A-Za-z0-9+/=]', clean))
+          # Extract alphanumeric body (ignore headers, newlines, and escape sequences)
+          body = re.sub(r'[^a-zA-Z0-9+/=]', '', raw)
           
-          if len(body) < 100:
-              print(f'Error: Key body too short ({len(body)} chars). Check KG_STORE_PRIVATE_KEY.')
+          if len(body) < 64:
+              print('Error: Key body too short. Check KG_STORE_PRIVATE_KEY.')
               exit(1)
           
-          # Wrap at 64 chars
+          # Re-wrap at 64 chars
           wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
-          pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
+          final_pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
           
           with open('/tmp/apple_key.p8', 'w') as f:
-              f.write(pem)
+              f.write(final_pem)
           print('Successfully reconstructed private key to /tmp/apple_key.p8')
           "
-          
-          keychain initialize
-          
-          # 2. Fetch signing files
-          # Using environment variable as it's the most reliable way
+
+          # 2. Set the environment variable properly (This is the standard way)
           export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/apple_key.p8)"
-          
-          app-store-connect fetch-signing-files "$APP_ID" \
+
+          keychain initialize
+
+          # 3. Fetch signing files
+          # Note: We do NOT pass --private-key here, the tool picks it up from the ENV
+          app-store-connect fetch-signing-files \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            "$APP_ID"
             
           keychain add-certificates
-          
-          # 3. Use profiles
+
+          # 4. Use profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
             --export-options-plist /tmp/export_options.plist
-          
-          # 4. Build IPA
+
+          # 5. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
