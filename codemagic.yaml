@@ -1,4 +1,4 @@
-# Updated: July 03, 2026 - Final build trigger
+# Updated: July 03, 2026 - Triggering build for payment and build fix
 workflows:
   ios-release:
     name: Kerala Grocery iOS Release
