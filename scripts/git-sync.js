@@ -19,6 +19,8 @@ const commitMessage = `Auto-commit: ${timestamp}`;
 
 console.log('Starting git sync...');
 
+run('git fetch origin');
+run('git pull origin main --rebase');
 run('git add .');
 
 // Check if there are changes to commit

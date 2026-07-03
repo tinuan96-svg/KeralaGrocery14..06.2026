@@ -53,9 +53,9 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Reconstruct Private Key and Fetch Signing Files (Binary Safe)
+          # 1. Reconstruct Private Key
           python3 -c "
-          import os, base64, re, subprocess
+          import os, base64, re
           
           def fix_pem(raw):
               if not raw: return None
@@ -77,41 +77,32 @@ workflows:
 
           final_pem = fix_pem(os.environ.get('KG_STORE_PRIVATE_KEY', ''))
           if not final_pem:
-              print('Error: Could not reconstruct a valid PEM from KG_STORE_PRIVATE_KEY'); exit(1)
+              print('Error: Could not reconstruct a valid PEM'); exit(1)
           
           with open('/tmp/apple_key.p8', 'w') as f:
               f.write(final_pem)
           print('Successfully reconstructed private key to /tmp/apple_key.p8')
-
-          # Prepare environment for the CLI tool
-          env = os.environ.copy()
-          env['APP_STORE_CONNECT_PRIVATE_KEY'] = final_pem
-          
-          # Execute the fetch command directly from Python to preserve PEM formatting
-          cmd = [
-              'app-store-connect', 'fetch-signing-files',
-              '--issuer-id', os.environ['APP_STORE_CONNECT_ISSUER_ID'],
-              '--key-id', os.environ['APP_STORE_CONNECT_KEY_IDENTIFIER'],
-              '--type', 'IOS_APP_STORE',
-              '--create',
-              os.environ['APP_ID']
-          ]
-          
-          print(f'Running: {\" \".join(cmd[:-1])} [BUNDLE_ID]')
-          result = subprocess.run(cmd, env=env)
-          if result.returncode != 0:
-              exit(result.returncode)
           "
           
           keychain initialize
+          
+          # 2. Fetch signing files using the FILE PATH (Most reliable)
+          app-store-connect fetch-signing-files \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --private-key /tmp/apple_key.p8 \
+            --type IOS_APP_STORE \
+            --create \
+            "$APP_ID"
+            
           keychain add-certificates
           
-          # 2. Use profiles
+          # 3. Use profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
             --export-options-plist /tmp/export_options.plist
           
-          # 3. Build IPA
+          # 4. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
