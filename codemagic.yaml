@@ -51,23 +51,22 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Reconstruct Private Key
+          # 1. Reconstruct Private Key PEM file using robust Python script
           python3 -c "
-          import os, base64, re
+          import os, re
           raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
-          # Remove quotes and expand escapes
+          # Remove any surrounding quotes and handles literal \n
           raw = re.sub(r'^[\"\']|[\"\']$', '', raw)
           raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
-          try:
-              decoded = base64.b64decode(raw).decode('utf-8')
-              if 'BEGIN PRIVATE KEY' in decoded: raw = decoded
-          except: pass
+          
           # Extract body and re-wrap at 64 chars
           body = raw.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
           body = ''.join(body.split())
           wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+          raw_pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
+          
           with open('/tmp/apple_key.p8', 'w') as f:
-              f.write(f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n')
+              f.write(raw_pem)
           "
           
           keychain initialize
@@ -80,7 +79,6 @@ workflows:
             --type IOS_APP_STORE \
             --create \
             "$APP_ID"
-            
           keychain add-certificates
           
           # 3. Use profiles
@@ -108,12 +106,8 @@ workflows:
           EOF
           
           # 5. Build IPA
-          # Locate workspace and build
-          WORKSPACE=$(find . -name "*.xcworkspace" | grep -v "xcodeproj" | head -n 1)
-          echo "Building with workspace: $WORKSPACE"
-          
           xcode-project build-ipa \
-            --workspace "$WORKSPACE" \
+            --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
             --export-options-plist /tmp/export_options.plist \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
