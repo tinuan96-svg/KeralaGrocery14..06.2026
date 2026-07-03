@@ -51,23 +51,32 @@ workflows:
           agvtool new-version -all $((400 + $BUILD_NUMBER))
       - name: Build iOS IPA
         script: |
-          # 1. Reconstruct Private Key
+          # 1. Reconstruct Private Key PEM file
           python3 -c "
           import os, base64, re
           raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
-          # Remove quotes and expand escapes
+          # Remove surrounding quotes if they exist
           raw = re.sub(r'^[\"\']|[\"\']$', '', raw)
+          # Replace literal \n with actual newlines
           raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
-          try:
-              decoded = base64.b64decode(raw).decode('utf-8')
-              if 'BEGIN PRIVATE KEY' in decoded: raw = decoded
-          except: pass
-          # Extract body and re-wrap at 64 chars
+          
+          # If it looks like base64 (no PEM headers), try to decode
+          if 'BEGIN PRIVATE KEY' not in raw:
+              try:
+                  decoded = base64.b64decode(raw).decode('utf-8')
+                  if 'BEGIN PRIVATE KEY' in decoded:
+                      raw = decoded
+              except:
+                  pass
+          
+          # Force standardized PEM format
           body = raw.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
-          body = ''.join(body.split())
-          wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+          body = ''.join(body.split()) # Remove all internal whitespace/newlines
+          wrapped_body = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+          final_pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped_body}\n-----END PRIVATE KEY-----\n'
+          
           with open('/tmp/apple_key.p8', 'w') as f:
-              f.write(f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n')
+              f.write(final_pem)
           "
           
           keychain initialize
@@ -86,33 +95,17 @@ workflows:
           # 3. Use profiles
           xcode-project use-profiles
           
-          # 4. Custom Export Options
-          cat <<EOF > /tmp/export_options.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>$APP_ID</key>
-              <string>KeralaGrocery</string>
-            </dict>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>teamID</key>
-            <string>$TEAM_ID</string>
-          </dict>
-          </plist>
-          EOF
+          # 4. Build IPA
+          # Verify workspace existence
+          if [ ! -d "ios/App/App.xcworkspace" ]; then
+            echo "Error: ios/App/App.xcworkspace not found. Checking if it exists elsewhere..."
+            find . -name "*.xcworkspace"
+            exit 1
+          fi
           
-          # 5. Build IPA
-          # Using explicit workspace path
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
-            --export-options-plist /tmp/export_options.plist \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
             --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
     artifacts:
