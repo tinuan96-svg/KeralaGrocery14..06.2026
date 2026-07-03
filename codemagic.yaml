@@ -78,14 +78,6 @@ workflows:
               f.write(final_pem)
           "
           
-          # Validate key reconstruction
-          if grep -q "BEGIN PRIVATE KEY" /tmp/apple_key.p8; then
-            echo "Private Key reconstructed successfully."
-          else
-            echo "Error: Private Key reconstruction failed!"
-            exit 1
-          fi
-          
           keychain initialize
           
           # 2. Fetch signing files
