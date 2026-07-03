@@ -1,4 +1,5 @@
-Sync Trigger: July 02, 2026
-Fix: Guideline 2.3.10 - Google Play references removed.
+Sync Trigger: July 03, 2026
+Feature: Enforce product approval requirements (images, category, description, price).
+Status: Reset all products to draft for admin review.
 Branches: main, KeralaGrocery.com
-Commit Hash: Latest
+Commit Hash: 231c0281
