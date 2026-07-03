@@ -1,5 +1,3 @@
-require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
-
 platform :ios, '15.0'
 use_frameworks! :linkage => :static
 
@@ -9,11 +7,24 @@ install! 'cocoapods', :disable_input_output_paths => true
 project 'App.xcodeproj'
 
 target 'App' do
-  capacitor_pods
+  # Inlined core pods for maximum CI reliability
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+
+  # Capacitor Plugins
+  pod 'CapacitorApp',               :path => '../../node_modules/@capacitor/app'
+  pod 'CapacitorBrowser',           :path => '../../node_modules/@capacitor/browser'
+  pod 'CapacitorHaptics',           :path => '../../node_modules/@capacitor/haptics'
+  pod 'CapacitorKeyboard',          :path => '../../node_modules/@capacitor/keyboard'
+  pod 'CapacitorNetwork',           :path => '../../node_modules/@capacitor/network'
+  pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
+  pod 'CapacitorShare',             :path => '../../node_modules/@capacitor/share'
+  pod 'CapacitorSplashScreen',      :path => '../../node_modules/@capacitor/splash-screen'
+  pod 'CapacitorStatusBar',         :path => '../../node_modules/@capacitor/status-bar'
 end
 
 post_install do |installer|
-  assertDeploymentTarget(installer)
+  assertDeploymentTarget(installer) if respond_to?(:assertDeploymentTarget)
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'

@@ -62,7 +62,7 @@ workflows:
           # Replace literal escapes with actual characters
           raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
           
-          # Extract the base64 body if headers are present
+          # Extract body and re-wrap at 64 chars
           if 'BEGIN PRIVATE KEY' in raw:
               parts = raw.split('-----')
               # Body is parts[2]
@@ -116,13 +116,7 @@ workflows:
           EOF
           
           # 5. Build IPA
-          # Verify workspace existence
-          if [ ! -d "ios/App/App.xcworkspace" ]; then
-            echo "Error: ios/App/App.xcworkspace not found! Listing ios/App content:"
-            ls -la ios/App
-            exit 1
-          fi
-
+          # Targeting the CocoaPods workspace
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
