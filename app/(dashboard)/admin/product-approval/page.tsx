@@ -44,6 +44,8 @@ function isMissingRequiredFields(p: ApprovalProduct): string[] {
   if (!p.image_url && !p.image_main) missing.push('image');
   if (!p.short_description?.trim()) missing.push('short description');
   if (!p.description?.trim()) missing.push('description');
+  const price = p.selling_price ?? p.price ?? 0;
+  if (price <= 0) missing.push('selling price');
   return missing;
 }
 

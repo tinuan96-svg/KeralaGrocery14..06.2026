@@ -99,22 +99,34 @@ const SELECT = `
   categories(id, name, slug)
 `;
 
-export function isMissingRequiredFields(p: ApprovalProduct | Pick<ApprovalProduct, 'category_id' | 'image_url' | 'image_main' | 'short_description' | 'description'>): string[] {
+export function isMissingRequiredFields(p: ApprovalProduct | Pick<ApprovalProduct, 'category_id' | 'image_url' | 'image_main' | 'short_description' | 'description' | 'price' | 'selling_price'>): string[] {
   const missing: string[] = [];
   if (!p.category_id) missing.push('category');
   if (!p.image_url && !p.image_main) missing.push('image');
-  if (!(p as ApprovalProduct).short_description?.trim() && p.short_description !== undefined && !p.short_description?.trim()) missing.push('short description');
-  if (!(p as ApprovalProduct).description?.trim() && p.description !== undefined && !p.description?.trim()) missing.push('description');
+  if (!(p as any).short_description?.trim()) missing.push('short description');
+  if (!(p as any).description?.trim()) missing.push('description');
+  const price = (p as any).selling_price ?? (p as any).price ?? 0;
+  if (price <= 0) missing.push('selling price');
   return missing;
 }
 
 // Strict version used internally — checks all fields explicitly
-function checkMissingFields(p: { category_id: string | null; image_url: string | null; image_main: string | null; short_description: string | null; description: string | null }): string[] {
+function checkMissingFields(p: {
+  category_id: string | null;
+  image_url: string | null;
+  image_main: string | null;
+  short_description: string | null;
+  description: string | null;
+  price?: number;
+  selling_price?: number | null;
+}): string[] {
   const missing: string[] = [];
   if (!p.category_id) missing.push('category');
   if (!p.image_url && !p.image_main) missing.push('image');
   if (!p.short_description?.trim()) missing.push('short description');
   if (!p.description?.trim()) missing.push('description');
+  const price = p.selling_price ?? p.price ?? 0;
+  if (price <= 0) missing.push('selling price');
   return missing;
 }
 
@@ -159,12 +171,12 @@ export async function fetchApprovalStats(): Promise<ApprovalStats> {
 
   const { data: draftProducts } = await supabase
     .from('products')
-    .select('id, category_id, image_url, image_main, short_description, description, price')
+    .select('id, category_id, image_url, image_main, short_description, description, price, selling_price')
     .eq('approval_status', 'draft')
     .eq('is_deleted', false);
 
   const missingFields = (draftProducts ?? []).filter(p =>
-    !p.category_id || (!p.image_url && !p.image_main) || !p.short_description || !p.description
+    checkMissingFields(p as any).length > 0
   ).length;
 
   return {
@@ -267,7 +279,7 @@ export async function approveProduct(
   // Fetch current product state
   const { data: product, error: fetchErr } = await supabase
     .from('products')
-    .select('id, name, category_id, image_url, image_main, short_description, description, approval_status')
+    .select('id, name, category_id, image_url, image_main, short_description, description, price, selling_price, approval_status')
     .eq('id', productId)
     .maybeSingle();
 
@@ -505,11 +517,22 @@ export async function bulkApproveDraftProducts(
   const supabase = getSupabase();
   const now = new Date().toISOString();
 
-  const { count } = await supabase
+  // Fetch only products that are NOT missing any required fields
+  const { data: eligibleProducts, error: fetchErr } = await supabase
     .from('products')
-    .select('*', { count: 'exact', head: true })
+    .select('id, category_id, image_url, image_main, short_description, description, price, selling_price')
     .eq('approval_status', 'draft')
     .eq('is_deleted', false);
+
+  if (fetchErr) return { approved: 0, error: fetchErr.message };
+
+  const eligibleIds = (eligibleProducts ?? [])
+    .filter(p => checkMissingFields(p as any).length === 0)
+    .map(p => p.id);
+
+  if (eligibleIds.length === 0) {
+    return { approved: 0, error: 'No draft products meet the requirements for approval (missing category, image, description, or price).' };
+  }
 
   const { error } = await supabase
     .from('products')
@@ -520,8 +543,7 @@ export async function bulkApproveDraftProducts(
       approved_by: adminUserId,
       updated_at: now,
     })
-    .eq('approval_status', 'draft')
-    .eq('is_deleted', false);
+    .in('id', eligibleIds);
 
   if (error) {
     console.error('[bulkApprove] failed:', {
@@ -534,12 +556,12 @@ export async function bulkApproveDraftProducts(
   // Single audit log entry for bulk action
   await writeApprovalLog({
     productId: '00000000-0000-0000-0000-000000000000',
-    productName: `Bulk approve (${count ?? 0} products)`,
+    productName: `Bulk approve (${eligibleIds.length} products)`,
     action: 'bulk_approve',
     adminUser: adminUserId,
     success: true,
     approvalStatusBefore: 'draft',
   });
 
-  return { approved: count ?? 0, error: null };
+  return { approved: eligibleIds.length, error: null };
 }
