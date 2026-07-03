@@ -61,38 +61,32 @@ workflows:
               print('Error: KG_STORE_PRIVATE_KEY is empty')
               exit(1)
           
-          # Fix escaped newlines that often happen in CI env vars
-          raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
+          # Aggressively extract base64 body
+          # Strip anything that looks like a PEM header/footer
+          clean = re.sub(r'-+BEGIN.*?-+', '', raw)
+          clean = re.sub(r'-+END.*?-+', '', clean)
+          # Keep only base64 valid characters
+          body = ''.join(re.findall(r'[A-Za-z0-9+/=]', clean))
           
-          # Extract ONLY the base64 part, ignoring everything else
-          # We look for the blob of characters that are valid in base64
-          # and usually at least 100 characters long.
-          match = re.search(r'([A-Za-z0-9+/=]{100,})', raw.replace('\n', '').replace(' ', ''))
-          if not match:
-              # Fallback to older logic if regex fails
-              body = re.sub(r'-----BEGIN.*?-----', '', raw)
-              body = re.sub(r'-----END.*?-----', '', body)
-              body = ''.join(body.split())
-          else:
-              body = match.group(1)
+          if len(body) < 100:
+              print(f'Error: Key body too short ({len(body)} chars). Check KG_STORE_PRIVATE_KEY.')
+              exit(1)
           
-          # Construct clean PEM
-          pem = '-----BEGIN PRIVATE KEY-----\n'
-          for i in range(0, len(body), 64):
-              pem += body[i:i+64] + '\n'
-          pem += '-----END PRIVATE KEY-----\n'
+          # Wrap at 64 chars
+          wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+          pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
           
           with open('/tmp/apple_key.p8', 'w') as f:
               f.write(pem)
+          print('Successfully reconstructed private key to /tmp/apple_key.p8')
           "
           
           keychain initialize
           
-          # 2. Set environment variable for CLI tools
+          # 2. Fetch signing files
+          # Using environment variable as it's the most reliable way
           export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/apple_key.p8)"
           
-          # 3. Fetch signing files
-          # We omit --private-key because the tool picks it up from the environment variable
           app-store-connect fetch-signing-files "$APP_ID" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
@@ -101,12 +95,12 @@ workflows:
             
           keychain add-certificates
           
-          # 4. Use profiles
+          # 3. Use profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
             --export-options-plist /tmp/export_options.plist
           
-          # 5. Build IPA
+          # 4. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
