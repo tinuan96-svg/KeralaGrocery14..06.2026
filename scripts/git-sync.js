@@ -19,21 +19,22 @@ const commitMessage = `Auto-commit: ${timestamp}`;
 
 console.log('Starting git sync...');
 
-run('git fetch origin');
-run('git pull origin main --rebase');
 run('git add .');
 
 // Check if there are changes to commit
 try {
   const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
-  if (!status) {
-    console.log('No changes to commit.');
-  } else {
-    if (run(`git commit -m "${commitMessage}"`)) {
-      const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
-      run(`git push origin ${branch}`);
-    }
+  if (status) {
+    run(`git commit -m "${commitMessage}"`);
   }
+
+  console.log('Syncing with remote...');
+  run('git fetch origin');
+  // Pull remote changes, favor local in case of conflict to ensure push succeeds
+  run('git pull origin main --rebase -X ours');
+
+  const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+  run(`git push origin ${branch}`);
 } catch (error) {
-  console.error('Failed to check git status or push changes.');
+  console.error('Failed to sync with git.');
 }

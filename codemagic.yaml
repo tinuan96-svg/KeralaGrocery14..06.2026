@@ -59,50 +59,48 @@ workflows:
           
           def fix_pem(raw):
               if not raw: return None
-              # Handle literal escapes
-              raw = raw.strip().replace('\\\\n', '\n').replace('\\n', '\n')
-              # Handle base64
-              if not raw.startswith('-----') and len(raw) > 64:
-                  try:
-                      decoded = base64.b64decode(raw).decode('utf-8')
-                      if 'PRIVATE KEY' in decoded: raw = decoded
-                  except: pass
-              # Clean body
-              body = raw.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').strip()
-              body = ''.join(body.split())
-              if not body: return None
-              # Wrap at 64
+              # Extract the alphanumeric body (ignore headers, newlines, and escape sequences)
+              body = re.sub(r'[^a-zA-Z0-9+/=]', '', raw)
+              # If it's a long string, it's likely the key
+              if len(body) < 64: return None
+              # Re-wrap at 64 chars
               wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
               return f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
 
-          final_pem = fix_pem(os.environ.get('KG_STORE_PRIVATE_KEY', ''))
+          raw_key = os.environ.get('KG_STORE_PRIVATE_KEY', '')
+          final_pem = fix_pem(raw_key)
+          
           if not final_pem:
-              print('Error: Could not reconstruct a valid PEM'); exit(1)
+              print('Error: Could not reconstruct a valid PEM from KG_STORE_PRIVATE_KEY')
+              exit(1)
           
           with open('/tmp/apple_key.p8', 'w') as f:
               f.write(final_pem)
           print('Successfully reconstructed private key to /tmp/apple_key.p8')
           "
           
+          # 2. Set the environment variable properly (This is the standard way)
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/apple_key.p8)"
+          
           keychain initialize
           
-          # 2. Fetch signing files using the FILE PATH (Most reliable)
+          # 3. Fetch signing files
+          # Note: We do NOT pass --private-key here, the tool picks it up from the ENV
           app-store-connect fetch-signing-files \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key /tmp/apple_key.p8 \
             --type IOS_APP_STORE \
             --create \
             "$APP_ID"
             
           keychain add-certificates
           
-          # 3. Use profiles
+          # 4. Use profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
             --export-options-plist /tmp/export_options.plist
           
-          # 4. Build IPA
+          # 5. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
