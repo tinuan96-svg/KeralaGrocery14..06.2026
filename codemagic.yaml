@@ -95,6 +95,7 @@ workflows:
           keychain initialize
           
           # 3. Fetch signing files
+          # Using --type IOS_APP_STORE to match the production release workflow
           app-store-connect fetch-signing-files \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
@@ -105,16 +106,22 @@ workflows:
             
           keychain add-certificates
           
-          # 4. Use profiles and explicitly specify export options path
-          xcode-project use-profiles --export-options-plist /tmp/export_options.plist
+          # 4. Use profiles
+          # Explicitly target the bundle ID and project file
+          xcode-project use-profiles \
+            --project "ios/App/App.xcodeproj" \
+            --bundle-id "$APP_ID" \
+            --export-options-plist /tmp/export_options.plist
           
           # 5. Build IPA
+          # We use the workspace and scheme, and point to the generated export options.
+          # Explicitly setting the build configuration and adding flags to handle common CI issues.
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
             --export-options-plist /tmp/export_options.plist \
-            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
-            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
+            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO" \
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
