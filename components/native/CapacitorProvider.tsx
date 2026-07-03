@@ -45,37 +45,45 @@ export function CapacitorProvider({ children }: { children: ReactNode }) {
           // Mark <html> so CSS can target the native shell
           document.documentElement.classList.add('is-native', `is-${plat}`);
 
-          // Set status bar style first (doesn't need page to load)
-          const { StatusBar, Style } = await import('@capacitor/status-bar');
-          await StatusBar.setStyle({ style: Style.Light });
-          if (plat === 'android') {
-            await StatusBar.setBackgroundColor({ color: '#0B5D3B' });
+          try {
+            // Set status bar style first (doesn't need page to load)
+            const { StatusBar, Style } = await import('@capacitor/status-bar');
+            await StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+            if (plat === 'android') {
+              await StatusBar.setBackgroundColor({ color: '#0B5D3B' }).catch(() => {});
+            }
+          } catch (e) {
+            console.warn('[StatusBar] init error', e);
           }
 
           // Hide the splash screen only after the web content is fully painted.
-          // Since server.url loads a remote page, we wait for window 'load'
-          // (all resources fetched) + a short paint delay, so the reviewer
-          // never sees a blank WKWebView between splash and real content.
-          // A 10-second hard timeout ensures the splash never gets stuck.
-          const { SplashScreen } = await import('@capacitor/splash-screen');
-          const hideSplash = async () => {
-            await new Promise<void>((r) => setTimeout(r, 350));
-            try { await SplashScreen.hide({ fadeOutDuration: 300 }); } catch { /* already hidden */ }
-          };
+          try {
+            const { SplashScreen } = await import('@capacitor/splash-screen');
+            const hideSplash = async () => {
+              await new Promise<void>((r) => setTimeout(r, 400));
+              try { await SplashScreen.hide({ fadeOutDuration: 400 }); } catch { /* ignore */ }
+            };
 
-          if (document.readyState === 'complete') {
-            hideSplash();
-          } else {
-            window.addEventListener('load', hideSplash, { once: true });
+            if (document.readyState === 'complete') {
+              hideSplash();
+            } else {
+              window.addEventListener('load', hideSplash, { once: true });
+            }
+            // Fallback: always hide within 10 seconds
+            setTimeout(() => {
+              try { SplashScreen.hide({ fadeOutDuration: 300 }); } catch { /* ignore */ }
+            }, 10000);
+          } catch (e) {
+            console.warn('[SplashScreen] init error', e);
           }
-          // Fallback: always hide within 10 seconds
-          setTimeout(() => {
-            try { SplashScreen.hide({ fadeOutDuration: 200 }); } catch { /* ignore */ }
-          }, 10000);
 
-          // Resize body when keyboard shows/hides
-          const { Keyboard } = await import('@capacitor/keyboard');
-          await Keyboard.setScroll({ isDisabled: false });
+          try {
+            // Resize body when keyboard shows/hides
+            const { Keyboard } = await import('@capacitor/keyboard');
+            await Keyboard.setScroll({ isDisabled: false }).catch(() => {});
+          } catch (e) {
+            console.warn('[Keyboard] init error', e);
+          }
         }
       } catch (e) {
         console.warn('[Capacitor] init error', e);

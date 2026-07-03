@@ -661,7 +661,9 @@ html.is-native.is-android .kg-mobile-nav {
    iOS chrome to replace them. Hide only presentational banners. */
 html.is-native .kg-announcement-bar,
 html.is-native .kg-cookie-banner,
-html.is-native.is-ios .kg-google-play-section {
+html.is-native.is-ios .kg-google-play-section,
+html.is-native.is-ios .kg-app-links-section,
+html.is-native.is-ios .hidden-on-ios {
   display: none !important;
 }
 

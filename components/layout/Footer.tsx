@@ -45,7 +45,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="bg-[#071f12] text-gray-300">
+    <footer className="bg-[#071f12] text-gray-300 kg-footer-root">
 
       {/* Trust strip */}
       <div className="border-b border-white/8">
@@ -158,17 +158,17 @@ export default function Footer() {
           {/* App + payment */}
           <div>
             {mounted && platform === 'android' && showAndroidLink && (
-              <div className="kg-app-links-section">
+              <div className="kg-app-links-section hidden-on-ios">
                 <h4 className="text-white font-bold text-sm mb-4">Get The App</h4>
-                <p className="text-xs text-gray-400 mb-3">Shop on the go with our Android app.</p>
+                <p className="text-xs text-gray-400 mb-3">Shop on the go with our mobile app.</p>
                 <a
                   href="#"
                   className="inline-flex items-center gap-2.5 bg-white/8 hover:bg-[#0B5D3B]/60 border border-white/15 hover:border-[#6FDB2F]/30 rounded-2xl px-4 py-2.5 transition-all duration-200 mb-5 group"
                 >
-                  <span className="text-xl leading-none">🤖</span>
+                  <span className="text-xl leading-none">🛒</span>
                   <div>
-                    <p className="text-[9px] text-gray-400 leading-none mb-0.5">Get it on</p>
-                    <p className="text-sm font-bold text-white leading-tight">Play Store</p>
+                    <p className="text-[9px] text-gray-400 leading-none mb-0.5">Available for</p>
+                    <p className="text-sm font-bold text-white leading-tight">Mobile</p>
                   </div>
                 </a>
               </div>
