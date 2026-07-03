@@ -55,32 +55,22 @@ workflows:
         script: |
           # 1. Reconstruct Private Key
           python3 -c "
-          import os, base64, re
-          
-          def fix_pem(raw):
-              if not raw: return None
-              # Handle literal escapes
-              raw = raw.strip().replace('\\\\n', '\n').replace('\\n', '\n')
-              # Handle base64
-              if not raw.startswith('-----') and len(raw) > 100:
-                  try:
-                      decoded = base64.b64decode(raw).decode('utf-8')
-                      if 'PRIVATE KEY' in decoded: raw = decoded
-                  except: pass
-              # Clean body: remove headers and then keep only base64 characters
-              body = raw.replace('-----BEGIN PRIVATE KEY-----', '').replace('-----END PRIVATE KEY-----', '').replace('-----BEGIN RSA PRIVATE KEY-----', '').replace('-----END RSA PRIVATE KEY-----', '').strip()
-              body = re.sub(r'[^a-zA-Z0-9+/=]', '', body)
-              if not body: return None
-              # Re-wrap at 64 chars
-              wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
-              return f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
-
-          raw_key = os.environ.get('KG_STORE_PRIVATE_KEY', '')
-          final_pem = fix_pem(raw_key)
-          
-          if not final_pem:
-              print('Error: Could not reconstruct a valid PEM from KG_STORE_PRIVATE_KEY')
+          import os, re
+          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '')
+          if not raw:
+              print('Error: KG_STORE_PRIVATE_KEY is empty')
               exit(1)
+          
+          # Clean the input: remove headers/footers and all whitespace
+          body = re.sub(r'-----BEGIN.*?-----', '', raw)
+          body = re.sub(r'-----END.*?-----', '', body)
+          body = re.sub(r'\s+', '', body)
+          
+          # Re-wrap at 64 characters (PEM standard)
+          wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+          
+          # Construct standard PKCS#8 PEM
+          final_pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
           
           with open('/tmp/apple_key.p8', 'w') as f:
               f.write(final_pem)
@@ -90,6 +80,7 @@ workflows:
           keychain initialize
           
           # 2. Fetch signing files
+          # Using @file: prefix as required by Codemagic CLI tools for file paths
           app-store-connect fetch-signing-files \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
@@ -100,13 +91,13 @@ workflows:
             
           keychain add-certificates
           
-          # 4. Use profiles
+          # 3. Use profiles
+          # Removed --method as it is not a valid argument for use-profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
-            --method app-store \
             --export-options-plist /tmp/export_options.plist
           
-          # 5. Build IPA
+          # 4. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
