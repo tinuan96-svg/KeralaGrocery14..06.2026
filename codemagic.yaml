@@ -1,4 +1,4 @@
-# Updated: July 02, 2026 - Final Submission Prep (Apple Sign-in + Metadata Fix)
+# Updated: July 03, 2026 - Final build trigger
 workflows:
   ios-release:
     name: Kerala Grocery iOS Release
