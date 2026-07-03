@@ -57,42 +57,56 @@ workflows:
           python3 -c "
           import os, base64, re
           raw = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
-          # Remove quotes and expand escapes
+          # Remove any surrounding quotes
           raw = re.sub(r'^[\"\']|[\"\']$', '', raw)
+          # Replace literal escapes with actual characters
           raw = raw.replace('\\\\n', '\n').replace('\\n', '\n')
-          try:
-              decoded = base64.b64decode(raw).decode('utf-8')
-              if 'BEGIN PRIVATE KEY' in decoded: raw = decoded
-          except: pass
-          # Extract body and re-wrap at 64 chars
-          if '-----' in raw:
-              body = raw.split('-----')[2].strip()
-          else:
-              body = raw
-          body = ''.join(body.split())
-          wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
-          with open('/tmp/apple_key.p8', 'w') as f:
-              f.write(f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n')
-          "
           
-          # 2. Set environment for signing tools
-          export APP_STORE_CONNECT_PRIVATE_KEY=$(cat /tmp/apple_key.p8)
-          export APP_STORE_CONNECT_ISSUER_ID="$APP_STORE_CONNECT_ISSUER_ID"
-          export APP_STORE_CONNECT_KEY_IDENTIFIER="$APP_STORE_CONNECT_KEY_IDENTIFIER"
+          # If headers are missing, it's a raw base64 blob
+          if 'BEGIN PRIVATE KEY' not in raw:
+              body = ''.join(raw.split())
+              body = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+              raw = f'-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n'
+          else:
+              # Re-format to ensure strict 64-char lines
+              parts = raw.split('-----')
+              # parts[2] is the body if it has headers
+              body = ''.join(parts[2].split())
+              body = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+              raw = f'-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n'
+          
+          with open('/tmp/apple_key.p8', 'w') as f:
+              f.write(raw)
+          "
           
           keychain initialize
           
-          # 3. Fetch signing files
-          app-store-connect fetch-signing-files --type IOS_APP_STORE --create "$APP_ID"
+          # 2. Fetch signing files
+          app-store-connect fetch-signing-files "$APP_ID" \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --private-key /tmp/apple_key.p8 \
+            --type IOS_APP_STORE \
+            --create
+            
           keychain add-certificates
           
-          # 4. Use profiles
+          # 3. Use profiles
           xcode-project use-profiles
           
-          # 5. Build IPA
+          # 4. Build IPA
+          # Ensuring we use the root xcworkspace in ios/App/
+          XCODE_WORKSPACE_REAL="ios/App/App.xcworkspace"
+          if [ ! -d "$XCODE_WORKSPACE_REAL" ]; then
+            echo "Workspace not found at $XCODE_WORKSPACE_REAL, trying to find it..."
+            XCODE_WORKSPACE_REAL=$(find ios/App -name "*.xcworkspace" -maxdepth 1 | head -n 1)
+          fi
+          echo "Building with workspace: $XCODE_WORKSPACE_REAL"
+          
           xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
+            --workspace "$XCODE_WORKSPACE_REAL" \
             --scheme "$XCODE_SCHEME" \
+            --export-method app-store \
             --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual" \
             --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO"
     artifacts:
