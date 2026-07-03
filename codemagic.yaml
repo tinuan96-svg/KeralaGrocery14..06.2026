@@ -55,40 +55,30 @@ workflows:
         script: |
           # 1. Reconstruct Private Key
           python3 -c "
-          import os, re
-          k = os.environ.get('KG_STORE_PRIVATE_KEY', '').strip()
-          if not k:
+          import os
+          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '')
+          if not raw:
               print('Error: KG_STORE_PRIVATE_KEY is empty')
               exit(1)
           
-          # Fix escaped newlines
-          k = k.replace('\\\\n', '\n').replace('\\n', '\n')
+          # Keep only base64 characters (strip headers, footers, newlines, spaces)
+          clean_body = ''.join(c for c in raw if c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
           
-          # Handle existing PEM or raw base64
-          if '-----BEGIN' in k:
-              parts = k.split('-----')
-              body = parts[2].strip() if len(parts) >= 3 else k
-          else:
-              body = k
+          # PEM body must be wrapped at 64 chars
+          wrapped = '\n'.join(clean_body[i:i+64] for i in range(0, len(clean_body), 64))
           
-          # Remove all non-base64 characters
-          body = re.sub(r'[^A-Za-z0-9+/=]', '', body)
-          
-          # Reconstruct strictly formatted PEM
-          pem = '-----BEGIN PRIVATE KEY-----\n'
-          for i in range(0, len(body), 64):
-              pem += body[i:i+64] + '\n'
-          pem += '-----END PRIVATE KEY-----\n'
+          # Final strictly-formatted PEM
+          pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
           
           with open('/tmp/apple_key.p8', 'w') as f:
               f.write(pem)
+          print('Successfully reconstructed private key to /tmp/apple_key.p8')
           "
           
           keychain initialize
           
           # 2. Fetch signing files
-          # Using @file: prefix and unsetting environment variable to avoid conflicts
-          unset APP_STORE_CONNECT_PRIVATE_KEY
+          # Using the positional bundle_id and the verified private key file
           app-store-connect fetch-signing-files "$APP_ID" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
@@ -99,17 +89,20 @@ workflows:
           keychain add-certificates
           
           # 3. Use profiles
+          # We force the bundle ID to ensure the tool matches the correct profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
+            --bundle-id "$APP_ID" \
             --export-options-plist /tmp/export_options.plist
           
           # 4. Build IPA
+          # We pass the bundle ID and signing style to archive-flags for extra safety
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
             --export-options-plist /tmp/export_options.plist \
             --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO" \
-            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual"
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual PRODUCT_BUNDLE_IDENTIFIER=$APP_ID"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
