@@ -61,13 +61,20 @@ workflows:
               print('Error: KG_STORE_PRIVATE_KEY is empty')
               exit(1)
           
-          # Fix escaped newlines and remove all existing headers/whitespace
+          # Fix escaped newlines
           k = k.replace('\\\\n', '\n').replace('\\n', '\n')
-          body = re.sub(r'-----BEGIN.*?-----', '', k)
-          body = re.sub(r'-----END.*?-----', '', body)
+          
+          # Handle existing PEM or raw base64
+          if '-----BEGIN' in k:
+              parts = k.split('-----')
+              body = parts[2].strip() if len(parts) >= 3 else k
+          else:
+              body = k
+          
+          # Remove all non-base64 characters
           body = re.sub(r'[^A-Za-z0-9+/=]', '', body)
           
-          # Construct clean PEM
+          # Reconstruct strictly formatted PEM
           pem = '-----BEGIN PRIVATE KEY-----\n'
           for i in range(0, len(body), 64):
               pem += body[i:i+64] + '\n'
@@ -79,25 +86,24 @@ workflows:
           
           keychain initialize
           
-          # 2. Set environment variable (The CLI tool looks for this automatically)
-          export APP_STORE_CONNECT_PRIVATE_KEY=$(cat /tmp/apple_key.p8)
-          
-          # 3. Fetch signing files
-          # Note: We do NOT pass --private-key here, the tool picks it up from the ENV
+          # 2. Fetch signing files
+          # Using @file: prefix and unsetting environment variable to avoid conflicts
+          unset APP_STORE_CONNECT_PRIVATE_KEY
           app-store-connect fetch-signing-files "$APP_ID" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --private-key "@file:/tmp/apple_key.p8" \
             --type IOS_APP_STORE \
             --create
             
           keychain add-certificates
           
-          # 4. Use profiles
+          # 3. Use profiles
           xcode-project use-profiles \
             --project "ios/App/App.xcodeproj" \
             --export-options-plist /tmp/export_options.plist
           
-          # 5. Build IPA
+          # 4. Build IPA
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "$XCODE_SCHEME" \
