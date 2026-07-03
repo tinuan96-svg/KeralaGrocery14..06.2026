@@ -7,7 +7,7 @@ install! 'cocoapods', :disable_input_output_paths => true
 project 'App.xcodeproj'
 
 target 'App' do
-  # Inlined core pods for maximum CI reliability
+  # Inlined core pods to avoid helper load failures in CI
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
 
@@ -24,7 +24,6 @@ target 'App' do
 end
 
 post_install do |installer|
-  assertDeploymentTarget(installer) if respond_to?(:assertDeploymentTarget)
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
