@@ -92,6 +92,8 @@ export default function AdminImagesPage() {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [processAll, setProcessAll] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+  const [processingSelected, setProcessingSelected] = useState(false);
 
   const [showUpload, setShowUpload] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<UploadItem[]>([]);
@@ -195,6 +197,59 @@ export default function AdminImagesPage() {
     await loadImages();
   };
 
+  const toggleSelectImage = (name: string) => {
+    const next = new Set(selectedImages);
+    if (next.has(name)) next.delete(name);
+    else next.add(name);
+    setSelectedImages(next);
+  };
+
+  const handleProcessSelected = async () => {
+    if (selectedImages.size === 0) return;
+    if (!confirm(`Queue ${selectedImages.size} selected images for AI enhancement?`)) return;
+
+    setProcessingSelected(true);
+    const supabase = getSupabase();
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const imagesToProcess = images.filter(img => selectedImages.has(img.name));
+
+      for (const img of imagesToProcess) {
+        // Find if this image is already linked to a product to get product_id
+        const { data: product } = await supabase
+          .from('products')
+          .select('id, brand, name')
+          .eq('image_url', img.url)
+          .maybeSingle();
+
+        await fetch(`${SUPABASE_URL}/functions/v1/process-product-image`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            source_image_path: img.name,
+            source_image_url: img.url,
+            product_id: product?.id,
+            seo_name: product ? [product.brand, product.name].filter(Boolean).join(' ') : undefined,
+            force: true, // Force re-processing if manually selected
+          }),
+        });
+      }
+
+      setSelectedImages(new Set());
+      alert('Selected images have been queued for processing.');
+    } catch (err) {
+      console.error('Error processing selected images:', err);
+      alert('Failed to queue some images for processing.');
+    } finally {
+      setProcessingSelected(false);
+    }
+  };
+
   const handleProcessAll = async () => {
     if (!confirm('This will queue all unprocessed images for AI enhancement. Continue?')) return;
     setProcessAll(true);
@@ -247,6 +302,16 @@ export default function AdminImagesPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          {selectedImages.size > 0 && (
+            <button
+              onClick={handleProcessSelected}
+              disabled={processingSelected}
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium px-3 py-2 rounded-lg transition-colors animate-in fade-in slide-in-from-right-2"
+            >
+              {processingSelected ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              Process Selected ({selectedImages.size})
+            </button>
+          )}
           <button
             onClick={handleProcessAll}
             disabled={processAll}
@@ -298,46 +363,67 @@ export default function AdminImagesPage() {
         <div className="text-center py-16 text-gray-400 text-sm">No images found</div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-          {filtered.map(img => (
-            <div key={img.name} className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-              <div className="aspect-square bg-gray-50 overflow-hidden">
-                <picture>
-                  <img
-                    src={img.url}
-                    alt={img.name}
-                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-200"
-                    loading="lazy"
-                    onError={e => {
-                      (e.target as HTMLImageElement).src = '/placeholder.webp';
-                    }}
-                  />
-                </picture>
-              </div>
-              <div className="px-2.5 py-2">
-                <p className="text-xs text-gray-700 font-medium truncate leading-snug" title={img.name}>
-                  {img.name.split('/').pop()}
-                </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{img.size ? `${(img.size / 1024).toFixed(0)} KB` : ''}</p>
-              </div>
-              <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => copyUrl(img.url)}
-                  className="w-7 h-7 bg-white/90 hover:bg-white rounded-lg shadow flex items-center justify-center text-gray-600 hover:text-green-600 transition-colors"
-                  title="Copy URL"
+          {filtered.map(img => {
+            const isSelected = selectedImages.has(img.name);
+            return (
+              <div
+                key={img.name}
+                onClick={() => toggleSelectImage(img.name)}
+                className={`group relative bg-white border rounded-xl overflow-hidden hover:shadow-md transition-all cursor-pointer ${
+                  isSelected ? 'border-indigo-500 ring-2 ring-indigo-500/20' : 'border-gray-200'
+                }`}
+              >
+                <div className="aspect-square bg-gray-50 overflow-hidden relative">
+                  <picture>
+                    <img
+                      src={img.url}
+                      alt={img.name}
+                      className={`w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-200 ${
+                        isSelected ? 'opacity-75' : ''
+                      }`}
+                      loading="lazy"
+                      onError={e => {
+                        (e.target as HTMLImageElement).src = '/placeholder.webp';
+                      }}
+                    />
+                  </picture>
+
+                  {/* Selection indicator */}
+                  <div className={`absolute top-2 left-2 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                    isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white/80 border-gray-300'
+                  }`}>
+                    {isSelected && <Check className="w-3.5 h-3.5" />}
+                  </div>
+                </div>
+                <div className="px-2.5 py-2">
+                  <p className="text-xs text-gray-700 font-medium truncate leading-snug" title={img.name}>
+                    {img.name.split('/').pop()}
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{img.size ? `${(img.size / 1024).toFixed(0)} KB` : ''}</p>
+                </div>
+                <div
+                  className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={e => e.stopPropagation()}
                 >
-                  {copiedUrl === img.url ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
-                </button>
-                <button
-                  onClick={() => handleDelete(img.name)}
-                  disabled={deleting === img.name}
-                  className="w-7 h-7 bg-white/90 hover:bg-white rounded-lg shadow flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors"
-                  title="Delete"
-                >
-                  {deleting === img.name ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                </button>
+                  <button
+                    onClick={() => copyUrl(img.url)}
+                    className="w-7 h-7 bg-white/90 hover:bg-white rounded-lg shadow flex items-center justify-center text-gray-600 hover:text-green-600 transition-colors"
+                    title="Copy URL"
+                  >
+                    {copiedUrl === img.url ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(img.name)}
+                    disabled={deleting === img.name}
+                    className="w-7 h-7 bg-white/90 hover:bg-white rounded-lg shadow flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors"
+                    title="Delete"
+                  >
+                    {deleting === img.name ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
