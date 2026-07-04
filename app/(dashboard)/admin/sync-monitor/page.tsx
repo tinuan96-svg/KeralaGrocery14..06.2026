@@ -80,7 +80,7 @@ async function callSync(token: string, body: Record<string, unknown>) {
   return res.json();
 }
 
-export default function SyncStatusPage() {
+export default function SyncMonitorPage() {
   const [connState, setConnState]           = useState<ConnState>('connecting');
   const [lastEventAt, setLastEventAt]       = useState<string | null>(null);
   const [liveEvents, setLiveEvents]         = useState<SyncEvent[]>([]);
@@ -130,45 +130,6 @@ export default function SyncStatusPage() {
       setDiagLoading(false);
     }
   }, [getToken]);
-
-  const handleForcePoll = useCallback(async () => {
-    setPollLoading(true);
-    setForceResult(null);
-    try {
-      const token = await getToken();
-      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/centralhub-realtime`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ action: 'poll' }),
-      });
-      const json = await res.json();
-      setForceResult(`Poll complete: ${json.updated ?? 0} updated, ${json.inserted ?? 0} inserted, ${json.failed ?? 0} failed`);
-      loadStatus();
-    } catch (e) {
-      setForceResult(`Poll error: ${e instanceof Error ? e.message : 'unknown'}`);
-    } finally {
-      setPollLoading(false);
-    }
-  }, [getToken, loadStatus]);
-
-  const handleForceResync = useCallback(async () => {
-    setForceLoading(true);
-    setForceResult(null);
-    try {
-      const token = await getToken();
-      const json = await callSync(token, { action: 'sync' });
-      setForceResult(
-        `Full resync complete: ${json.updatedExisting ?? 0} updated, ${json.importedNew ?? 0} imported, ${json.failed ?? 0} failed`
-      );
-      loadStatus();
-      loadBrandDiag();
-    } catch (e) {
-      setForceResult(`Resync error: ${e instanceof Error ? e.message : 'unknown'}`);
-    } finally {
-      setForceLoading(false);
-    }
-  }, [getToken, loadStatus, loadBrandDiag]);
 
   const handleBrandBackfill = useCallback(async () => {
     setBrandLoading(true);

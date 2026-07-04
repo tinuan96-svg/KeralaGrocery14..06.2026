@@ -32,6 +32,15 @@ export function getSupabase(): SupabaseClient {
         'X-Client-Info': 'kerala-grocery-web',
       },
     },
+    realtime: {
+      params: {
+        events_per_second: 10,
+      },
+      timeout: 20000,
+    },
+    db: {
+      schema: 'public',
+    },
   });
 
   return browserClient;

@@ -190,7 +190,11 @@ export async function fetchCentralhubStatus(): Promise<{
     supabase.from('products').select('last_sync_at').not('last_sync_at', 'is', null).order('last_sync_at', { ascending: false }).limit(1).maybeSingle(),
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('approval_status', 'draft').eq('is_deleted', false),
   ]);
-  const totalRes = await supabase.from('products').select('*', { count: 'exact', head: true }).not('last_sync_at', 'is', null);
+
+  // Total count includes all products linked to CentralHub, including deleted ones
+  // as requested by the user to ensure 400+ products are reflected.
+  const totalRes = await supabase.from('products').select('*', { count: 'exact', head: true }).not('centralhub_product_id', 'is', null);
+
   return {
     connected: !syncRes.error,
     last_sync: syncRes.data?.last_sync_at ?? null,

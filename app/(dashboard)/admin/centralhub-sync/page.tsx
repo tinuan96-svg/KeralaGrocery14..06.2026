@@ -530,28 +530,6 @@ export default function CentralHubSyncPage() {
             {backfilling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
             {backfilling ? 'Backfilling…' : 'Backfill Links'}
           </button>
-
-          {/* Force Resync */}
-          <button
-            onClick={handleForceResync}
-            disabled={forcing || !apiOk}
-            title="Force re-sync all products — updates names, slugs (drafts), weight, stock, and recalculates prices"
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-orange-700 bg-orange-50 border border-orange-200 hover:bg-orange-100 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {forcing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-            {forcing ? 'Force Resyncing…' : 'Force Resync'}
-          </button>
-
-          {/* Sync */}
-          <button
-            onClick={handleSync}
-            disabled={syncing || !apiOk}
-            title={!apiOk ? 'API not connected' : 'Run standard sync'}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowDown className="w-4 h-4" />}
-            {syncing ? 'Syncing…' : 'Sync Products'}
-          </button>
         </div>
       </div>
 

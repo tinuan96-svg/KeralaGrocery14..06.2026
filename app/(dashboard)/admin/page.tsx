@@ -156,7 +156,7 @@ function BusinessHealth({ hub, pendingApproval, missingImages, missingDesc, load
     { show: pendingApproval > 0, label: `${num(pendingApproval)} products awaiting approval`, href: '/admin/product-approval', severity: 'warn' },
     { show: missingImages > 0,   label: `${num(missingImages)} products missing images`,      href: '/admin/products',         severity: 'warn' },
     { show: missingDesc > 0,     label: `${num(missingDesc)} products missing descriptions`,  href: '/admin/ingestion',        severity: 'info' },
-    { show: !loading && hub !== null && !hub.connected, label: 'CentralHub connection error', href: '/admin/sync-status', severity: 'error' },
+    { show: !loading && hub !== null && !hub.connected, label: 'CentralHub connection error', href: '/admin/sync-monitor', severity: 'error' },
   ].filter(i => i.show);
 
   const ago = hub?.last_sync ? timeAgo(hub.last_sync) : 'Never';
@@ -185,7 +185,7 @@ function BusinessHealth({ hub, pendingApproval, missingImages, missingDesc, load
           }`}>
             {loading ? '…' : connected ? 'Connected' : 'Error'}
           </span>
-          <Link href="/admin/sync-status" className="text-gray-600 hover:text-gray-400 transition-colors">
+          <Link href="/admin/sync-monitor" className="text-gray-600 hover:text-gray-400 transition-colors">
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -321,7 +321,7 @@ function QuickAccess({ pendingApproval }: { pendingApproval: number }) {
     { label: 'Pricing',            sub: 'Cost & markup rules',             href: '/admin/pricing',          icon: TrendingUp,    badge: null },
     { label: 'Categories',         sub: 'Manage taxonomy',                 href: '/admin/categories',       icon: Tag,           badge: null },
     { label: 'Product Images',     sub: 'Image management',                href: '/admin/products',         icon: ImageIcon,     badge: null },
-    { label: 'Sync Status',        sub: 'CentralHub logs',                 href: '/admin/sync-status',      icon: Activity,      badge: null },
+    { label: 'Sync Monitor',       sub: 'CentralHub logs',                 href: '/admin/sync-monitor',      icon: Activity,      badge: null },
     { label: 'Variant Audit',      sub: 'Size grouping',                   href: '/admin/variants',         icon: Layers,        badge: null },
   ];
 

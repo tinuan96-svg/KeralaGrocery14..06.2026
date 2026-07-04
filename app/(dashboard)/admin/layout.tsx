@@ -45,7 +45,7 @@ const DRAWER_NAV = [
     section: 'CentralHub',
     items: [
       { href: '/admin/centralhub-sync', label: 'Sync Products', icon: ArrowDownToLine },
-      { href: '/admin/sync-status',     label: 'Sync Status',   icon: Activity },
+      { href: '/admin/sync-monitor',    label: 'Sync Monitor',   icon: Activity },
     ],
   },
   {

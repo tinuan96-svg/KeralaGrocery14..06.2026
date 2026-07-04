@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       // Ensure fields match CentralHub format
       const productUpsert = {
         id: productData.id,
+        centralhub_product_id: productData.id, // Ensure we store the sync identifier
         sku: productData.sku || null,
         name: productData.name,
         slug: productData.slug,
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
         // Auto-approve and show products from CentralHub master
         approval_status: 'approved',
         visibility_status: true,
+        last_sync_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
