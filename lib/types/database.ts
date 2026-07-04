@@ -53,6 +53,27 @@ export interface Product {
   is_deal?: boolean;
   is_new_arrival?: boolean;
   sold_count?: number;
+  tags?: string[];
+  custom_attributes?: Record<string, any>;
+  warehouse_location?: string | null;
+  gtin?: string | null;
+  is_archived?: boolean;
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  variant_name: string;
+  price: number;
+  cost_price?: number;
+  stock: number;
+  sku?: string;
+  barcode?: string;
+  unit_value?: number;
+  unit_type?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface GalleryImage {
@@ -101,6 +122,12 @@ export interface ProductWithDetails {
   is_new_arrival?: boolean;
   sold_count?: number;
   gallery_images?: GalleryImage[];
+  variants?: ProductVariant[];
+  tags?: string[];
+  custom_attributes?: Record<string, any>;
+  warehouse_location?: string | null;
+  gtin?: string | null;
+  is_archived?: boolean;
 }
 
 export interface Banner {

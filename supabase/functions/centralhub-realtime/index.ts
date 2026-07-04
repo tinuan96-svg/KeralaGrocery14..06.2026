@@ -33,6 +33,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, X-Webhook-Secret",
 };
 
+interface CentralHubVariant {
+  id: string;
+  variant_name: string;
+  price: number;
+  cost_price?: number;
+  stock: number;
+  sku?: string;
+  barcode?: string;
+  unit_value?: number;
+  unit_type?: string;
+  is_active?: boolean;
+}
+
 interface CentralHubProduct {
   id: string;
   name: string;
@@ -45,6 +58,12 @@ interface CentralHubProduct {
   slug: string | null;
   gtin: string | null;
   warehouse_location: string | null;
+  brand_id?: string | null;
+  tags?: string[] | null;
+  custom_attributes?: Record<string, any> | null;
+  is_archived?: boolean;
+  is_active?: boolean;
+  variants?: CentralHubVariant[];
 }
 
 interface WebhookBody {
@@ -108,6 +127,12 @@ async function applyProductUpdate(
   const hpId = String(hp.id);
   const now = new Date().toISOString();
 
+  // Calculate total stock from variants if present
+  let totalStock = hp.stock ?? 0;
+  if (hp.variants && hp.variants.length > 0) {
+    totalStock = hp.variants.reduce((sum, v) => sum + (v.stock ?? 0), 0);
+  }
+
   // Find local product by centralhub_product_id
   const { data: localProduct } = await supabase
     .from("products")
@@ -115,51 +140,68 @@ async function applyProductUpdate(
     .eq("centralhub_product_id", hpId)
     .maybeSingle();
 
-  // Store brand exactly as received from CentralHub — no transformation
+  // Store brand exactly as received from CentralHub
   const brandName = hp.brand ?? null;
   const supplierPrice = Number(hp.price ?? 0);
+  const markupPct = localProduct ? Number(localProduct.markup_percentage ?? 5) : 5;
+  const newSellingPrice = applyMarkup(supplierPrice, markupPct);
+
+  const productData: Record<string, any> = {
+    source_name: hp.name,
+    source_brand: brandName,
+    brand: brandName,
+    brand_id: hp.brand_id,
+    supplier_price: supplierPrice,
+    cost_price: supplierPrice,
+    selling_price: newSellingPrice,
+    price: newSellingPrice,
+    markup_percentage: markupPct,
+    stock: totalStock,
+    weight: hp.weight ?? null,
+    unit: hp.unit ?? null,
+    product_type: hp.product_type ?? null,
+    gtin: hp.gtin ?? null,
+    warehouse_location: hp.warehouse_location ?? null,
+    tags: hp.tags ?? [],
+    custom_attributes: hp.custom_attributes ?? {},
+    is_archived: hp.is_archived ?? false,
+    is_active: hp.is_active ?? true,
+    last_sync_at: now,
+    updated_at: now,
+  };
+
+  // Visibility status logic: if is_active is false or is_archived is true, hide it
+  if (hp.is_active === false || hp.is_archived === true) {
+    productData.visibility_status = false;
+  }
+
+  let localId: string;
+  let action: "updated" | "inserted";
 
   if (localProduct) {
-    const markupPct = Number(localProduct.markup_percentage ?? 5);
-    const newSellingPrice = applyMarkup(supplierPrice, markupPct);
+    localId = localProduct.id;
+    action = "updated";
 
     // Only update name if admin hasn't customised it
     const nameIsAdminEdited = localProduct.source_name != null && localProduct.name !== localProduct.source_name;
-
-    const updatePayload: Record<string, unknown> = {
-      source_name: hp.name,
-      source_brand: brandName,
-      brand: brandName,
-      supplier_price: supplierPrice,
-      cost_price: supplierPrice,
-      selling_price: newSellingPrice,
-      price: newSellingPrice,
-      markup_percentage: markupPct,
-      last_sync_at: now,
-      updated_at: now,
-    };
-
     if (!nameIsAdminEdited && localProduct.name !== hp.name) {
-      updatePayload.name = hp.name;
+      productData.name = hp.name;
     }
-    if (hp.weight !== null) updatePayload.weight = hp.weight;
-    if (hp.stock !== null) updatePayload.stock = hp.stock;
-    if (hp.unit !== null) updatePayload.unit = hp.unit;
-    if (hp.product_type !== null) updatePayload.product_type = hp.product_type;
 
     // Strip protected fields
-    for (const pf of PROTECTED_FIELDS) delete updatePayload[pf];
+    for (const pf of PROTECTED_FIELDS) delete productData[pf];
+
     // Re-allow pricing fields
-    updatePayload.supplier_price = supplierPrice;
-    updatePayload.cost_price = supplierPrice;
-    updatePayload.selling_price = newSellingPrice;
-    updatePayload.price = newSellingPrice;
+    productData.supplier_price = supplierPrice;
+    productData.cost_price = supplierPrice;
+    productData.selling_price = newSellingPrice;
+    productData.price = newSellingPrice;
 
     // Record price change in history if cost changed
     const oldCost = Number(localProduct.cost_price ?? 0);
     if (Math.abs(oldCost - supplierPrice) > 0.001) {
       await supabase.from("price_history").insert({
-        product_id: localProduct.id,
+        product_id: localId,
         old_cost_price: oldCost,
         new_cost_price: supplierPrice,
         old_selling_price: Number(localProduct.selling_price ?? localProduct.price ?? 0),
@@ -171,13 +213,14 @@ async function applyProductUpdate(
 
     const { error } = await supabase
       .from("products")
-      .update(updatePayload)
-      .eq("id", localProduct.id);
+      .update(productData)
+      .eq("id", localId);
 
     if (error) return { action: "skipped", error: error.message };
-    return { action: "updated" };
   } else {
-    // Insert new draft product
+    action = "inserted";
+
+    // Slug generation
     const { data: existingSlugs } = await supabase
       .from("products")
       .select("slug")
@@ -189,49 +232,44 @@ async function applyProductUpdate(
     if (allSlugs.has(finalSlug)) finalSlug = `${baseSlug}-${hpId.slice(-6)}`;
     if (allSlugs.has(finalSlug)) finalSlug = `${baseSlug}-${Date.now()}`;
 
-    const newSellingPrice = applyMarkup(supplierPrice);
-
-    const { error } = await supabase.from("products").insert({
+    const { data: newProd, error } = await supabase.from("products").insert({
+      ...productData,
       centralhub_product_id: hpId,
       source_product_id: hpId,
-      source_name: hp.name,
-      source_brand: brandName,
-      brand: brandName,
       name: hp.name,
       slug: finalSlug,
-      description: null,
-      short_description: null,
-      image_url: null,
-      category_id: null,
-      supplier_price: supplierPrice,
-      cost_price: supplierPrice,
-      selling_price: newSellingPrice,
-      price: newSellingPrice,
-      markup_percentage: 5,
-      original_price: null,
-      weight: hp.weight ?? null,
-      unit: hp.unit ?? null,
-      stock: hp.stock ?? 0,
-      product_type: hp.product_type ?? null,
-      is_active: true,
-      is_deleted: false,
-      is_featured: false,
-      is_deal: false,
-      is_new_arrival: true,
-      is_bestseller: false,
-      discount_percentage: 0,
-      sold_count: 0,
-      rating: 4.5,
-      review_count: 0,
       approval_status: "draft",
       visibility_status: false,
-      last_sync_at: now,
       created_at: now,
-    });
+    }).select("id").single();
 
     if (error) return { action: "skipped", error: error.message };
-    return { action: "inserted" };
+    localId = newProd.id;
   }
+
+  // Handle Variants
+  if (hp.variants && hp.variants.length > 0) {
+    for (const v of hp.variants) {
+      const variantSellingPrice = applyMarkup(Number(v.price), markupPct);
+      const { error: vError } = await supabase.from("product_variants").upsert({
+        centralhub_variant_id: v.id, // Using CentralHub variant ID to prevent duplicates
+        product_id: localId,
+        variant_name: v.variant_name,
+        price: variantSellingPrice,
+        cost_price: v.cost_price ?? v.price,
+        stock: v.stock ?? 0,
+        sku: v.sku,
+        barcode: v.barcode,
+        unit_value: v.unit_value,
+        unit_type: v.unit_type,
+        is_active: v.is_active ?? true,
+        updated_at: now,
+      }, { onConflict: "centralhub_variant_id" });
+      if (vError) console.error(`Error upserting variant ${v.id}:`, vError.message);
+    }
+  }
+
+  return { action };
 }
 
 async function applyProductDelete(
@@ -243,6 +281,7 @@ async function applyProductDelete(
     .from("products")
     .update({
       is_active: false,
+      is_archived: true,
       visibility_status: false,
       approval_status: "rejected",
       updated_at: now,
@@ -328,7 +367,11 @@ Deno.serve(async (req: Request) => {
       const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
       const { data: changedProducts, error: fetchErr } = await hub
         .from("products")
-        .select("id,name,price,stock,product_type,brand,weight,unit,slug,gtin,warehouse_location")
+        .select(`
+          id, name, price, stock, product_type, brand, weight, unit, slug, gtin, warehouse_location,
+          brand_id, tags, custom_attributes, is_archived, is_active,
+          variants:product_variants(*)
+        `)
         .or(`updated_at.gte.${since},created_at.gte.${since}`)
         .order("updated_at", { ascending: false })
         .limit(200);
