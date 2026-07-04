@@ -12,7 +12,7 @@ import ProductAccordions from '@/components/product/ProductAccordions';
 import KeralaProductCard from '@/components/product/KeralaProductCard';
 import RecentlyViewedTracker from '@/components/product/RecentlyViewedTracker';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
-import { getProductDetail, getProducts, getProductVariantGroup } from '@/lib/services/rpcApiClient';
+import { getProductDetail, getProducts } from '@/lib/services/rpcApiClient';
 import { getSupabase } from '@/lib/supabase/client';
 import type { RpcProduct, ProductVariantOption } from '@/lib/services/rpcApiClient';
 import type { ProductWithDetails } from '@/lib/types/database';
@@ -69,8 +69,8 @@ export default function KeralaProductDetailPage({ slug }: Props) {
   useProductSync();
   const actionsRef = useRef<HTMLDivElement>(null);
   const [product, setProduct] = useState<RpcProduct | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariantOption | null>(null);
   const [related, setRelated] = useState<RpcProduct[]>([]);
-  const [variants, setVariants] = useState<ProductVariantOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
@@ -106,6 +106,9 @@ export default function KeralaProductDetailPage({ slug }: Props) {
       }
 
       setProduct(p);
+      if (p.variants && p.variants.length > 0) {
+        setSelectedVariant(p.variants[0]);
+      }
       setIsLoading(false);
       fetchRelated(p, cancelled);
 
@@ -123,11 +126,6 @@ export default function KeralaProductDetailPage({ slug }: Props) {
           ).filter(Boolean);
           if (!cancelled) setGalleryUrls(urls);
         });
-      if (p.variant_group_id) {
-        getProductVariantGroup(p.variant_group_id).then(({ variants: v }) => {
-          if (!cancelled && v.length > 1) setVariants(v);
-        });
-      }
     });
 
     async function fetchRelated(p: RpcProduct, isCancelled: boolean) {
@@ -176,17 +174,25 @@ export default function KeralaProductDetailPage({ slug }: Props) {
   }
 
   const productWD = toProductWithDetails(product);
-  const price    = product.price;
-  const original = product.original_price ?? price;
+
+  // Use selected variant data if available
+  const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+  const currentStock = selectedVariant ? selectedVariant.stock : product.stock;
+  const inStock = currentStock > 0;
+
+  const original = product.original_price ?? currentPrice;
   const discount = product.discount_pct;
-  const savings  = (original - price).toFixed(2);
-  const inStock  = product.in_stock;
+  const savings  = (original - currentPrice).toFixed(2);
 
   const stockStatus = inStock
-    ? product.stock <= 5
-      ? { text: `Only ${product.stock} left!`, color: 'text-amber-700 bg-amber-50 border border-amber-200', dot: 'bg-amber-500' }
+    ? currentStock <= 5
+      ? { text: `Only ${currentStock} left!`, color: 'text-amber-700 bg-amber-50 border border-amber-200', dot: 'bg-amber-500' }
       : { text: 'In Stock',                    color: 'text-green-700 bg-green-50 border border-green-200', dot: 'bg-green-500' }
     : { text: 'Out of Stock',                  color: 'text-red-700 bg-red-50 border border-red-200',       dot: 'bg-red-500' };
+
+  // Update productWD for child components
+  productWD.price = currentPrice;
+  productWD.stock = currentStock;
 
   const resolvedImg = product.image_url?.startsWith('http') ? product.image_url : '/placeholder.webp';
   const galleryImages = galleryUrls.length > 0 ? galleryUrls : [resolvedImg];
@@ -266,30 +272,30 @@ export default function KeralaProductDetailPage({ slug }: Props) {
               )}
             </div>
 
-            {variants.length > 1 && (
+            {product.variants && product.variants.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Size</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Size / Weight</p>
                 <div className="flex flex-wrap gap-2">
-                  {variants.map((v) => {
-                    const isCurrent = v.id === product.id;
-                    const label = v.variant_size || v.variant_unit || 'N/A';
+                  {product.variants.map((v) => {
+                    const isCurrent = selectedVariant?.id === v.id;
+                    const label = v.variant_name;
                     return (
-                      <Link
+                      <button
                         key={v.id}
-                        href={`/products/${v.slug}`}
+                        onClick={() => setSelectedVariant(v)}
                         className={`inline-flex flex-col items-center px-4 py-2 rounded-xl border text-sm font-semibold transition-colors ${
                           isCurrent
                             ? 'bg-[#0B5D3B] border-[#0B5D3B] text-white'
-                            : v.in_stock
+                            : v.stock > 0
                             ? 'border-gray-200 text-gray-700 hover:border-[#0B5D3B] hover:text-[#0B5D3B] bg-white'
-                            : 'border-gray-100 text-gray-300 bg-gray-50 cursor-not-allowed pointer-events-none'
+                            : 'border-gray-100 text-gray-300 bg-gray-50'
                         }`}
                       >
                         <span>{label}</span>
                         <span className={`text-xs font-normal mt-0.5 ${isCurrent ? 'text-green-200' : 'text-gray-400'}`}>
                           £{v.price.toFixed(2)}
                         </span>
-                      </Link>
+                      </button>
                     );
                   })}
                 </div>
@@ -306,7 +312,7 @@ export default function KeralaProductDetailPage({ slug }: Props) {
             {/* Price */}
             <div className="bg-[#F8F6F2] rounded-2xl p-4 space-y-2">
               <div className="flex items-baseline gap-3 flex-wrap">
-                <span className="text-4xl font-bold text-[#0B5D3B]">£{price.toFixed(2)}</span>
+                <span className="text-4xl font-bold text-[#0B5D3B]">£{currentPrice.toFixed(2)}</span>
                 {discount > 0 && (
                   <>
                     <span className="text-xl text-gray-400 line-through font-medium">£{original.toFixed(2)}</span>

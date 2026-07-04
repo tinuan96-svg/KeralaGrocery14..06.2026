@@ -37,7 +37,6 @@ const DRAWER_NAV = [
     section: 'Catalogue',
     items: [
       { href: '/admin/product-approval', label: 'Product Approval', icon: ClipboardCheck },
-      { href: '/admin/variants',         label: 'Variant Audit',    icon: Layers },
       { href: '/admin/pricing',          label: 'Pricing',          icon: TrendingUp },
       { href: '/admin/categories',       label: 'Categories',       icon: Tag },
     ],

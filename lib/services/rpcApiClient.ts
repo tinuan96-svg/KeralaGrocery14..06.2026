@@ -32,24 +32,20 @@ export interface RpcProduct {
   discount_pct: number;
   in_stock: boolean;
   display_title: string;
-  variant_group_id: string | null;
-  variant_size: string | null;
-  variant_weight_g: number | null;
-  variant_unit: string | null;
+  variants?: ProductVariantOption[];
 }
 
 export interface ProductVariantOption {
   id: string;
-  name: string;
-  slug: string;
-  variant_size: string;
-  variant_weight_g: number | null;
-  variant_unit: string | null;
+  variant_name: string;
   price: number;
-  compare_price: number | null;
-  image_url: string | null;
-  image_main: string | null;
-  in_stock: boolean;
+  cost_price?: number;
+  stock: number;
+  sku?: string;
+  barcode?: string;
+  unit_value?: number;
+  unit_type?: string;
+  is_active: boolean;
 }
 
 export interface RpcFilters {
@@ -131,10 +127,6 @@ function mapRow(
     discount_pct:    discountPct,
     in_stock:        true,
     display_title:   displayTitle,
-    variant_group_id: (row.variant_group_id as string | null) ?? null,
-    variant_size:     (row.variant_size as string | null) ?? null,
-    variant_weight_g: row.variant_weight_g != null ? Number(row.variant_weight_g) : null,
-    variant_unit:     (row.variant_unit as string | null) ?? null,
   };
 }
 
@@ -182,7 +174,7 @@ export async function getProducts(
     let query = supabase
       .from('products')
       .select(
-        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, variant_group_id, variant_size, variant_weight_g, variant_unit, categories(name)',
+        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, categories(name)',
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
@@ -281,7 +273,7 @@ export async function getProductDetail(
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, variant_group_id, variant_size, variant_weight_g, variant_unit, categories(name)')
+      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, categories(name), variants:product_variants(*)')
       .eq('slug', idOrSlug)
       .eq('approval_status', 'approved')
       .eq('visibility_status', true)
@@ -292,6 +284,11 @@ export async function getProductDetail(
 
     const categoryMap = await fetchCategoryMap();
     const product = mapRow(data as Record<string, unknown>, categoryMap);
+
+    // Add variants if present
+    if ((data as any).variants) {
+      product.variants = (data as any).variants.filter((v: any) => v.is_active);
+    }
 
     if (!product.image_url) {
       const { data: gallery } = await supabase
@@ -375,51 +372,3 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
   }
 }
 
-// ---------------------------------------------------------------------------
-// getProductVariantGroup — fetch all size variants for a group
-// ---------------------------------------------------------------------------
-
-export async function getProductVariantGroup(
-  variantGroupId: string,
-): Promise<{ variants: ProductVariantOption[]; error: string | null }> {
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('products')
-      .select('id, name, slug, variant_size, variant_weight_g, variant_unit, price, selling_price, original_price, image_url, image_main, approval_status, visibility_status, is_active')
-      .eq('variant_group_id', variantGroupId)
-      .eq('approval_status', 'approved')
-      .eq('visibility_status', true)
-      .eq('is_active', true)
-      .order('variant_weight_g', { ascending: true });
-
-    if (error) return { variants: [], error: error.message };
-
-    const rows = (data ?? []) as Record<string, unknown>[];
-    const variants: ProductVariantOption[] = rows.map((r) => {
-      const price = Number(r.selling_price ?? r.price ?? 0);
-      const originalPrice = r.original_price ? Number(r.original_price) : null;
-      const imageUrl =
-        (r.image_main as string | null)?.startsWith('http') ? (r.image_main as string) :
-        (r.image_url as string | null)?.startsWith('http') ? (r.image_url as string) :
-        null;
-      return {
-        id:              String(r.id ?? ''),
-        name:            String(r.name ?? ''),
-        slug:            (r.slug as string | null) ?? String(r.id ?? ''),
-        variant_size:    (r.variant_size as string | null) ?? '',
-        variant_weight_g: r.variant_weight_g != null ? Number(r.variant_weight_g) : null,
-        variant_unit:    (r.variant_unit as string | null) ?? null,
-        price,
-        compare_price:   originalPrice,
-        image_url:       imageUrl,
-        image_main:      (r.image_main as string | null) ?? null,
-        in_stock:        true,
-      };
-    });
-
-    return { variants, error: null };
-  } catch (err) {
-    return { variants: [], error: err instanceof Error ? err.message : 'Unexpected error' };
-  }
-}
