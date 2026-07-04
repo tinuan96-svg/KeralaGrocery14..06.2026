@@ -240,33 +240,17 @@ export default function SyncStatusPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Sync Status</h1>
+          <h1 className="text-xl font-bold text-gray-900">Sync Monitor</h1>
           <p className="text-sm text-gray-500 mt-0.5">Real-time CentralHub synchronisation monitor</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={loadStatus}
             disabled={statusLoading}
-            className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${statusLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
-          <button
-            onClick={handleForcePoll}
-            disabled={pollLoading}
-            className="flex items-center gap-2 px-3 py-2 border border-blue-200 text-blue-700 rounded-xl text-sm font-medium hover:bg-blue-50 transition-colors disabled:opacity-60"
-          >
-            {pollLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowDown className="w-4 h-4" />}
-            Poll CentralHub
-          </button>
-          <button
-            onClick={handleForceResync}
-            disabled={forceLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0B5D3B] hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-60"
-          >
-            {forceLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-            Force Full Resync
+            Refresh Status
           </button>
         </div>
       </div>
@@ -444,32 +428,31 @@ export default function SyncStatusPage() {
       </div>
 
       {/* Webhook URL info */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-        <div className="flex items-start gap-2">
-          <Activity className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-amber-200 shadow-sm flex-shrink-0">
+            <Activity className="w-5 h-5 text-amber-600" />
+          </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-amber-800">CentralHub Webhook Endpoint</p>
-            <p className="text-xs text-amber-700 mt-0.5">
-              Configure this URL as a webhook in CentralHub to receive real-time product changes:
+            <p className="text-sm font-bold text-amber-900">Live Sync Webhook Configuration</p>
+            <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+              Your system is now configured for <strong>Live Push</strong>. Whenever a product is changed in CentralHub, it will update here instantly.
             </p>
-            <div className="mt-2 space-y-2">
+            <div className="mt-4 space-y-3">
               <div>
-                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Primary (API Route)</span>
-                <code className="block mt-1 text-xs bg-white border border-amber-200 rounded-lg px-3 py-1.5 text-gray-800 break-all select-all">
-                  {window.location.origin}/api/webhooks/centralhub
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest block mb-1">Step 1: Use this URL in CentralHub</span>
+                <code className="block text-xs bg-white border border-amber-200 rounded-lg px-3 py-2 text-gray-800 break-all select-all font-mono font-semibold">
+                  https://keralagrocery.com/api/webhooks/centralhub
                 </code>
+                <p className="text-[10px] text-amber-600 mt-1 italic">
+                  * Replace "keralagrocery.com" with your actual production domain.
+                </p>
               </div>
-              <div>
-                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Fallback (Edge Function)</span>
-                <code className="block mt-1 text-xs bg-white/50 border border-amber-100 rounded-lg px-3 py-1.5 text-gray-600 break-all select-all">
-                  {process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/centralhub-realtime
-                </code>
+              <div className="p-2.5 bg-white/50 border border-amber-100 rounded-lg">
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest block mb-1">Step 2: Security Header</span>
+                <p className="text-xs text-gray-700">Ensure the <strong>x-webhook-secret</strong> header is sent from CentralHub.</p>
               </div>
             </div>
-            <p className="text-[11px] text-amber-600 mt-2">
-              Send POST with body: {`{ "type": "INSERT"|"UPDATE"|"DELETE", "record": {...} }`}
-              {' — '}Ensure <strong>x-webhook-secret</strong> header matches your configuration.
-            </p>
           </div>
         </div>
       </div>

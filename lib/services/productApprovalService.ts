@@ -163,12 +163,12 @@ export async function fetchApprovalStats(): Promise<ApprovalStats> {
   const supabase = getSupabase();
 
   const [totalRes, draftRes, approvedRes, rejectedRes, deletedRes, syncRes] = await Promise.all([
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_deleted', false),
+    supabase.from('products').select('*', { count: 'exact', head: true }),
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('approval_status', 'draft').eq('is_deleted', false),
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('approval_status', 'approved').eq('is_deleted', false),
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('approval_status', 'rejected').eq('is_deleted', false),
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_deleted', true),
-    supabase.from('products').select('last_sync_at').eq('is_deleted', false).order('last_sync_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('products').select('last_sync_at').order('last_sync_at', { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   const { data: draftProducts } = await supabase
