@@ -42,27 +42,32 @@ export async function POST(req: NextRequest) {
     if (type === 'INSERT' || type === 'UPDATE') {
       const { variants, ...productData } = record;
 
-      // Check if product already exists locally by CentralHub ID to avoid duplicates
-      // if the local primary key (id) differs from the CentralHub UUID.
-      const { data: existing } = await supabase
+      // Hardened Matching: centralhub_product_id (primary) and gtin (secondary)
+      let { data: existing } = await supabase
         .from('products')
-        .select('id')
+        .select('id, slug, description, short_description, image_url, category_id, tags, approval_status, visibility_status')
         .eq('centralhub_product_id', productData.id)
         .maybeSingle();
 
+      if (!existing && productData.gtin) {
+        const { data: gtinMatch } = await supabase
+          .from('products')
+          .select('id, slug, description, short_description, image_url, category_id, tags, approval_status, visibility_status')
+          .eq('gtin', productData.gtin)
+          .maybeSingle();
+        existing = gtinMatch;
+      }
+
       const targetId = existing?.id || productData.id;
 
-      // Ensure fields match CentralHub format
-      const productUpsert = {
+      // Construct restricted payload
+      const productUpsert: any = {
         id: targetId,
         centralhub_product_id: productData.id,
-        sku: productData.sku || null,
+        gtin: productData.gtin || null,
         name: productData.name,
-        slug: productData.slug,
         brand: productData.brand || null,
-        category: productData.category || 'Uncategorized',
-        department: productData.department || null,
-        subcategory: productData.subcategory || null,
+        brand_id: productData.brand_id || null,
         price: productData.price || 0,
         sale_price: productData.sale_price || null,
         compare_at_price: productData.compare_at_price || null,
@@ -70,20 +75,19 @@ export async function POST(req: NextRequest) {
         in_stock: productData.in_stock ?? true,
         unit: productData.unit || null,
         weight: productData.weight || null,
-        description: productData.description || null,
-        image_url: productData.image_url || null,
-        is_active: productData.is_active ?? true,
-        tags: productData.tags || [],
         custom_attributes: productData.custom_attributes || {},
-        warehouse_location: productData.warehouse_location || null,
-        gtin: productData.gtin || null,
-        is_deleted: false, // Ensure product is not marked as deleted if present in sync
-        // Auto-approve and show products from CentralHub master
-        approval_status: 'approved',
-        visibility_status: true,
         last_sync_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        updated_at: productData.updated_at || new Date().toISOString(),
+        is_deleted: false,
       };
+
+      // Only set metadata and visibility if this is a NEW product
+      if (!existing) {
+        productUpsert.slug = productData.slug || `p-${productData.id.slice(0, 8)}`;
+        productUpsert.approval_status = 'draft';
+        productUpsert.visibility_status = false;
+        // Other metadata fields like description, category_id, image_url are left null for local admin to fill
+      }
 
       const { error: pError } = await supabase
         .from('products')
