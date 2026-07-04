@@ -783,13 +783,19 @@ Deno.serve(async (req: Request) => {
                   if (hp.product_type !== null) updatePayload.product_type = hp.product_type;
                 }
 
+                // Ensure visibility is synced from CentralHub master
+                updatePayload.approval_status = 'approved';
+                updatePayload.visibility_status = true;
+
                 // Purge any protected fields that may have crept in
                 for (const pf of PROTECTED_FIELDS) delete updatePayload[pf];
-                // Re-allow pricing fields (they are not in PROTECTED_FIELDS)
+                // Re-allow pricing and visibility fields
                 updatePayload.supplier_price = supplierPrice;
                 updatePayload.cost_price = supplierPrice;
                 updatePayload.selling_price = newSellingPrice;
                 updatePayload.price = newSellingPrice;
+                updatePayload.approval_status = 'approved';
+                updatePayload.visibility_status = true;
 
                 // Record price change in history if cost changed
                 const oldCost = Number(exRow.cost_price ?? exRow.supplier_price ?? 0);
@@ -848,8 +854,8 @@ Deno.serve(async (req: Request) => {
                   sold_count: 0,
                   rating: 4.5,
                   review_count: 0,
-                  approval_status: "draft",
-                  visibility_status: false,
+                  approval_status: "approved",
+                  visibility_status: true,
                   last_sync_at: now,
                   created_at: now,
                 });

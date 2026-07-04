@@ -27,9 +27,6 @@ export function getSupabase(): SupabaseClient {
       storageKey: 'kerala-grocery-auth',
       storage: window.localStorage,
     },
-    realtime: {
-      params: { eventsPerSecond: 0 },
-    },
     global: {
       headers: {
         'X-Client-Info': 'kerala-grocery-web',

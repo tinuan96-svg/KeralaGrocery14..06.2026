@@ -447,17 +447,28 @@ export default function SyncStatusPage() {
       <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
         <div className="flex items-start gap-2">
           <Activity className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-amber-800">CentralHub Webhook Endpoint</p>
             <p className="text-xs text-amber-700 mt-0.5">
               Configure this URL as a webhook in CentralHub to receive real-time product changes:
             </p>
-            <code className="block mt-1.5 text-xs bg-white border border-amber-200 rounded-lg px-3 py-1.5 text-gray-800 break-all select-all">
-              {process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/centralhub-realtime
-            </code>
-            <p className="text-[11px] text-amber-600 mt-1">
+            <div className="mt-2 space-y-2">
+              <div>
+                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Primary (API Route)</span>
+                <code className="block mt-1 text-xs bg-white border border-amber-200 rounded-lg px-3 py-1.5 text-gray-800 break-all select-all">
+                  {window.location.origin}/api/webhooks/centralhub
+                </code>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Fallback (Edge Function)</span>
+                <code className="block mt-1 text-xs bg-white/50 border border-amber-100 rounded-lg px-3 py-1.5 text-gray-600 break-all select-all">
+                  {process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/centralhub-realtime
+                </code>
+              </div>
+            </div>
+            <p className="text-[11px] text-amber-600 mt-2">
               Send POST with body: {`{ "type": "INSERT"|"UPDATE"|"DELETE", "record": {...} }`}
-              {' — '}Brand field in CentralHub products is automatically synced to the local brands column.
+              {' — '}Ensure <strong>x-webhook-secret</strong> header matches your configuration.
             </p>
           </div>
         </div>
