@@ -113,6 +113,19 @@ export function RealtimeSyncProvider({ children }: { children: React.ReactNode }
           }));
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'product_variants' },
+        (payload) => {
+          if (!isMountedRef.current) return;
+          bumpVersion(`VARIANT_${payload.eventType}`);
+          setState(prev => ({
+            ...prev,
+            connectionState: 'connected',
+            syncedToday: prev.syncedToday + 1,
+          }));
+        }
+      )
       .subscribe((status) => {
         if (!isMountedRef.current) return;
         if (status === 'SUBSCRIBED') {
