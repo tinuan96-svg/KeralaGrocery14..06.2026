@@ -48,6 +48,7 @@ export interface ApprovalStats {
   draft: number;
   approved: number;
   rejected: number;
+  deleted: number;
   missingFields: number;
   lastSyncAt: string | null;
 }
@@ -161,11 +162,12 @@ async function writeApprovalLog(opts: {
 export async function fetchApprovalStats(): Promise<ApprovalStats> {
   const supabase = getSupabase();
 
-  const [totalRes, draftRes, approvedRes, rejectedRes, syncRes] = await Promise.all([
+  const [totalRes, draftRes, approvedRes, rejectedRes, deletedRes, syncRes] = await Promise.all([
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_deleted', false),
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('approval_status', 'draft').eq('is_deleted', false),
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('approval_status', 'approved').eq('is_deleted', false),
     supabase.from('products').select('*', { count: 'exact', head: true }).eq('approval_status', 'rejected').eq('is_deleted', false),
+    supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_deleted', true),
     supabase.from('products').select('last_sync_at').eq('is_deleted', false).order('last_sync_at', { ascending: false }).limit(1).maybeSingle(),
   ]);
 
@@ -184,6 +186,7 @@ export async function fetchApprovalStats(): Promise<ApprovalStats> {
     draft: draftRes.count ?? 0,
     approved: approvedRes.count ?? 0,
     rejected: rejectedRes.count ?? 0,
+    deleted: deletedRes.count ?? 0,
     missingFields,
     lastSyncAt: syncRes.data?.last_sync_at ?? null,
   };

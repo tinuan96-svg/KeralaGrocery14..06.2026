@@ -299,7 +299,7 @@ export default function ProductApprovalPage() {
     { label: 'Total Products', value: stats?.total ?? '—',        bg: 'bg-gray-50',   text: 'text-gray-900' },
     { label: 'Draft',          value: stats?.draft ?? '—',        bg: 'bg-amber-50',  text: 'text-amber-700' },
     { label: 'Approved',       value: stats?.approved ?? '—',     bg: 'bg-green-50',  text: 'text-green-700' },
-    { label: 'Rejected',       value: stats?.rejected ?? '—',     bg: 'bg-red-50',    text: 'text-red-700' },
+    { label: 'Deleted/Hidden', value: stats?.deleted ?? '—',      bg: 'bg-red-50',    text: 'text-red-700' },
     { label: 'Missing Fields', value: stats?.missingFields ?? '—', bg: 'bg-orange-50', text: 'text-orange-700' },
   ];
 

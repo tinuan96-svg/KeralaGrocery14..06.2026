@@ -44,27 +44,31 @@ export async function POST(req: NextRequest) {
       // Ensure fields match CentralHub format
       const productUpsert = {
         id: productData.id,
-        sku: productData.sku,
+        sku: productData.sku || null,
         name: productData.name,
         slug: productData.slug,
-        brand: productData.brand,
-        category: productData.category,
-        department: productData.department,
-        subcategory: productData.subcategory,
-        price: productData.price,
-        sale_price: productData.sale_price,
-        compare_at_price: productData.compare_at_price,
-        stock: productData.stock,
-        in_stock: productData.in_stock,
-        unit: productData.unit,
-        weight: productData.weight,
-        description: productData.description,
-        image_url: productData.image_url,
-        is_active: productData.is_active,
+        brand: productData.brand || null,
+        category: productData.category || 'Uncategorized',
+        department: productData.department || null,
+        subcategory: productData.subcategory || null,
+        price: productData.price || 0,
+        sale_price: productData.sale_price || null,
+        compare_at_price: productData.compare_at_price || null,
+        stock: productData.stock || 0,
+        in_stock: productData.in_stock ?? true,
+        unit: productData.unit || null,
+        weight: productData.weight || null,
+        description: productData.description || null,
+        image_url: productData.image_url || null,
+        is_active: productData.is_active ?? true,
         tags: productData.tags || [],
         custom_attributes: productData.custom_attributes || {},
-        warehouse_location: productData.warehouse_location,
-        gtin: productData.gtin,
+        warehouse_location: productData.warehouse_location || null,
+        gtin: productData.gtin || null,
+        is_deleted: false, // Ensure product is not marked as deleted if present in sync
+        // Auto-approve and show products from CentralHub master
+        approval_status: 'approved',
+        visibility_status: true,
         updated_at: new Date().toISOString(),
       };
 
@@ -72,7 +76,16 @@ export async function POST(req: NextRequest) {
         .from('products')
         .upsert(productUpsert, { onConflict: 'id' });
 
-      if (pError) throw pError;
+      if (pError) {
+        console.error('Product Upsert Error:', pError.message);
+        await supabase.from('sync_errors').insert({
+          external_id: productData.id,
+          entity_type: 'product',
+          error_message: pError.message,
+          payload: record,
+        });
+        throw pError;
+      }
 
       // Handle variants
       if (Array.isArray(variants) && variants.length > 0) {
@@ -80,13 +93,13 @@ export async function POST(req: NextRequest) {
           id: v.id,
           product_id: productData.id,
           variant_name: v.variant_name,
-          price: v.price,
-          cost_price: v.cost_price,
-          stock: v.stock,
-          sku: v.sku,
-          barcode: v.barcode,
-          unit_value: v.unit_value,
-          unit_type: v.unit_type,
+          price: v.price || 0,
+          cost_price: v.cost_price || 0,
+          stock: v.stock || 0,
+          sku: v.sku || null,
+          barcode: v.barcode || null,
+          unit_value: v.unit_value || null,
+          unit_type: v.unit_type || null,
           is_active: v.is_active ?? true,
           updated_at: new Date().toISOString(),
         }));
@@ -95,7 +108,15 @@ export async function POST(req: NextRequest) {
           .from('product_variants')
           .upsert(variantsUpsert, { onConflict: 'id' });
 
-        if (vError) console.error('Error upserting variants:', vError);
+        if (vError) {
+          console.error('Variants Upsert Error:', vError.message);
+          await supabase.from('sync_errors').insert({
+            external_id: productData.id,
+            entity_type: 'variants',
+            error_message: vError.message,
+            payload: { product_id: productData.id, variants },
+          });
+        }
       }
     }
 
