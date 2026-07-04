@@ -261,6 +261,42 @@ Deno.serve(async (req: Request) => {
       if (cartClearError) console.error("[create-order] cart clear failed:", cartClearError);
     }
 
+    // ── Transmit Order to CentralHub ──────────────────────────────────────────
+    const centralhubWebhookUrl = Deno.env.get("CENTRALHUB_ORDER_WEBHOOK_URL");
+    const centralhubSecret = Deno.env.get("CENTRALHUB_WEBHOOK_SECRET");
+
+    if (centralhubWebhookUrl) {
+      EdgeRuntime.waitUntil(
+        fetch(centralhubWebhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-webhook-secret": centralhubSecret || "",
+          },
+          body: JSON.stringify({
+            type: "INSERT",
+            record: {
+              ...order,
+              items: orderItems,
+            },
+          }),
+        }).then(async (res) => {
+          if (res.ok) {
+            const result = await res.json();
+            if (result.external_order_id) {
+              await supabase
+                .from("orders")
+                .update({ external_order_id: result.external_order_id })
+                .eq("id", order.id);
+            }
+            console.log(`[create-order] Order ${orderNumber} transmitted to CentralHub`);
+          } else {
+            console.error(`[create-order] CentralHub transmission failed: ${res.status}`);
+          }
+        }).catch(err => console.error("[create-order] CentralHub transmission error:", err))
+      );
+    }
+
     return respond(200, {
       success: true,
       order: { id: order.id, order_number: order.order_number, total: serverTotal },
