@@ -78,7 +78,7 @@ const PROTECTED_FIELDS = new Set([
   "category_id", "image_url", "image_main", "image_medium", "image_thumbnail",
   "image_large", "image_path", "enhanced_image_url", "description",
   "short_description", "seo_title", "seo_description", "seo_keywords",
-  "compare_price", "original_price", "approval_status", "visibility_status",
+  "compare_price", "original_price",
   "is_featured", "is_deal", "is_new_arrival", "is_bestseller",
 ]);
 
@@ -168,11 +168,15 @@ async function applyProductUpdate(
     is_active: hp.is_active ?? true,
     last_sync_at: now,
     updated_at: now,
+    // Auto-approve and show products from CentralHub master
+    approval_status: 'approved',
+    visibility_status: true,
   };
 
   // Visibility status logic: if is_active is false or is_archived is true, hide it
   if (hp.is_active === false || hp.is_archived === true) {
     productData.visibility_status = false;
+    productData.approval_status = 'rejected';
   }
 
   let localId: string;
@@ -238,8 +242,6 @@ async function applyProductUpdate(
       source_product_id: hpId,
       name: hp.name,
       slug: finalSlug,
-      approval_status: "draft",
-      visibility_status: false,
       created_at: now,
     }).select("id").single();
 
