@@ -411,7 +411,7 @@ export default function SyncMonitorPage() {
               </div>
               <div className="p-2.5 bg-white/50 border border-amber-100 rounded-lg">
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest block mb-1">Step 2: Security Header</span>
-                <p className="text-xs text-gray-700">Ensure the <strong>x-webhook-secret</strong> header is sent from CentralHub.</p>
+                <p className="text-xs text-gray-700">Ensure the <strong>x-webhook-secret</strong> header is sent from CentralHub with value: <code className="bg-white px-1 rounded border border-amber-200">kerala</code></p>
               </div>
             </div>
           </div>

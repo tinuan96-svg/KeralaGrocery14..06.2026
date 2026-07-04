@@ -7,10 +7,13 @@
  *   { action: 'sync_diagnostics' }                        — detailed out-of-sync report
  *   { action: 'diagnostics' }                             — basic connection + counts
  *   { action: 'backfill' }                                — link existing products to CentralHub by name match
+ *   { action: 'sync_orders' }                             — push existing local orders to CentralHub
  *
  * Environment variables (auto-provided or set as secrets):
  *   CENTRALHUB_API_URL          — CentralHub Supabase project URL
  *   CENTRALHUB_API_KEY          — CentralHub anon/publishable key
+ *   CENTRALHUB_ORDER_WEBHOOK_URL — Outbound URL for orders
+ *   CENTRALHUB_WEBHOOK_SECRET    — Shared secret
  *   SUPABASE_URL                — auto-provided
  *   SUPABASE_SERVICE_ROLE_KEY   — auto-provided
  */
@@ -1022,6 +1025,78 @@ Deno.serve(async (req: Request) => {
       return new Response(JSON.stringify({ report, total: report.length }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // ── sync_orders ──────────────────────────────────────────────────────────
+    if (action === "sync_orders") {
+      const orderWebhookUrl = Deno.env.get("CENTRALHUB_ORDER_WEBHOOK_URL");
+      const webhookSecret = Deno.env.get("CENTRALHUB_WEBHOOK_SECRET");
+
+      if (!orderWebhookUrl) {
+        return new Response(JSON.stringify({ error: "CENTRALHUB_ORDER_WEBHOOK_URL not configured" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Fetch all local orders that haven't been linked to CentralHub yet (optional filter)
+      // For now, we fetch all active orders.
+      const { data: orders, error: ordersErr } = await supabase
+        .from("orders")
+        .select("*, order_items(*)")
+        .order("created_at", { ascending: false });
+
+      if (ordersErr) {
+        return new Response(JSON.stringify({ error: ordersErr.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+      const orderErrors: string[] = [];
+
+      for (const order of (orders ?? [])) {
+        try {
+          const res = await fetch(orderWebhookUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-webhook-secret": webhookSecret || "",
+            },
+            body: JSON.stringify({
+              type: "INSERT",
+              record: {
+                ...order,
+                items: order.order_items,
+              },
+            }),
+          });
+
+          if (res.ok) {
+            const result = await res.json();
+            if (result.external_order_id) {
+              await supabase
+                .from("orders")
+                .update({ external_order_id: result.external_order_id })
+                .eq("id", order.id);
+            }
+            successCount++;
+          } else {
+            failCount++;
+            orderErrors.push(`Order ${order.order_number}: HTTP ${res.status}`);
+          }
+        } catch (e) {
+          failCount++;
+          orderErrors.push(`Order ${order.order_number}: ${(e as Error).message}`);
+        }
+      }
+
+      return new Response(JSON.stringify({
+        total: (orders ?? []).length,
+        success: successCount,
+        failed: failCount,
+        errors: orderErrors.slice(0, 50),
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ error: `Unknown action: ${action}` }), {

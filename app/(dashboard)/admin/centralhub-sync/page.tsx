@@ -5,7 +5,7 @@ import { getSupabase } from '@/lib/supabase/client';
 import {
   RefreshCw, CheckCircle2, XCircle, AlertTriangle, Loader2,
   Database, Server, ArrowDown, Clock, Package, Link2, Unlink,
-  Copy, AlertCircle, ChevronDown, ChevronUp, Zap,
+  Copy, AlertCircle, ChevronDown, ChevronUp, Zap, ShoppingCart,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -453,6 +453,10 @@ export default function CentralHubSyncPage() {
   const [backfillResult, setBackfillResult] = useState<BackfillResult | null>(null);
   const [backfillError, setBackfillError] = useState<string | null>(null);
 
+  const [syncingOrders, setSyncingOrders] = useState(false);
+  const [orderSyncResult, setOrderSyncResult] = useState<any>(null);
+  const [orderSyncError, setOrderSyncError] = useState<string | null>(null);
+
   const loadDiagnostics = useCallback(async () => {
     setDiagLoading(true);
     setDiagError(null);
@@ -497,6 +501,16 @@ export default function CentralHubSyncPage() {
     loadDiagnostics();
   };
 
+  const handleSyncOrders = async () => {
+    setSyncingOrders(true);
+    setOrderSyncResult(null);
+    setOrderSyncError(null);
+    const { data, error } = await callEdgeFn({ action: 'sync_orders' });
+    if (error) setOrderSyncError(error);
+    else setOrderSyncResult(data);
+    setSyncingOrders(false);
+  };
+
   const apiOk = diag?.apiConnected === true;
   const notConfigured = diag?.apiError?.includes('not configured');
 
@@ -530,10 +544,46 @@ export default function CentralHubSyncPage() {
             {backfilling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
             {backfilling ? 'Backfilling…' : 'Backfill Links'}
           </button>
+
+          {/* Sync Orders */}
+          <button
+            onClick={handleSyncOrders}
+            disabled={syncingOrders || !apiOk}
+            title="Push all existing local orders to CentralHub"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {syncingOrders ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShoppingCart className="w-4 h-4" />}
+            {syncingOrders ? 'Syncing Orders…' : 'Sync Old Orders'}
+          </button>
         </div>
       </div>
 
       {/* Result banners */}
+      {orderSyncResult && (
+        <div className="mb-5 px-4 py-3 bg-blue-50 border border-blue-200 rounded-2xl">
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <span className="text-sm font-semibold text-blue-800">Order Sync Complete</span>
+            <button onClick={() => setOrderSyncResult(null)} className="text-gray-400 hover:text-gray-600 ml-auto">
+              <XCircle className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-white rounded-xl px-2 py-2 text-center">
+              <p className="text-base font-bold text-gray-900">{orderSyncResult.total}</p>
+              <p className="text-[10px] text-gray-500 leading-tight">Processed</p>
+            </div>
+            <div className="bg-white rounded-xl px-2 py-2 text-center">
+              <p className="text-base font-bold text-green-600">{orderSyncResult.success}</p>
+              <p className="text-[10px] text-gray-500 leading-tight">Succeeded</p>
+            </div>
+            <div className="bg-white rounded-xl px-2 py-2 text-center">
+              <p className={`text-base font-bold ${orderSyncResult.failed > 0 ? 'text-red-600' : 'text-gray-900'}`}>{orderSyncResult.failed}</p>
+              <p className="text-[10px] text-gray-500 leading-tight">Failed</p>
+            </div>
+          </div>
+        </div>
+      )}
       {syncResult && !syncError && (
         <ResultBanner result={syncResult} onDismiss={() => setSyncResult(null)} />
       )}
