@@ -1,0 +1,908 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * ── Dynamic Theme Accent ───────────────────────────────────────────────────
+ * Register CSS custom properties so Chrome can smoothly interpolate them
+ * when JS writes new values (applyAccent() in lib/utils/themeAccent.ts).
+ * Browsers that don't support @property fall back to instant colour swaps.
+ *
+ * --ka-c      primary accent colour  (icons, active dots)
+ * --ka-bg     ultra-light section tint  (top gradient on sections)
+ * --ka-border border / ring accent colour
+ * --ka-text   dark readable accent text  (View All, timers)
+ */
+@property --ka-c {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0B5D3B;
+}
+@property --ka-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ECFDF5;
+}
+@property --ka-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #6EE7B7;
+}
+@property --ka-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #065F46;
+}
+
+@layer base {
+  :root {
+    /* ── KG Design tokens ──────────────────────────────────────────────── */
+    /* Surfaces */
+    --background: 150 20% 98%;
+    --foreground: 150 15% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 15% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 15% 12%;
+
+    /* Brand: deep forest green #0B5D3B → hsl(152 72% 21%) */
+    --primary: 152 72% 21%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: lighter green */
+    --secondary: 152 45% 92%;
+    --secondary-foreground: 152 72% 21%;
+
+    /* Muted surfaces */
+    --muted: 150 25% 96%;
+    --muted-foreground: 150 8% 48%;
+
+    /* Accent: lime green #6FDB2F → hsl(97 69% 52%) */
+    --accent: 97 69% 52%;
+    --accent-foreground: 150 15% 10%;
+
+    /* Semantic */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 150 15% 90%;
+    --input: 150 15% 90%;
+    --ring: 152 72% 21%;
+    --radius: 0.875rem;
+
+    /* Legacy compat */
+    --orange: 27 96% 61%;
+    --orange-foreground: 0 0% 100%;
+    --cream: 150 20% 98%;
+    --green-deep: 152 72% 21%;
+    --green-leaf: 152 60% 45%;
+
+    /* ── KG brand constants ────────────────────────────────────────────── */
+    --kg-green:        #0B5D3B;
+    --kg-green-dark:   #0a3d22;
+    --kg-green-deeper: #071f12;
+    --kg-green-mid:    #0d6b44;
+    --kg-lime:         #6FDB2F;
+    --kg-lime-soft:    #e8fad4;
+    --kg-surface:      #f4faf6;
+    --kg-border:       #d1ead9;
+
+    /* Dynamic accent — initial values match KG brand green */
+    --ka-c:      #0B5D3B;
+    --ka-bg:     #ECFDF5;
+    --ka-border: #6EE7B7;
+    --ka-text:   #065F46;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  /*
+   * ── Touch / mobile baseline ──────────────────────────────────────────────────
+   * 1. Remove the grey flash on tap in iOS Safari and Android Chrome.
+   * 2. touch-action: manipulation kills the 300ms double-tap delay on all
+   *    interactive elements so taps feel instant.
+   * 3. Smooth momentum scrolling on iOS for all overflow containers.
+   * 4. overscroll-behavior-x: none prevents the browser swipe-back gesture from
+   *    firing when users horizontally swipe inside carousels.
+   */
+  html {
+    overscroll-behavior-x: none;
+    /* Ensure env() safe-area variables are available everywhere */
+    --safe-top:    env(safe-area-inset-top,    0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left:   env(safe-area-inset-left,   0px);
+    --safe-right:  env(safe-area-inset-right,  0px);
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    background-color: #f4faf6;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  label,
+  [tabindex] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Momentum scroll on all overflow containers */
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .overflow-auto,
+  .overflow-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer utilities {
+  /* ── KG Brand utilities ───────────────────────────────────────────────── */
+  .kg-surface {
+    background-color: var(--kg-surface);
+  }
+
+  .kg-border {
+    border-color: var(--kg-border);
+  }
+
+  .btn-brand {
+    background-color: var(--kg-green);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 0.875rem;
+    transition: background-color 150ms, transform 100ms, box-shadow 150ms;
+  }
+  .btn-brand:hover {
+    background-color: var(--kg-green-mid);
+    box-shadow: 0 4px 16px rgba(11,93,59,0.25);
+  }
+  .btn-brand:active {
+    transform: scale(0.96);
+  }
+
+  .btn-brand-outline {
+    border: 2px solid var(--kg-green);
+    color: var(--kg-green);
+    font-weight: 700;
+    border-radius: 0.875rem;
+    transition: background-color 150ms, color 150ms, transform 100ms;
+    background: transparent;
+  }
+  .btn-brand-outline:hover {
+    background-color: var(--kg-surface);
+  }
+  .btn-brand-outline:active {
+    transform: scale(0.96);
+  }
+
+  .card-kg {
+    background: #fff;
+    border: 1.5px solid var(--kg-border);
+    border-radius: 1.125rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: border-color 200ms, box-shadow 200ms, transform 200ms;
+  }
+  .card-kg:hover {
+    border-color: rgba(11, 93, 59, 0.25);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+    transform: translateY(-1px);
+  }
+
+  .badge-lime {
+    background-color: var(--kg-lime);
+    color: #0a3d22;
+    font-weight: 800;
+    border-radius: 9999px;
+    padding: 2px 7px;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .badge-deal {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff4500 100%);
+    color: #fff;
+    font-weight: 800;
+    border-radius: 9999px;
+    padding: 2px 7px;
+    font-size: 10px;
+    box-shadow: 0 2px 6px rgba(255, 107, 0, 0.35);
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .hover-glow-green {
+    @apply hover:shadow-[0_0_20px_rgba(34,197,94,0.3)];
+  }
+
+  .hover-glow-orange {
+    @apply hover:shadow-[0_0_20px_rgba(251,146,60,0.3)];
+  }
+
+  .gradient-green {
+    background: linear-gradient(135deg, var(--kg-green-dark) 0%, var(--kg-green) 50%, var(--kg-green-mid) 100%);
+  }
+
+  .gradient-orange {
+    @apply bg-gradient-to-br from-orange-500 to-orange-600;
+  }
+
+  .gradient-bg-light {
+    background: linear-gradient(135deg, var(--kg-surface) 0%, #fff 60%);
+  }
+
+  .section-cream {
+    background-color: var(--kg-surface);
+  }
+
+  .section-green-tint {
+    background-color: #edfaf3;
+  }
+
+  /* Input focus ring */
+  .input-brand:focus {
+    outline: none;
+    border-color: var(--kg-green);
+    box-shadow: 0 0 0 3px rgba(11, 93, 59, 0.12);
+  }
+
+  /* ── Accent-driven utilities ──────────────────────────────────────────────
+   * Elements using these classes automatically animate when the banner
+   * changes and applyAccent() updates the --ka-* CSS custom properties.
+   * The transition is on the CSS *property* (color/background-color etc.),
+   * not on the custom property itself — this works in all browsers.
+   * Chrome/Edge 111+ also interpolates the custom properties directly via
+   * @property registration above, giving even smoother results.
+   * ─────────────────────────────────────────────────────────────────────── */
+
+  /* Section-level top gradient tint */
+  .ka-section {
+    background: linear-gradient(180deg, var(--ka-bg) 0px, #ffffff 56px);
+    transition: background 700ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Icons adjacent to section headings */
+  .ka-icon {
+    color: var(--ka-c);
+    transition: color 600ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* "View All" pill buttons */
+  .ka-view-all {
+    color: var(--ka-text);
+    background-color: var(--ka-bg);
+    border-color: var(--ka-border);
+    transition: color 600ms cubic-bezier(0.4,0,0.2,1),
+                background-color 600ms cubic-bezier(0.4,0,0.2,1),
+                border-color 600ms cubic-bezier(0.4,0,0.2,1);
+  }
+  .ka-view-all:hover {
+    filter: brightness(0.96);
+  }
+
+  /* Countdown / timer text */
+  .ka-timer {
+    color: var(--ka-c);
+    transition: color 600ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Floating button glow — uses color-mix() for alpha over the accent */
+  .ka-glow {
+    box-shadow:
+      0 8px 28px color-mix(in srgb, var(--ka-c) 38%, transparent),
+      0 2px 8px rgba(0, 0, 0, 0.12);
+    transition: box-shadow 700ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Wallet / loyalty accent highlight */
+  .ka-wallet-bar {
+    background: linear-gradient(90deg, var(--ka-c), var(--ka-border));
+    transition: background 700ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Active dot indicators */
+  .ka-dot-active {
+    background-color: var(--ka-c);
+    transition: background-color 600ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .text-gradient-green {
+    @apply bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-orange {
+    @apply bg-gradient-to-r from-orange-600 to-yellow-500 bg-clip-text text-transparent;
+  }
+
+  .btn-press {
+    @apply active:scale-95 transition-transform duration-100;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*
+   * Force fixed/floating UI elements onto their own GPU compositor layer.
+   * This prevents iOS Safari's momentum scroll from visually dragging
+   * elements that have position:fixed — the most common cause of
+   * "fixed nav scrolls with content" on mobile.
+   */
+  .fixed-gpu {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)];
+  }
+
+  .hover-lift-sm {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md;
+  }
+
+  /* Rendered product descriptions from HTML (OpenAI-generated) */
+  .prose-description h1,
+  .prose-description h2,
+  .prose-description h3,
+  .prose-description h4,
+  .prose-description h5,
+  .prose-description h6 {
+    @apply font-bold text-gray-900 mt-4 mb-2 leading-snug;
+  }
+  .prose-description h1 { @apply text-xl; }
+  .prose-description h2 { @apply text-lg; }
+  .prose-description h3 { @apply text-base; }
+  .prose-description h4,
+  .prose-description h5,
+  .prose-description h6 { @apply text-sm; }
+  .prose-description p {
+    @apply text-gray-600 leading-relaxed mb-3;
+  }
+  .prose-description ul {
+    @apply list-disc list-inside space-y-1 mb-3 text-gray-600;
+  }
+  .prose-description ol {
+    @apply list-decimal list-inside space-y-1 mb-3 text-gray-600;
+  }
+  .prose-description li {
+    @apply text-sm leading-relaxed;
+  }
+  .prose-description strong,
+  .prose-description b {
+    @apply font-semibold text-gray-800;
+  }
+  .prose-description em,
+  .prose-description i {
+    @apply italic;
+  }
+  .prose-description a {
+    @apply text-green-700 underline underline-offset-2 hover:text-green-800;
+  }
+  .prose-description blockquote {
+    @apply border-l-4 border-green-200 pl-4 italic text-gray-500 my-3;
+  }
+  .prose-description hr {
+    @apply border-gray-200 my-4;
+  }
+  .prose-description > *:first-child {
+    @apply mt-0;
+  }
+  .prose-description > *:last-child {
+    @apply mb-0;
+  }
+
+  /* Compact variant for modals / cards */
+  .prose-description-sm p,
+  .prose-description-sm li {
+    @apply text-sm;
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtle page-enter: content slides up 6px and fades in */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.page-enter {
+  animation: page-enter 0.22s ease-out both;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.8s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.8s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Responsive safe-area utilities ─────────────────────────────────────── */
+/* Use these classes instead of hardcoded px values for bottom/top padding  */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-nav-safe {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Ensure nothing is ever wider than the viewport on small screens */
+.responsive-container {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Fluid product grid — 2 cols on phones, 3 on tablets, 4-5 on desktop */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+@media (min-width: 480px) {
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+}
+@media (min-width: 640px) {
+  .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 1280px) {
+  .product-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+/* Equal-height cards in the product grid */
+.product-grid > * {
+  height: 100%;
+}
+
+
+@keyframes banner-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(1deg); }
+  66% { transform: translateY(-4px) rotate(-1deg); }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out;
+}
+
+.animate-float-slow {
+  animation: float-slow 5s ease-in-out infinite;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+
+@keyframes cart-bounce {
+  0%   { transform: scale(1)    rotate(0deg);  }
+  18%  { transform: scale(1.28) rotate(-10deg); }
+  36%  { transform: scale(1.14) rotate(8deg);  }
+  54%  { transform: scale(1.22) rotate(-5deg); }
+  72%  { transform: scale(1.08) rotate(3deg);  }
+  100% { transform: scale(1)    rotate(0deg);  }
+}
+
+.animate-cart-bounce {
+  animation: cart-bounce 0.62s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ── Announcement bar slide animations ──────────────────────────────────────── */
+@keyframes slide-in-down {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: translateY(0);      }
+}
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+@keyframes slide-out-up {
+  from { opacity: 1; transform: translateY(0);     }
+  to   { opacity: 0; transform: translateY(-100%); }
+}
+@keyframes slide-out-down {
+  from { opacity: 1; transform: translateY(0);    }
+  to   { opacity: 0; transform: translateY(100%); }
+}
+
+.animate-slide-in-down  { animation: slide-in-down  0.28s ease-out both; }
+.animate-slide-in-up    { animation: slide-in-up    0.28s ease-out both; }
+.animate-slide-out-up   { animation: slide-out-up   0.24s ease-in  both; }
+.animate-slide-out-down { animation: slide-out-down 0.24s ease-in  both; }
+
+/* ── Capacitor / Native shell overrides ──────────────────────────────────── */
+
+/* Android native: hide the web header and mobile nav because the Android
+   activity_main.xml provides a native header (AppBarLayout) and a native
+   BottomNavigationView that replace them. */
+html.is-native.is-android .kg-web-header,
+html.is-native.is-android .kg-mobile-nav {
+  display: none !important;
+}
+
+/* iOS native: the web header and mobile nav ARE shown — there is no native
+   iOS chrome to replace them. Hide only presentational banners. */
+html.is-native .kg-announcement-bar,
+html.is-native .kg-cookie-banner,
+html.is-native.is-ios .kg-google-play-section,
+html.is-native.is-ios .kg-app-links-section,
+html.is-native.is-ios .hidden-on-ios {
+  display: none !important;
+}
+
+/* iOS native: let the web header extend behind the status bar / Dynamic Island.
+   The header's padding-top absorbs the safe-area inset so its content
+   stays below the status bar. Body top padding is cleared to prevent a
+   double offset (the header is in normal flow so it reserves that space). */
+html.is-native.is-ios .kg-web-header {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* When status bar overlays the web view (is-ios), the header
+   height expands by the safe-area, so the total visual nav height increases.
+   Compensate main content so nothing slides behind the extended header. */
+html.is-native.is-ios main {
+  padding-top: 0 !important;
+}
+
+html.is-native.is-ios body {
+  padding-top: 0 !important;
+}
+
+/* Android / generic native body safe-area baseline. */
+html.is-native body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Disable tap highlight on native to feel more app-like. */
+html.is-native * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Disable text selection across the native app (UX expectation). */
+html.is-native body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Re-enable selection for inputs and product descriptions. */
+html.is-native input,
+html.is-native textarea,
+html.is-native [data-selectable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Keyboard avoidance: when Capacitor Keyboard plugin fires, it resizes
+   the viewport height. Ensure forms / bottom sheets scroll correctly. */
+html.is-native .keyboard-aware {
+  transition: padding-bottom 200ms ease;
+}
+
+/* Samsung Fold / tablet: wider content areas when unfolded (≥600px) */
+@media (min-width: 600px) and (max-width: 900px) {
+  html.is-native .kg-mobile-nav .grid {
+    max-width: 540px;
+    margin: 0 auto;
+  }
+}
+
+/* Landscape orientation safe: prevent content from being clipped on
+   devices with a notch / punch-hole in landscape mode. */
+@media (orientation: landscape) {
+  html.is-native body {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+/* ── Comprehensive device-responsive layout system ─────────────────────── */
+
+/* 1. Fluid typography — scales smoothly between phone and desktop */
+:root {
+  --text-xs:   clamp(0.625rem, 1.5vw, 0.75rem);
+  --text-sm:   clamp(0.75rem,  1.8vw, 0.875rem);
+  --text-base: clamp(0.875rem, 2vw,   1rem);
+  --text-lg:   clamp(1rem,     2.5vw, 1.125rem);
+  --text-xl:   clamp(1.125rem, 3vw,   1.25rem);
+  --text-2xl:  clamp(1.25rem,  3.5vw, 1.5rem);
+  --text-3xl:  clamp(1.5rem,   4vw,   1.875rem);
+  --text-4xl:  clamp(1.875rem, 5vw,   2.25rem);
+
+  /* Fluid spacing */
+  --space-xs:  clamp(0.25rem, 1vw,  0.5rem);
+  --space-sm:  clamp(0.5rem,  2vw,  0.75rem);
+  --space-md:  clamp(0.75rem, 2.5vw, 1rem);
+  --space-lg:  clamp(1rem,    3vw,   1.5rem);
+  --space-xl:  clamp(1.5rem,  4vw,   2rem);
+
+  /* Mobile nav height — exposed for JS/CSS calculations */
+  --nav-height: 60px;
+  --header-height: 60px;
+  --announcement-bar-height: 36px;
+}
+
+/* 2. Prevent global horizontal overflow */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* 3. Page content bottom clearance — accounts for mobile nav + safe area */
+.page-bottom-safe {
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 1rem);
+}
+
+/* Desktop override */
+@media (min-width: 1024px) {
+  .page-bottom-safe {
+    padding-bottom: 0;
+  }
+}
+
+/* 4. Fluid section padding — comfortable on all screen sizes */
+.section-pad {
+  padding-left: clamp(0.75rem, 4vw, 2rem);
+  padding-right: clamp(0.75rem, 4vw, 2rem);
+  padding-top: clamp(1rem, 3vw, 2rem);
+  padding-bottom: clamp(1rem, 3vw, 2rem);
+}
+
+/* 5. Image aspect-ratio normalization — avoids layout shift */
+.img-product {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  object-fit: contain;
+}
+
+/* 6. Keyboard avoidance for forms */
+.form-keyboard-aware {
+  padding-bottom: env(keyboard-inset-height, 0px);
+  transition: padding-bottom 200ms ease-out;
+}
+
+/* 7. Tablet-optimized grids (480px–1023px) */
+@media (min-width: 480px) and (max-width: 639px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+/* 8. Foldable / Samsung Fold inner display (360–520px) */
+@media (min-width: 360px) and (max-width: 520px) {
+  :root { --nav-height: 58px; }
+}
+
+/* 9. Landscape phones — shorten header, expand horizontal space */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --header-height: 50px;
+    --nav-height: 52px;
+  }
+  .kg-web-header .flex.h-\[60px\] {
+    height: 50px !important;
+  }
+  .kg-mobile-nav .grid {
+    height: 52px !important;
+  }
+  /* Wider content: reduce horizontal padding */
+  .page-bottom-safe,
+  .section-pad {
+    padding-left: clamp(0.5rem, 3vw, 1.5rem);
+    padding-right: clamp(0.5rem, 3vw, 1.5rem);
+  }
+}
+
+/* 10. Large tablets / iPad (≥768px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* 11. Unfolded foldable tablet (≥820px) */
+@media (min-width: 820px) and (max-width: 1180px) {
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* 12. Dynamic Island / notch top padding for sticky header */
+.header-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* 13. Scrollable areas with inertia on all iOS versions */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* 14. Horizontal carousels — prevent page bounce-back */
+.carousel-track {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+.carousel-item { scroll-snap-align: start; }
+
+/* 15. Equal-height card grids */
+.equal-height-grid {
+  display: grid;
+  align-items: stretch;
+}
+.equal-height-grid > * {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 16. Bottom sheet / drawer safe area */
+.sheet-bottom-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+}
+
+/* 17. Input focus — prevent viewport zoom on iOS (font-size ≥ 16px) */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+textarea,
+select {
+  font-size: max(16px, 1rem);
+}
+
+/* 18. Prevent long words from breaking layout */
+.text-break {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
