@@ -30,10 +30,11 @@ export async function POST(req: NextRequest) {
     if (type === 'DELETE') {
       const id = record?.id || old_record?.id;
       if (id) {
+        // Match by centralhub_product_id as the primary sync key
         await supabase
           .from('products')
           .update({ is_deleted: true, is_active: false })
-          .eq('id', id);
+          .eq('centralhub_product_id', id);
       }
       return NextResponse.json({ ok: true }, { headers: corsHeaders });
     }
@@ -41,10 +42,20 @@ export async function POST(req: NextRequest) {
     if (type === 'INSERT' || type === 'UPDATE') {
       const { variants, ...productData } = record;
 
+      // Check if product already exists locally by CentralHub ID to avoid duplicates
+      // if the local primary key (id) differs from the CentralHub UUID.
+      const { data: existing } = await supabase
+        .from('products')
+        .select('id')
+        .eq('centralhub_product_id', productData.id)
+        .maybeSingle();
+
+      const targetId = existing?.id || productData.id;
+
       // Ensure fields match CentralHub format
       const productUpsert = {
-        id: productData.id,
-        centralhub_product_id: productData.id, // Ensure we store the sync identifier
+        id: targetId,
+        centralhub_product_id: productData.id,
         sku: productData.sku || null,
         name: productData.name,
         slug: productData.slug,
@@ -93,7 +104,7 @@ export async function POST(req: NextRequest) {
       if (Array.isArray(variants) && variants.length > 0) {
         const variantsUpsert = variants.map((v: any) => ({
           id: v.id,
-          product_id: productData.id,
+          product_id: targetId, // Use the resolved local product ID
           variant_name: v.variant_name,
           price: v.price || 0,
           cost_price: v.cost_price || 0,
