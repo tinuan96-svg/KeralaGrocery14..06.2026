@@ -51,6 +51,8 @@ export default function SMSNotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [retryingLog, setRetryingLog] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
@@ -66,23 +68,44 @@ export default function SMSNotificationsPage() {
 
       if (settingsData) setSettings(settingsData);
 
-      // Load logs
+      // Load logs using the view for better searching
       let query = supabase
-        .from('sms_logs')
-        .select('*, orders(order_number, customer_name)')
+        .from('sms_logs_with_details')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
       }
 
+      if (startDate) {
+        query = query.gte('created_at', new Date(startDate).toISOString());
+      }
+
+      if (endDate) {
+        // Add one day to end date to include the whole day
+        const end = new Date(endDate);
+        end.setDate(end.getDate() + 1);
+        query = query.lt('created_at', end.toISOString());
+      }
+
       if (searchQuery) {
-        query = query.or(`phone_number.ilike.%${searchQuery}%,message.ilike.%${searchQuery}%`);
+        query = query.or(`phone_number.ilike.%${searchQuery}%,message.ilike.%${searchQuery}%,order_number.ilike.%${searchQuery}%,order_customer_name.ilike.%${searchQuery}%`);
       }
 
       const { data: logData } = await query.limit(100);
 
-      if (logData) setLogs(logData as any);
+      if (logData) {
+        // Transform the data to match the expected interface if necessary
+        const transformedLogs = logData.map(log => ({
+          ...log,
+          orders: {
+            order_number: log.order_number,
+            customer_name: log.order_customer_name
+          }
+        }));
+        setLogs(transformedLogs as any);
+      }
     } catch (err) {
       console.error('Error loading SMS data:', err);
       toast.error('Failed to load data');
@@ -246,6 +269,24 @@ export default function SMSNotificationsPage() {
               <option value="sent">Sent</option>
               <option value="failed">Failed</option>
             </select>
+
+            <div className="flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-xl px-3 py-1">
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="bg-transparent text-xs text-white focus:outline-none"
+                title="Start Date"
+              />
+              <span className="text-gray-600">-</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="bg-transparent text-xs text-white focus:outline-none"
+                title="End Date"
+              />
+            </div>
 
             <button
               onClick={loadData}
