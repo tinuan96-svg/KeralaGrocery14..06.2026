@@ -29,12 +29,13 @@ interface ProductRow {
 }
 
 async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
+  // Force Refresh: 2026-07-06 07:46
   const supabase = createServerSupabaseClient();
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
   let query = supabase
     .from('products')
-    .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id, categories(name)')
+    .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id')
     .eq('approval_status', 'approved')
     .eq('visibility_status', true);
 

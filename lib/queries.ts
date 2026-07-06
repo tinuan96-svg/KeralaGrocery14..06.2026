@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from './supabase/server';
 import type { Category, ProductWithDetails } from './types/database';
 
+// Force Refresh: 2026-07-06 07:45
 const PRODUCTS_SELECT = `
   id,
   name,
@@ -25,9 +26,7 @@ const PRODUCTS_SELECT = `
   discount_percentage,
   created_at,
   category_id,
-  brand_id,
-  categories(id, name, slug, icon, sort_order),
-  brands(id, name, slug, logo_url, sort_order)
+  brand_id
 `;
 
 export function mapProduct(p: any): ProductWithDetails {
@@ -79,8 +78,7 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getAllProducts(): Promise<ProductWithDetails[]> {
-  const supabase = createServerSupabaseClient();
-  const { data, error } = await supabase
+    const { data, error } = await supabase
     .from('products')
     .select(PRODUCTS_SELECT)
     .eq('is_deleted', false)
@@ -93,5 +91,25 @@ export async function getAllProducts(): Promise<ProductWithDetails[]> {
     console.error('Error fetching products:', error);
     return [];
   }
-  return (data || []).map(mapProduct);
+
+  const products = (data || []).map(mapProduct);
+
+  // Manually map categories and brands
+  try {
+    const [catRes, brandRes] = await Promise.all([
+      supabase.from('categories').select('id, name, slug, icon, sort_order'),
+      supabase.from('brands').select('id, name, slug, logo_url, sort_order').catch(() => ({ data: null })),
+    ]);
+    const catMap = new Map((catRes.data || []).map(c => [c.id, c]));
+    const brandMap = new Map((brandRes?.data || []).map(b => [b.id, b]));
+
+    products.forEach(p => {
+      if (p.category_id) p.category = catMap.get(p.category_id);
+      if (p.brand_id) p.brand = brandMap.get(p.brand_id);
+    });
+  } catch (mapErr) {
+    console.warn('[queries] mapping failed:', mapErr);
+  }
+
+  return products;
 }

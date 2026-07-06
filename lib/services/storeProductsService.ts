@@ -1,6 +1,7 @@
 import { getSupabase } from '@/lib/supabase/client';
 import type { ProductWithDetails, Category } from '@/lib/types/database';
 
+// Force Refresh: 2026-07-06 07:45
 const PRODUCTS_SELECT = `
   id,
   name,
@@ -25,9 +26,7 @@ const PRODUCTS_SELECT = `
   sold_count,
   created_at,
   category_id,
-  brand_id,
-  categories(id, name, slug),
-  brands(id, name, slug, logo_url)
+  brand_id
 `;
 
 function mapProduct(p: any): ProductWithDetails {
@@ -96,7 +95,26 @@ export async function fetchStoreProducts(
       return { products: [], error: error.message };
     }
 
-    return { products: (data || []).map(mapProduct), error: null };
+    const products = (data || []).map(mapProduct);
+
+    // Manually map categories and brands
+    try {
+      const [catRes, brandRes] = await Promise.all([
+        supabase.from('categories').select('id, name, slug'),
+        supabase.from('brands').select('id, name, slug, logo_url').catch(() => ({ data: null })),
+      ]);
+      const catMap = new Map((catRes.data || []).map(c => [c.id, c]));
+      const brandMap = new Map((brandRes?.data || []).map(b => [b.id, b]));
+
+      products.forEach(p => {
+        if (p.category_id) p.category = catMap.get(p.category_id);
+        if (p.brand_id) p.brand = brandMap.get(p.brand_id);
+      });
+    } catch (mapErr) {
+      console.warn('[storeProductsService] mapping failed:', mapErr);
+    }
+
+    return { products, error: null };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to load products';
     console.error('[storeProductsService] Unexpected error:', err);

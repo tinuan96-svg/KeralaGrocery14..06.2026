@@ -1,6 +1,7 @@
 /**
  * Products API Client — queries the products table directly via Supabase.
  * Uses simple flat queries (no embedded joins) to avoid PostgREST parsing issues.
+ * Force Refresh: 2026-07-06 07:46
  */
 
 import { getSupabase } from '@/lib/supabase/client';
@@ -339,10 +340,10 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
     const supabase = getSupabase();
 
     // Only include categories/brands that have at least one approved, visible, active product
-    const [catRes, brandRes, priceRes] = await Promise.all([
+    const [catRes, brandRes, priceRes, allCats] = await Promise.all([
       supabase
         .from('products')
-        .select('category_id, categories!inner(name, is_active)')
+        .select('category_id')
         .eq('approval_status', 'approved')
         .eq('visibility_status', true)
         .eq('is_active', true)
@@ -364,12 +365,20 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .eq('approval_status', 'approved')
         .eq('visibility_status', true)
         .eq('is_active', true),
+      supabase
+        .from('categories')
+        .select('id, name, is_active')
     ]);
 
+    const activeCatIds = new Set((allCats.data || []).filter(c => c.is_active).map(c => c.id));
+    const catNameMap = new Map((allCats.data || []).map(c => [c.id, c.name]));
+
     const catSet = new Set<string>();
-    for (const r of (catRes.data ?? []) as unknown as { categories: { name: string; is_active: boolean } | { name: string; is_active: boolean }[] }[]) {
-      const cat = Array.isArray(r.categories) ? r.categories[0] : r.categories;
-      if (cat?.is_active && cat?.name) catSet.add(cat.name);
+    for (const r of (catRes.data ?? []) as { category_id: string }[]) {
+      if (activeCatIds.has(r.category_id)) {
+        const name = catNameMap.get(r.category_id);
+        if (name) catSet.add(name);
+      }
     }
 
     const brdSet = new Set<string>();
