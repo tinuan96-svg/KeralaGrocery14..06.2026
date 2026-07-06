@@ -1,9 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 import { sendWelcomeNotification } from '@/lib/services/whatsappService';
+import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
 
 const USER_STORAGE_KEY = 'kerala-grocery-user';
 
@@ -152,7 +155,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })();
     });
 
-    return () => subscription.unsubscribe();
+    // ── Capacitor Native URL Handling ────────────────────────────────────────
+    // Listen for custom scheme redirects (e.g. kgapp://auth)
+    const setupNativeListener = async () => {
+      if (!Capacitor.isNativePlatform()) return;
+
+      const listener = await App.addListener('appUrlOpen', async (data) => {
+        console.log('[Auth] appUrlOpen event:', data.url);
+
+        // Handle kgapp://auth custom scheme
+        if (data.url.startsWith('kgapp://auth')) {
+          const url = new URL(data.url.replace('kgapp://auth', 'https://keralagrocery.com/auth/callback'));
+
+          // Close any open browser tabs (like the Google login tab)
+          await Browser.close().catch(() => {});
+
+          // Pass the URL parameters to Supabase to exchange for a session
+          const params = new URLSearchParams(url.search || url.hash.substring(1));
+          const code = params.get('code');
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+
+          if (code) {
+            await supabase.auth.exchangeCodeForSession(code);
+          } else if (accessToken && refreshToken) {
+            await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+          }
+        }
+      });
+
+      return () => listener.remove();
+    };
+
+    const cleanupNative = setupNativeListener();
+
+    return () => {
+      subscription.unsubscribe();
+      cleanupNative.then(fn => fn?.());
+    };
   }, []);
 
   // ── Auth methods ───────────────────────────────────────────────────────────
@@ -171,14 +214,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { data, error };
   };
 
-    const signInWithGoogle = async () => {
+  const signInWithGoogle = async () => {
     const supabase = getSupabase();
-
-    // Check for the flag we injected in Step 2
-    const isApp = /KeralaGroceryApp/i.test(navigator.userAgent) || (window as any).isKGApp === true;
+    const isApp = Capacitor.isNativePlatform();
     
-    // Use the custom scheme for the app, or standard URL for web
-    const redirectTo = isApp 
+    const redirectTo = isApp
       ? 'kgapp://auth' 
       : `${window.location.origin}/auth/callback`;
 
@@ -186,18 +226,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider: 'google',
       options: {
         redirectTo,
-        queryParams: { 
+        skipBrowserRedirect: isApp, // Important for Capacitor
+        queryParams: {
           access_type: 'offline', 
           prompt: 'select_account' 
         },
       },
     });
+
+    if (!error && isApp && data?.url) {
+      // Open in native browser context (Chrome Custom Tab / Safari View Controller)
+      await Browser.open({ url: data.url, windowName: '_self' });
+    }
+
     return { data, error };
   };
 
   const signInWithApple = async () => {
     const supabase = getSupabase();
-    const isApp = /KeralaGroceryApp/i.test(navigator.userAgent) || (window as any).isKGApp === true;
+    const isApp = Capacitor.isNativePlatform();
     const redirectTo = isApp
       ? 'kgapp://auth'
       : `${window.location.origin}/auth/callback`;
@@ -206,8 +253,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider: 'apple',
       options: {
         redirectTo,
+        skipBrowserRedirect: isApp,
       },
     });
+
+    if (!error && isApp && data?.url) {
+      await Browser.open({ url: data.url, windowName: '_self' });
+    }
+
     return { data, error };
   };
 
