@@ -27,6 +27,7 @@ interface NotificationRequest {
   message?: string;
   type?: string;
   orderNumber?: string;
+  channel?: 'whatsapp' | 'sms';
 }
 
 // ── Message builders ──────────────────────────────────────────────────────────
@@ -234,7 +235,7 @@ Deno.serve(async (req: Request) => {
     const smsFrom = rawSmsNum.replace(/^whatsapp:/, "");
 
     // Look up preferred channel to skip known-failing path
-    const preferred = await getPreferredChannel(supabase, phone);
+    const preferred = body.channel ?? await getPreferredChannel(supabase, phone);
     console.log(`[notify] phone=${phone} preferred=${preferred ?? "none"}`);
 
     // ── WhatsApp: try if preferred or unknown ─────────────────────────────────

@@ -53,7 +53,8 @@ const DRAWER_NAV = [
     items: [
       { href: '/admin/announcements',  label: 'Announcements',   icon: Megaphone },
       { href: '/admin/banners',         label: 'Banners',         icon: MonitorPlay },
-      { href: '/admin/sms-diagnostics', label: 'SMS Diagnostics', icon: MessageSquare },
+      { href: '/admin/sms-notifications', label: 'SMS Notifications', icon: MessageSquare },
+      { href: '/admin/sms-diagnostics', label: 'SMS Diagnostics', icon: Stethoscope },
     ],
   },
   {

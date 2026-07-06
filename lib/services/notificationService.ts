@@ -1,10 +1,12 @@
 type NotificationType = 'welcome' | 'order_placed' | 'order_shipped' | 'order_delivered' | 'order_cancelled';
+type NotificationChannel = 'whatsapp' | 'sms';
 
 interface SendNotificationParams {
   phone: string;
   type: NotificationType;
   orderNumber?: string;
   customMessage?: string;
+  channel?: NotificationChannel;
 }
 
 const formatPhoneNumber = (phone: string): string => {
@@ -43,11 +45,12 @@ const getMessageForType = (type: NotificationType, orderNumber?: string): string
   }
 };
 
-export const sendWhatsAppNotification = async ({
+export const sendNotification = async ({
   phone,
   type,
   orderNumber,
   customMessage,
+  channel,
 }: SendNotificationParams): Promise<{ success: boolean; error?: string }> => {
   try {
     const formattedPhone = formatPhoneNumber(phone);
@@ -74,12 +77,13 @@ export const sendWhatsAppNotification = async ({
         message,
         type,
         orderNumber,
+        channel,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('WhatsApp notification failed:', errorData);
+      console.error('Notification failed:', errorData);
       return { success: false, error: errorData.error || 'Failed to send notification' };
     }
 
@@ -91,7 +95,7 @@ export const sendWhatsAppNotification = async ({
 
     return { success: true };
   } catch (error) {
-    console.error('Error sending WhatsApp notification:', error);
+    console.error('Error sending notification:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -99,22 +103,29 @@ export const sendWhatsAppNotification = async ({
   }
 };
 
-export const sendWelcomeNotification = async (phone: string) => {
-  return sendWhatsAppNotification({ phone, type: 'welcome' });
+/**
+ * Legacy wrapper for backward compatibility
+ */
+export const sendWhatsAppNotification = async (params: SendNotificationParams) => {
+  return sendNotification(params);
 };
 
-export const sendOrderPlacedNotification = async (phone: string, orderNumber: string) => {
-  return sendWhatsAppNotification({ phone, type: 'order_placed', orderNumber });
+export const sendWelcomeNotification = async (phone: string, channel?: NotificationChannel) => {
+  return sendNotification({ phone, type: 'welcome', channel });
 };
 
-export const sendOrderShippedNotification = async (phone: string, orderNumber: string) => {
-  return sendWhatsAppNotification({ phone, type: 'order_shipped', orderNumber });
+export const sendOrderPlacedNotification = async (phone: string, orderNumber: string, channel?: NotificationChannel) => {
+  return sendNotification({ phone, type: 'order_placed', orderNumber, channel });
 };
 
-export const sendOrderDeliveredNotification = async (phone: string, orderNumber: string) => {
-  return sendWhatsAppNotification({ phone, type: 'order_delivered', orderNumber });
+export const sendOrderShippedNotification = async (phone: string, orderNumber: string, channel?: NotificationChannel) => {
+  return sendNotification({ phone, type: 'order_shipped', orderNumber, channel });
 };
 
-export const sendOrderCancelledNotification = async (phone: string, orderNumber: string) => {
-  return sendWhatsAppNotification({ phone, type: 'order_cancelled', orderNumber });
+export const sendOrderDeliveredNotification = async (phone: string, orderNumber: string, channel?: NotificationChannel) => {
+  return sendNotification({ phone, type: 'order_delivered', orderNumber, channel });
+};
+
+export const sendOrderCancelledNotification = async (phone: string, orderNumber: string, channel?: NotificationChannel) => {
+  return sendNotification({ phone, type: 'order_cancelled', orderNumber, channel });
 };
