@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
-import { sendWelcomeNotification } from '@/lib/services/whatsappService';
+import { sendWelcomeNotification } from '@/lib/services/notificationService';
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
