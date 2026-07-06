@@ -160,30 +160,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const setupNativeListener = async () => {
       if (!Capacitor.isNativePlatform()) return;
 
+      const handleUrl = async (urlStr: string) => {
+        console.log('[Auth] Processing URL:', urlStr);
+
+        // Handle both custom scheme and web callback if intercepted
+        const isCustomScheme = urlStr.startsWith('kgapp://auth');
+        const isWebCallback = urlStr.includes('keralagrocery.com/auth/callback');
+
+        if (isCustomScheme || isWebCallback) {
+          // Normalize to a standard web URL for parsing
+          let webUrlStr = urlStr;
+          if (isCustomScheme) {
+            webUrlStr = urlStr.includes('auth/callback')
+              ? urlStr.replace('kgapp://auth/callback', 'https://keralagrocery.com/auth/callback')
+              : urlStr.replace('kgapp://auth', 'https://keralagrocery.com/auth/callback');
+          }
+
+          try {
+            const url = new URL(webUrlStr);
+
+            // Close any open browser tabs (like the Google login tab)
+            // Use a slight delay to ensure the native bridge is ready
+            setTimeout(async () => {
+              await Browser.close().catch(() => {});
+            }, 500);
+
+            // Pass the URL parameters to Supabase to exchange for a session
+            const params = new URLSearchParams(url.search || url.hash.substring(1));
+            const code = params.get('code');
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+
+            if (code) {
+              console.log('[Auth] Exchanging code for session...');
+              await supabase.auth.exchangeCodeForSession(code);
+            } else if (accessToken && refreshToken) {
+              console.log('[Auth] Setting session from tokens...');
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+            }
+          } catch (err) {
+            console.error('[Auth] OAuth handling error:', err);
+          }
+        }
+      };
+
       const listener = await App.addListener('appUrlOpen', async (data) => {
         console.log('[Auth] appUrlOpen event:', data.url);
+        await handleUrl(data.url);
+      });
 
-        // Handle kgapp://auth custom scheme
-        if (data.url.startsWith('kgapp://auth')) {
-          const url = new URL(data.url.replace('kgapp://auth', 'https://keralagrocery.com/auth/callback'));
-
-          // Close any open browser tabs (like the Google login tab)
-          await Browser.close().catch(() => {});
-
-          // Pass the URL parameters to Supabase to exchange for a session
-          const params = new URLSearchParams(url.search || url.hash.substring(1));
-          const code = params.get('code');
-          const accessToken = params.get('access_token');
-          const refreshToken = params.get('refresh_token');
-
-          if (code) {
-            await supabase.auth.exchangeCodeForSession(code);
-          } else if (accessToken && refreshToken) {
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-          }
+      // Check for launch URL in case app was opened from cold start via deep link
+      App.getLaunchUrl().then((launchUrl) => {
+        if (launchUrl?.url) {
+          console.log('[Auth] App launched with URL:', launchUrl.url);
+          handleUrl(launchUrl.url);
         }
       });
 
@@ -218,15 +251,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = getSupabase();
     const isApp = Capacitor.isNativePlatform();
     
+    // Explicitly use kgapp://auth/callback for native apps
     const redirectTo = isApp
-      ? 'kgapp://auth' 
+      ? 'kgapp://auth/callback'
       : `${window.location.origin}/auth/callback`;
+
+    console.log('[Auth] signInWithGoogle - isApp:', isApp, 'redirectTo:', redirectTo);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo,
-        skipBrowserRedirect: isApp, // Important for Capacitor
+        skipBrowserRedirect: isApp,
         queryParams: {
           access_type: 'offline', 
           prompt: 'select_account' 
@@ -235,8 +271,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!error && isApp && data?.url) {
-      // Open in native browser context (Chrome Custom Tab / Safari View Controller)
-      await Browser.open({ url: data.url, windowName: '_self' });
+      console.log('[Auth] Opening OAuth URL in browser:', data.url);
+      // Use windowName: '_blank' to ensure it opens as a new tab/overlay
+      await Browser.open({ url: data.url, windowName: '_blank' });
     }
 
     return { data, error };
@@ -246,7 +283,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = getSupabase();
     const isApp = Capacitor.isNativePlatform();
     const redirectTo = isApp
-      ? 'kgapp://auth'
+      ? 'kgapp://auth/callback'
       : `${window.location.origin}/auth/callback`;
 
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -258,7 +295,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!error && isApp && data?.url) {
-      await Browser.open({ url: data.url, windowName: '_self' });
+      await Browser.open({ url: data.url, windowName: '_blank' });
     }
 
     return { data, error };
