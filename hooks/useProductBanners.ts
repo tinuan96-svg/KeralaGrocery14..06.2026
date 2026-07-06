@@ -163,10 +163,13 @@ export function useProductBanners(): ProductBannersData {
     async function load() {
       const supabase = getSupabase();
 
-      // Fetch lookup maps
+      // Fetch lookup maps safely — if brands doesn't exist, we just skip it
       const [catRes, brdRes] = await Promise.all([
         supabase.from('categories').select('id,name,slug'),
-        supabase.from('brands').select('id,name,slug'),
+        (async () => {
+          try { return await supabase.from('brands').select('id,name,slug'); }
+          catch { return { data: null, error: { message: 'Table missing' } }; }
+        })(),
       ]);
 
       const catMap: Record<string, LookupRow> = {};

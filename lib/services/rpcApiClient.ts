@@ -174,7 +174,7 @@ export async function getProducts(
     let query = supabase
       .from('products')
       .select(
-        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, categories(name)',
+        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight',
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
@@ -275,7 +275,7 @@ export async function getProductDetail(
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, categories(name), variants:product_variants(*)')
+      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight')
       .eq('approval_status', 'approved')
       .eq('visibility_status', true);
 
@@ -293,9 +293,19 @@ export async function getProductDetail(
     const categoryMap = await fetchCategoryMap();
     const product = mapRow(data as Record<string, unknown>, categoryMap);
 
-    // Add variants if present
-    if ((data as any).variants) {
-      product.variants = (data as any).variants.filter((v: any) => v.is_active);
+    // Fetch variants separately to avoid relationship schema issues
+    try {
+      const { data: variants } = await supabase
+        .from('product_variants')
+        .select('*')
+        .eq('product_id', product.id)
+        .eq('is_active', true);
+
+      if (variants) {
+        product.variants = variants as ProductVariantOption[];
+      }
+    } catch (vErr) {
+      console.warn('[rpcApiClient] Failed to fetch variants:', vErr);
     }
 
     if (!product.image_url) {
