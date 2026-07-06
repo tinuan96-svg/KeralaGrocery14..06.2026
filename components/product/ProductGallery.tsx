@@ -31,7 +31,8 @@ function toJpegSrc(src: string): string {
       return u.toString();
     } catch { return src; }
   }
-  if (src.match(/\.webp(\?|$)/i)) return src.replace(/\.webp(\?|$)/i, '.jpg$1');
+  // If it's a webp, we can use it as is for modern browsers.
+  // No need to blindly replace with .jpg which might not exist.
   return src;
 }
 
