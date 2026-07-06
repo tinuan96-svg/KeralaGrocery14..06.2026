@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ShoppingCart, ChevronRight, Package, Clock, CircleCheck as CheckCircle, Circle as XCircle, RefreshCw } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase/client';
@@ -45,7 +45,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     const supabase = getSupabase();
     let query = supabase
@@ -62,9 +62,9 @@ export default function AdminOrdersPage() {
     const { data } = await query;
     setOrders((data as Order[]) ?? []);
     setLoading(false);
-  };
+  }, [statusFilter]);
 
-  useEffect(() => { load(); }, [statusFilter]);
+  useEffect(() => { load(); }, [load]);
 
   const FILTERS = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 

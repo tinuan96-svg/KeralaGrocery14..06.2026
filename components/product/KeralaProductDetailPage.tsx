@@ -212,7 +212,7 @@ export default function KeralaProductDetailPage({ slug }: Props) {
           id: product.id,
           name: product.display_title,
           slug: product.slug ?? product.id,
-          price,
+          price: currentPrice,
           image_url: product.image_url ?? null,
         }}
       />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -72,58 +72,7 @@ export default function CheckoutPage() {
     : 0;
   const cardAmount = Math.max(0, cartTotal + deliveryFee - walletAmount);
 
-  useEffect(() => {
-    loadUserProfile();
-    fetchDeliverySettings().then(settings => {
-      const result = calcDelivery(cartTotal, settings);
-      setDeliveryFee(result.fee);
-      setIsFreeDelivery(result.isFree);
-      setDeliveryMsg(result.progressMessage);
-      setLoadingDelivery(false);
-    });
-  }, [cartTotal]);
-
-  // Auto-select default address and fill form fields
-  useEffect(() => {
-    if (addressesLoading) return;
-    if (addresses.length === 0) {
-      setAddressMode('manual');
-      return;
-    }
-    setAddressMode('saved');
-    const def = defaultAddress;
-    if (def && !selectedAddressId) {
-      setSelectedAddressId(def.id);
-      setFormData(prev => ({
-        ...prev,
-        name:     def.full_name || prev.name,
-        phone:    def.phone     || prev.phone,
-        address:  def.address_line_1 + (def.address_line_2 ? `, ${def.address_line_2}` : ''),
-        city:     def.city,
-        postcode: def.postcode,
-      }));
-    }
-  }, [addressesLoading, addresses.length, defaultAddress?.id]);
-
-  // Block checkout if not authenticated or profile/phone not set up.
-  // Wait for profile to settle (undefined = fetch in-flight) before redirecting
-  // to avoid spurious redirects that cause the visible blink/loop.
-  useEffect(() => {
-    if (authLoading) return;
-    if (profile === undefined) return; // profile fetch still in-flight
-    if (!user) {
-      console.log('[Checkout] no user — redirecting to /account');
-      router.replace('/account');
-      return;
-    }
-    const isAdmin = !!(user?.app_metadata?.is_admin);
-    if (!isAdmin && (!profile || !profile.phone_verified)) {
-      console.log('[Checkout] phone not verified — redirecting to /complete-profile');
-      router.replace('/complete-profile?returnTo=/checkout');
-    }
-  }, [authLoading, user, profile, router]);
-
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
     if (!user) return;
     setIsLoadingProfile(true);
     try {
@@ -153,7 +102,61 @@ export default function CheckoutPage() {
     } finally {
       setIsLoadingProfile(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadUserProfile();
+  }, [loadUserProfile]);
+
+  useEffect(() => {
+    fetchDeliverySettings().then(settings => {
+      const result = calcDelivery(cartTotal, settings);
+      setDeliveryFee(result.fee);
+      setIsFreeDelivery(result.isFree);
+      setDeliveryMsg(result.progressMessage);
+      setLoadingDelivery(false);
+    });
+  }, [cartTotal]);
+
+  // Auto-select default address and fill form fields
+  useEffect(() => {
+    if (addressesLoading) return;
+    if (addresses.length === 0) {
+      setAddressMode('manual');
+      return;
+    }
+    setAddressMode('saved');
+    const def = defaultAddress;
+    if (def && !selectedAddressId) {
+      setSelectedAddressId(def.id);
+      setFormData(prev => ({
+        ...prev,
+        name:     def.full_name || prev.name,
+        phone:    def.phone     || prev.phone,
+        address:  def.address_line_1 + (def.address_line_2 ? `, ${def.address_line_2}` : ''),
+        city:     def.city,
+        postcode: def.postcode,
+      }));
+    }
+  }, [addressesLoading, addresses.length, defaultAddress, selectedAddressId]);
+
+  // Block checkout if not authenticated or profile/phone not set up.
+  // Wait for profile to settle (undefined = fetch in-flight) before redirecting
+  // to avoid spurious redirects that cause the visible blink/loop.
+  useEffect(() => {
+    if (authLoading) return;
+    if (profile === undefined) return; // profile fetch still in-flight
+    if (!user) {
+      console.log('[Checkout] no user — redirecting to /account');
+      router.replace('/account');
+      return;
+    }
+    const isAdmin = !!(user?.app_metadata?.is_admin);
+    if (!isAdmin && (!profile || !profile.phone_verified)) {
+      console.log('[Checkout] phone not verified — redirecting to /complete-profile');
+      router.replace('/complete-profile?returnTo=/checkout');
+    }
+  }, [authLoading, user, profile, router]);
 
   // Note: cartTotal and displayTotal are for display only. The server
   // recalculates the true total from database prices.

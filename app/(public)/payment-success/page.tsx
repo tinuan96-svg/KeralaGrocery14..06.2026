@@ -20,7 +20,7 @@ function PaymentSuccessContent() {
     if (authLoading) return;
     if (!user) { router.replace('/account'); return; }
     clearCart();
-  }, [authLoading, user]);
+  }, [authLoading, user, router, clearCart]);
 
   if (authLoading || !user) {
     return (

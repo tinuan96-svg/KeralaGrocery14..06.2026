@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,14 +47,7 @@ export default function AccountPage() {
     }
   }, [loading, user, isAdmin, profile, router]);
 
-  useEffect(() => {
-    if (user) {
-      fetchRecentOrders();
-      fetchUserProfile();
-    }
-  }, [user]);
-
-  const fetchRecentOrders = async () => {
+  const fetchRecentOrders = useCallback(async () => {
     try {
       const supabase = getSupabase();
       const { data, error } = await supabase
@@ -90,9 +83,9 @@ export default function AccountPage() {
     } finally {
       setLoadingOrders(false);
     }
-  };
+  }, [user?.id]);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const supabase = getSupabase();
       const { data, error } = await supabase
@@ -106,7 +99,14 @@ export default function AccountPage() {
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      fetchRecentOrders();
+      fetchUserProfile();
+    }
+  }, [user, fetchRecentOrders, fetchUserProfile]);
 
   const handleLogout = async () => {
     await signOut();

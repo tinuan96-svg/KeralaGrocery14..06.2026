@@ -123,11 +123,6 @@ export default function WalletDiagnosticsPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<WalletDiagnostic | null>(null);
 
-  if (!authLoading && (!user || !user.app_metadata?.is_admin)) {
-    router.replace('/admin/login');
-    return null;
-  }
-
   const runDiagnostic = useCallback(async () => {
     if (!emailSearch.trim()) return;
     setLoading(true);
@@ -235,6 +230,11 @@ export default function WalletDiagnosticsPage() {
       setLoading(false);
     }
   }, [emailSearch]);
+
+  if (!authLoading && (!user || !user.app_metadata?.is_admin)) {
+    router.replace('/admin/login');
+    return null;
+  }
 
   const tierColor = (tier: string) =>
     tier === 'gold' ? 'text-yellow-500' : tier === 'silver' ? 'text-slate-400' : 'text-amber-600';
