@@ -23,7 +23,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: true,
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizePackageImports: ['lucide-react'],
   },
   webpack: (config, { dev }) => {
     if (dev) {

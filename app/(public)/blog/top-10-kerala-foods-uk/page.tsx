@@ -71,7 +71,7 @@ export default function Top10KeralaFoodsUKPage() {
             Pure <strong>coconut oil</strong> is the foundation of Kerala cooking. Whether you&apos;re making sambar, avial, or fish curry, authentic coconut oil gives dishes that unmistakable Kerala flavor and aroma.
           </p>
           <p>
-            Look for cold-pressed or virgin coconut oil for the best quality. It's also great for hair care and skin care, making it a versatile addition to your home.
+            Look for cold-pressed or virgin coconut oil for the best quality. It&apos;s also great for hair care and skin care, making it a versatile addition to your home.
           </p>
 
           <h2>4. Kerala-Style Curry Powder</h2>
