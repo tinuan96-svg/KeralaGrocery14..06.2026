@@ -1,0 +1,29 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "PDZ7779Q9J.com.keralagrocery.app",
+        "paths": [
+          "/products/*",
+          "/categories/*",
+          "/brands/*",
+          "/cart",
+          "/checkout",
+          "/orders",
+          "/orders/*",
+          "/account",
+          "/account/*",
+          "/wallet",
+          "/offers",
+          "/auth/callback"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "PDZ7779Q9J.com.keralagrocery.app"
+    ]
+  }
+}

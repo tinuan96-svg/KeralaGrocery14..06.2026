@@ -1,0 +1,155 @@
+# Updated: July 03, 2026 - Triggering build for payment and build fix
+workflows:
+  ios-release:
+    name: Kerala Grocery iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    # Removed automatic integration to allow manual UI signing
+    environment:
+      groups:
+        - supabase
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        APP_ID: "com.keralagrocery.app"
+        TEAM_ID: "PDZ7779Q9J"
+        # Standard variables for Codemagic CLI tools
+        APP_STORE_CONNECT_ISSUER_ID: 9290b9a4-e764-43a3-a66c-7463fba41613
+        APP_STORE_CONNECT_KEY_IDENTIFIER: 75R54UD497
+        NEXT_PUBLIC_SHOW_GOOGLE_PLAY: "false"
+      node: 22
+      xcode: latest
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+          npm install plist
+      - name: Build Next.js project
+        script: |
+          export NEXT_TELEMETRY_DISABLED=1
+          export NEXT_PUBLIC_SHOW_GOOGLE_PLAY=false
+          npm run build
+          mkdir -p out
+          [ -f out/index.html ] || echo "<html><body>Kerala Grocery Remote Wrapper</body></html>" > out/index.html
+      - name: Sync Capacitor and Apply Fixes
+        script: |
+          npx cap sync ios
+          node scripts/patch-info-plist.js || true
+          cp ios-config/Podfile.patch ios/App/Podfile
+          cd ios/App
+          rm -rf Pods Podfile.lock
+          pod install --repo-update
+          cd ../..
+          node scripts/generate-ios-icons.js
+      - name: Set build number
+        script: |
+          cd ios/App
+          agvtool new-version -all $((400 + $BUILD_NUMBER))
+      - name: Build iOS IPA
+        script: |
+          # 1. Reconstruct Private Key
+          python3 -c "
+          import os, re
+          raw = os.environ.get('KG_STORE_PRIVATE_KEY', '')
+          if not raw:
+              print('Error: KG_STORE_PRIVATE_KEY is empty')
+              exit(1)
+          
+          # Extract alphanumeric body (ignore headers, newlines, and escape sequences)
+          body = re.sub(r'[^a-zA-Z0-9+/=]', '', raw)
+          
+          if len(body) < 64:
+              print('Error: Key body too short. Check KG_STORE_PRIVATE_KEY.')
+              exit(1)
+          
+          # Re-wrap at 64 chars
+          wrapped = '\n'.join(body[i:i+64] for i in range(0, len(body), 64))
+          final_pem = f'-----BEGIN PRIVATE KEY-----\n{wrapped}\n-----END PRIVATE KEY-----\n'
+          
+          with open('/tmp/apple_key.p8', 'w') as f:
+              f.write(final_pem)
+          print('Successfully reconstructed private key to /tmp/apple_key.p8')
+          "
+
+          # 2. Set the environment variable properly (This is the standard way)
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/apple_key.p8)"
+
+          keychain initialize
+
+          # 3. Fetch signing files
+          # Note: We do NOT pass --private-key here, the tool picks it up from the ENV
+          app-store-connect fetch-signing-files \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --type IOS_APP_STORE \
+            --create \
+            "$APP_ID"
+            
+          keychain add-certificates
+
+          # 4. Use profiles
+          xcode-project use-profiles \
+            --project "ios/App/App.xcodeproj" \
+            --export-options-plist /tmp/export_options.plist
+
+          # 5. Build IPA
+          xcode-project build-ipa \
+            --workspace "ios/App/App.xcworkspace" \
+            --scheme "$XCODE_SCHEME" \
+            --export-options-plist /tmp/export_options.plist \
+            --archive-xcargs "COMPILER_INDEX_STORE_ENABLE=NO" \
+            --archive-flags "DEVELOPMENT_TEAM=$TEAM_ID CODE_SIGN_STYLE=Manual"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - tinuan96@gmail.com
+      app_store_connect:
+        issuer_id: 9290b9a4-e764-43a3-a66c-7463fba41613
+        key_id: 75R54UD497
+        api_key: $KG_STORE_PRIVATE_KEY
+        submit_to_testflight: true
+        submit_to_app_store: false
+
+  simulator-workflow:
+    name: Kerala Grocery iOS Simulator
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 22
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Build Next.js project
+        script: |
+          export NEXT_TELEMETRY_DISABLED=1
+          npm run build
+          mkdir -p out
+          echo "<html><body>Kerala Grocery Simulator</body></html>" > out/index.html
+      - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Build for simulator
+        script: |
+          # Fresh pod install for simulator
+          cd ios/App && pod install && cd ../..
+          xcodebuild build \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination "generic/platform=iOS Simulator" \
+            CODE_SIGNING_ALLOWED=NO \
+            ENABLE_USER_SCRIPT_SANDBOXING=NO
+    artifacts:
+      - /Users/builder/Library/Developer/Xcode/DerivedData/**/*.app
