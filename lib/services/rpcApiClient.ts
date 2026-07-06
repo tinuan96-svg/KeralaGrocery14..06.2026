@@ -5,6 +5,7 @@
  */
 
 import { getSupabase } from '@/lib/supabase/client';
+import { resolveProductImage } from '@/lib/utils/image';
 
 export type RpcSortBy = 'created_at' | 'price' | 'name';
 export type RpcSortOrder = 'asc' | 'desc';
@@ -99,11 +100,14 @@ function mapRow(
     ? `${name} ${brandName}`
     : name;
 
-  const imageUrl =
-    (row.image_main as string | null)?.startsWith('http') ? (row.image_main as string) :
-    (row.enhanced_image_url as string | null)?.startsWith('http') ? (row.enhanced_image_url as string) :
-    (row.image_url as string | null)?.startsWith('http') ? (row.image_url as string) :
-    null;
+  const imageUrl = resolveProductImage({
+    image_main: row.image_main as string,
+    enhanced_image_url: row.enhanced_image_url as string,
+    image_url: row.image_url as string,
+    image_medium: row.image_medium as string,
+    image_cdn_url: row.image_cdn_url as string,
+    image_override: row.image_override as string,
+  });
 
   return {
     row_id:          0,
@@ -175,7 +179,7 @@ export async function getProducts(
     let query = supabase
       .from('products')
       .select(
-        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight',
+        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight',
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
@@ -276,7 +280,7 @@ export async function getProductDetail(
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight')
+      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight')
       .eq('approval_status', 'approved')
       .eq('visibility_status', true);
 

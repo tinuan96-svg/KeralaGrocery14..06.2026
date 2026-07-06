@@ -78,6 +78,7 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getAllProducts(): Promise<ProductWithDetails[]> {
+  const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
     .from('products')
     .select(PRODUCTS_SELECT)
@@ -98,12 +99,12 @@ export async function getAllProducts(): Promise<ProductWithDetails[]> {
   try {
     const [catRes, brandRes] = await Promise.all([
       supabase.from('categories').select('id, name, slug, icon, sort_order'),
-      supabase.from('brands').select('id, name, slug, logo_url, sort_order').catch(() => ({ data: null })),
+      supabase.from('brands').select('id, name, slug, logo_url, sort_order'),
     ]);
-    const catMap = new Map((catRes.data || []).map(c => [c.id, c]));
-    const brandMap = new Map((brandRes?.data || []).map(b => [b.id, b]));
+    const catMap = new Map((catRes.data || []).map((c: any) => [c.id, c]));
+    const brandMap = new Map((brandRes.data || []).map((b: any) => [b.id, b]));
 
-    products.forEach(p => {
+    products.forEach((p: any) => {
       if (p.category_id) p.category = catMap.get(p.category_id);
       if (p.brand_id) p.brand = brandMap.get(p.brand_id);
     });

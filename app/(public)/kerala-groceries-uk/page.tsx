@@ -91,7 +91,7 @@ export default async function KeralaGroceriesUKPage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Choose Our Kerala Groceries in the UK?</h2>
 
           <p className="text-gray-700 mb-6">
-            Finding authentic <strong>Kerala groceries in the UK</strong> can be challenging. At Kerala Groceries UK, we understand the importance of traditional ingredients and authentic flavors. That's why we've created the UK's most comprehensive online Kerala grocery store, serving customers from London to Edinburgh, Manchester to Cardiff.
+            Finding authentic <strong>Kerala groceries in the UK</strong> can be challenging. At Kerala Groceries UK, we understand the importance of traditional ingredients and authentic flavors. That&apos;s why we&apos;ve created the UK&apos;s most comprehensive online Kerala grocery store, serving customers from London to Edinburgh, Manchester to Cardiff.
           </p>
 
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">What We Offer</h3>
@@ -120,12 +120,12 @@ export default async function KeralaGroceriesUKPage() {
 
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">Fast Delivery Across the UK</h3>
           <p className="text-gray-700 mb-6">
-            We deliver to every corner of the United Kingdom. Whether you're in London, Birmingham, Manchester, Glasgow, or any other UK city, your Kerala groceries will arrive fresh and on time. We offer next-day delivery for orders placed before 6 PM, and free delivery on all orders over £45.
+            We deliver to every corner of the United Kingdom. Whether you&apos;re in London, Birmingham, Manchester, Glasgow, or any other UK city, your Kerala groceries will arrive fresh and on time. We offer next-day delivery for orders placed before 6 PM, and free delivery on all orders over £45.
           </p>
 
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">Shop Kerala Groceries Online with Confidence</h3>
           <p className="text-gray-700 mb-6">
-            Operated by <strong>Tasty Kerala Ltd</strong>, we're committed to providing the Kerala community in the UK with authentic products at competitive prices. Our secure checkout ensures your payment information is always protected, and our customer service team is ready to help with any questions.
+            Operated by <strong>Tasty Kerala Ltd</strong>, we&apos;re committed to providing the Kerala community in the UK with authentic products at competitive prices. Our secure checkout ensures your payment information is always protected, and our customer service team is ready to help with any questions.
           </p>
         </div>
 

@@ -41,7 +41,7 @@ export default function ContactClient() {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-green-700/50 text-green-200 text-sm font-medium px-4 py-1.5 rounded-full mb-5">
             <MessageSquare className="h-4 w-4" />
-            We're here to help
+            We&apos;re here to help
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
           <p className="text-green-100 text-lg max-w-xl mx-auto">
@@ -59,7 +59,7 @@ export default function ContactClient() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Get in Touch</h2>
               <p className="text-gray-500 text-sm">
-                Reach us by email, phone, or fill in the form and we'll respond promptly.
+                Reach us by email, phone, or fill in the form and we&apos;ll respond promptly.
               </p>
             </div>
 
@@ -129,7 +129,7 @@ export default function ContactClient() {
           {/* Contact Form */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
             <h2 className="text-xl font-bold text-gray-900 mb-1">Send Us a Message</h2>
-            <p className="text-sm text-gray-500 mb-6">We'll get back to you within one business day.</p>
+            <p className="text-sm text-gray-500 mb-6">We&apos;ll get back to you within one business day.</p>
 
             {isSent ? (
               <div className="py-10 text-center space-y-3">

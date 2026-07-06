@@ -79,7 +79,7 @@ export default function Testimonials() {
                   ))}
                 </div>
                 <p className="text-gray-700 mb-8 leading-relaxed text-base font-medium">
-                  "{testimonial.text}"
+                  &quot;{testimonial.text}&quot;
                 </p>
                 <div className="flex items-center gap-4 pt-6 border-t-2 border-green-100">
                   <Avatar className="w-14 h-14 border-2 border-green-200">

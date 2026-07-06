@@ -406,7 +406,7 @@ export default function SyncMonitorPage() {
                   https://keralagrocery.com/api/webhooks/centralhub
                 </code>
                 <p className="text-[10px] text-amber-600 mt-1 italic">
-                  * Replace "keralagrocery.com" with your actual production domain.
+                  * Replace &quot;keralagrocery.com&quot; with your actual production domain.
                 </p>
               </div>
               <div className="p-2.5 bg-white/50 border border-amber-100 rounded-lg">

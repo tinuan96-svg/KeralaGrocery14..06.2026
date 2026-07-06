@@ -47,7 +47,7 @@ function OrderFailedContent() {
           </div>
           <h1 className="text-3xl font-bold mb-2 text-gray-900">Payment Failed</h1>
           <p className="text-gray-600 text-lg">
-            We couldn't process your payment
+            We couldn&apos;t process your payment
           </p>
           {orderNumber && (
             <p className="text-gray-500 mt-2">

@@ -141,8 +141,8 @@ export default function PrivacyPage() {
           <p>
             Card payments are processed through <strong>Worldpay</strong> (and may also be processed
             through <strong>Stripe</strong> for certain transactions). These providers are PCI-DSS
-            compliant. We do not store or access your full card number. Please refer to Worldpay's and
-            Stripe's respective privacy policies for information on how they handle payment data.
+            compliant. We do not store or access your full card number. Please refer to Worldpay&apos;s and
+            Stripe&apos;s respective privacy policies for information on how they handle payment data.
           </p>
 
           <h3 className="font-semibold text-gray-900 mt-4 mb-1">4.2 Communications – Twilio (WhatsApp & SMS)</h3>
@@ -306,7 +306,7 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-5 space-y-2">
             <li><strong>Right of access</strong> — request a copy of the personal data we hold about you</li>
             <li><strong>Right to rectification</strong> — ask us to correct inaccurate or incomplete data</li>
-            <li><strong>Right to erasure</strong> — request deletion of your data ("right to be forgotten"), subject to legal retention obligations</li>
+            <li><strong>Right to erasure</strong> — request deletion of your data (&quot;right to be forgotten&quot;), subject to legal retention obligations</li>
             <li><strong>Right to restrict processing</strong> — ask us to limit how we use your data in certain circumstances</li>
             <li><strong>Right to data portability</strong> — receive your data in a structured, machine-readable format</li>
             <li><strong>Right to object</strong> — object to processing based on legitimate interests</li>
@@ -317,7 +317,7 @@ export default function PrivacyPage() {
             <a href="mailto:admin@keralagrocery.com" className="text-green-600 hover:underline">
               admin@keralagrocery.com
             </a>{' '}
-            with "Data Rights Request" in the subject line. We will respond within 30 days.
+            with &quot;Data Rights Request&quot; in the subject line. We will respond within 30 days.
           </p>
           <p>
             You also have the right to lodge a complaint with the{' '}
@@ -327,7 +327,7 @@ export default function PrivacyPage() {
               rel="noopener noreferrer"
               className="text-green-600 hover:underline"
             >
-              Information Commissioner's Office (ICO)
+              Information Commissioner&apos;s Office (ICO)
             </a>{' '}
             if you believe we have not handled your data correctly.
           </p>
@@ -344,7 +344,7 @@ export default function PrivacyPage() {
         <Section id="changes" title="13. Changes to This Policy">
           <p>
             We may update this Privacy Policy from time to time to reflect changes in our practices or
-            applicable law. We will post the updated policy on this page with a revised "Last updated"
+            applicable law. We will post the updated policy on this page with a revised &quot;Last updated&quot;
             date. For significant changes, we may notify you by email. Your continued use of our
             services after any changes constitutes acceptance of the updated policy.
           </p>

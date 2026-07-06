@@ -72,7 +72,7 @@ export default function AboutUsPage() {
             Bringing the Taste of Kerala<br className="hidden sm:block" /> to Every UK Home
           </h1>
           <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto mb-8">
-            Kerala Groceries UK is the UK's dedicated destination for authentic Kerala and South Indian
+            Kerala Groceries UK is the UK&apos;s dedicated destination for authentic Kerala and South Indian
             groceries — from aromatic spices and fresh rice varieties to traditional snacks and pickles.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -111,11 +111,11 @@ export default function AboutUsPage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
           <div className="prose prose-slate max-w-none text-gray-700 space-y-5 text-base leading-relaxed">
             <p>
-              Kerala Groceries UK was founded with a single mission: to make it easy for the UK's
+              Kerala Groceries UK was founded with a single mission: to make it easy for the UK&apos;s
               Kerala and South Indian community to find the authentic products they grew up with —
-              without compromise. Whether it's a specific brand of coconut oil, a particular variety
+              without compromise. Whether it&apos;s a specific brand of coconut oil, a particular variety
               of red rice, or the exact curry leaf pickle your grandmother made, we believe you
-              shouldn't have to settle.
+              shouldn&apos;t have to settle.
             </p>
             <p>
               Operated by <strong>Tasty Kerala Ltd</strong>, a company registered in the United Kingdom,

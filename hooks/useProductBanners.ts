@@ -96,6 +96,7 @@ type ProductRow = {
   discount_percentage: number | null;
   image_url: string | null;
   image_main: string | null;
+  enhanced_image_url: string | null;
   is_featured: boolean | null;
   is_bestseller: boolean | null;
   is_new_arrival: boolean | null;
@@ -109,6 +110,7 @@ type LookupRow = { id: string; name: string; slug: string | null };
 
 function resolveImage(row: ProductRow): string | null {
   if (row.image_main?.startsWith('http')) return row.image_main;
+  if (row.enhanced_image_url?.startsWith('http')) return row.enhanced_image_url;
   if (row.image_url?.startsWith('http')) return row.image_url;
   return null;
 }
@@ -145,7 +147,7 @@ const BASE_FILTER = {
   is_active: true,
 } as const;
 
-const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at';
+const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at';
 
 export function useProductBanners(): ProductBannersData {
   const [banners, setBanners] = useState<Record<BannerKey, BannerProduct[]>>({
@@ -174,11 +176,16 @@ export function useProductBanners(): ProductBannersData {
 
       const catMap: Record<string, LookupRow> = {};
       for (const r of (catRes.data ?? []) as LookupRow[]) catMap[r.id] = r;
+
+      const readyToEatCat = (catRes.data ?? []).find((c: any) =>
+        c.slug === 'ready-to-eat' || c.name.toLowerCase().includes('ready to eat')
+      );
+
       const brdMap: Record<string, LookupRow> = {};
       for (const r of (brdRes.data ?? []) as LookupRow[]) brdMap[r.id] = r;
 
       // Fetch all banner buckets in parallel
-      const [bestsellers, newArrivals, featured, recent] = await Promise.all([
+      const [bestsellers, newArrivals, featured, readyFoods, recent] = await Promise.all([
         supabase
           .from('products')
           .select(SELECT)
@@ -202,6 +209,15 @@ export function useProductBanners(): ProductBannersData {
           .or('is_deleted.is.null,is_deleted.eq.false')
           .eq('is_featured', true)
           .limit(BANNER_LIMIT),
+        readyToEatCat
+          ? supabase
+              .from('products')
+              .select(SELECT)
+              .match(BASE_FILTER)
+              .or('is_deleted.is.null,is_deleted.eq.false')
+              .eq('category_id', readyToEatCat.id)
+              .limit(BANNER_LIMIT)
+          : Promise.resolve({ data: [] }),
         supabase
           .from('products')
           .select(SELECT)
@@ -214,14 +230,47 @@ export function useProductBanners(): ProductBannersData {
       if (cancelled) return;
 
       const recentRows = (recent.data ?? []) as ProductRow[];
+      const readyRows = (readyFoods.data ?? []) as ProductRow[];
 
-      setBanners({
+      const allBanners = {
         top_sellers:  ((bestsellers.data ?? []) as ProductRow[]).map(r => toProduct(r, catMap, brdMap)),
         new_arrivals: ((newArrivals.data ?? []) as ProductRow[]).map(r => toProduct(r, catMap, brdMap)),
         featured:     ((featured.data ?? []) as ProductRow[]).map(r => toProduct(r, catMap, brdMap)),
-        ready_foods:  recentRows.slice(0, BANNER_LIMIT).map(r => toProduct(r, catMap, brdMap)),
+        ready_foods:  (readyRows.length > 0 ? readyRows : recentRows.slice(0, BANNER_LIMIT)).map(r => toProduct(r, catMap, brdMap)),
         random_picks: recentRows.slice(BANNER_LIMIT, BANNER_LIMIT * 2).map(r => toProduct(r, catMap, brdMap)),
-      });
+      };
+
+      // Fallback for missing images across all buckets
+      const allProducts = Object.values(allBanners).flat();
+      const missingIds = allProducts.filter((p) => !p.image_url).map((p) => p.id);
+
+      if (missingIds.length > 0) {
+        const { data: galleryRows } = await supabase
+          .from('product_gallery_images')
+          .select('product_id, image_url, enhanced_image_url, position')
+          .in('product_id', missingIds)
+          .order('position');
+
+        if (galleryRows?.length) {
+          const galleryMap = new Map<string, string>();
+          for (const g of galleryRows as any[]) {
+            if (!galleryMap.has(g.product_id)) {
+              const url = g.enhanced_image_url ?? g.image_url;
+              if (url?.startsWith('http')) galleryMap.set(g.product_id, url);
+            }
+          }
+          // Update the banner products with found gallery images
+          for (const key of Object.keys(allBanners) as BannerKey[]) {
+            for (const p of allBanners[key]) {
+              if (!p.image_url && galleryMap.has(p.id)) {
+                p.image_url = galleryMap.get(p.id)!;
+              }
+            }
+          }
+        }
+      }
+
+      setBanners(allBanners);
       setIsLoading(false);
     }
 

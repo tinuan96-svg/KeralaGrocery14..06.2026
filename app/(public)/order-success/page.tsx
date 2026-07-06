@@ -89,7 +89,7 @@ function OrderSuccessContent() {
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-3xl font-bold mb-4">Order Not Found</h1>
           <p className="text-gray-600 mb-8">
-            We couldn't find your order. Please check your email for order confirmation.
+            We couldn&apos;t find your order. Please check your email for order confirmation.
           </p>
           <Link href="/products">
             <Button className="bg-green-600 hover:bg-green-700 text-white">
@@ -142,7 +142,7 @@ function OrderSuccessContent() {
           <Card className="p-4 text-center">
             <Package className="h-8 w-8 text-orange-600 mx-auto mb-2" />
             <p className="font-semibold text-sm">Processing</p>
-            <p className="text-xs text-gray-600">We're preparing your order</p>
+            <p className="text-xs text-gray-600">We&apos;re preparing your order</p>
           </Card>
 
           <Card className="p-4 text-center">

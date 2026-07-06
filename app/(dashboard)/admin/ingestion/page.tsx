@@ -483,7 +483,7 @@ export default function IngestionPage() {
 
               <div>
                 <label className="text-sm font-medium text-gray-700">Folder (optional)</label>
-                <p className="text-xs text-gray-400 mb-1.5">Leave blank to scan all folders, or enter "uploads"</p>
+                <p className="text-xs text-gray-400 mb-1.5">Leave blank to scan all folders, or enter &quot;uploads&quot;</p>
                 <input
                   type="text"
                   placeholder="e.g. uploads"

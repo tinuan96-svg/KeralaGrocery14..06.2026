@@ -18,6 +18,9 @@ function formatPrice(p: number) {
 
 function toSrcSet(url: string | null): { webp: string | null; jpeg: string } {
   const src = url && url.startsWith('http') ? url : '/placeholder.webp';
+  if (src === '/placeholder.webp') {
+    return { webp: null, jpeg: src };
+  }
   if (src.includes('/render/image/')) {
     try {
       const u = new URL(src);
@@ -25,9 +28,13 @@ function toSrcSet(url: string | null): { webp: string | null; jpeg: string } {
       return { webp: src, jpeg: u.toString() };
     } catch { /* fall through */ }
   }
-  if (src.match(/\.webp(\?|$)/i)) {
-    return { webp: src, jpeg: src.replace(/\.webp(\?|$)/i, '.jpg$1') };
+
+  // If it's already a webp, we use it for both. Modern browsers that support <picture> support webp.
+  if (src.toLowerCase().endsWith('.webp') || src.toLowerCase().includes('.webp?')) {
+    return { webp: src, jpeg: src };
   }
+
+  // Fallback for others
   return { webp: null, jpeg: src };
 }
 
@@ -74,6 +81,9 @@ function ProductCard({
                     loading="lazy"
                     decoding="async"
                     className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/placeholder.webp';
+                    }}
                   />
                 </picture>
                 {hasDiscount && (
@@ -142,6 +152,9 @@ function ProductCard({
               loading="lazy"
               decoding="async"
               className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/placeholder.webp';
+              }}
             />
           </picture>
           {hasDiscount && (

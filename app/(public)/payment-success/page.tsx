@@ -49,8 +49,8 @@ function PaymentSuccessContent() {
             </p>
           )}
           <p className="text-sm text-gray-600 mb-8">
-            We've received your payment and your order is being processed.
-            You'll receive a confirmation shortly.
+            We&apos;ve received your payment and your order is being processed.
+            You&apos;ll receive a confirmation shortly.
           </p>
           <div className="space-y-3">
             <Link href="/orders">

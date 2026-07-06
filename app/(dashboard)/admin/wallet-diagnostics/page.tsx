@@ -256,7 +256,7 @@ export default function WalletDiagnosticsPage() {
 
         {/* Search */}
         <Card className="bg-gray-900 border-gray-800 rounded-2xl p-5">
-          <p className="text-xs text-gray-400 mb-3">Enter the customer's email address to run a full diagnostic.</p>
+          <p className="text-xs text-gray-400 mb-3">Enter the customer&apos;s email address to run a full diagnostic.</p>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />

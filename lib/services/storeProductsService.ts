@@ -101,14 +101,14 @@ export async function fetchStoreProducts(
     try {
       const [catRes, brandRes] = await Promise.all([
         supabase.from('categories').select('id, name, slug'),
-        supabase.from('brands').select('id, name, slug, logo_url').catch(() => ({ data: null })),
+        supabase.from('brands').select('id, name, slug, logo_url'),
       ]);
-      const catMap = new Map((catRes.data || []).map(c => [c.id, c]));
-      const brandMap = new Map((brandRes?.data || []).map(b => [b.id, b]));
+      const catMap = new Map((catRes.data || []).map((c: any) => [c.id, c]));
+      const brandMap = new Map((brandRes.data || []).map((b: any) => [b.id, b]));
 
-      products.forEach(p => {
-        if (p.category_id) p.category = catMap.get(p.category_id);
-        if (p.brand_id) p.brand = brandMap.get(p.brand_id);
+      products.forEach((p: any) => {
+        if (p.category_id) p.category = catMap.get(p.category_id) as Category | undefined;
+        if (p.brand_id) p.brand = brandMap.get(p.brand_id) as any;
       });
     } catch (mapErr) {
       console.warn('[storeProductsService] mapping failed:', mapErr);

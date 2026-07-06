@@ -224,7 +224,7 @@ export default async function BestSellersPage() {
           {/* SEO editorial content */}
           <section className="bg-white rounded-2xl border border-gray-200 p-8 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Why Kerala Groceries UK Is the UK's Favourite for Authentic Indian Groceries
+              Why Kerala Groceries UK Is the UK&apos;s Favourite for Authentic Indian Groceries
             </h2>
             <div className="prose prose-sm prose-slate max-w-none text-gray-700 space-y-4">
               <p>
@@ -235,7 +235,7 @@ export default async function BestSellersPage() {
                 pickles, chutneys, snacks, and a wide range of ready-to-eat meals.
               </p>
               <p>
-                Our best-selling products reflect what the UK's Kerala community actually buys:
+                Our best-selling products reflect what the UK&apos;s Kerala community actually buys:
                 <strong> Kerala red rice</strong>, <strong>coconut oil</strong>,{' '}
                 <strong>fish curry masala</strong>, <strong>tapioca chips</strong>,{' '}
                 <strong>mango pickle</strong>, and <strong>Kerala tea</strong> consistently rank

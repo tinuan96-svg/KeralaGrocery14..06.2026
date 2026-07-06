@@ -361,7 +361,7 @@ function RewardUpgradeCard({ spend, settings, tier }: { spend: number; settings:
             </div>
           </div>
           <p className="text-yellow-900/80 text-sm mb-4">
-            You're earning the maximum 15% cashback on every order. Keep spending to maximize your rewards!
+            You&apos;re earning the maximum 15% cashback on every order. Keep spending to maximize your rewards!
           </p>
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="bg-white/30 rounded-2xl p-3 text-center">

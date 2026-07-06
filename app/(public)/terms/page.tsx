@@ -82,7 +82,7 @@ export default function TermsPage() {
         <Section id="about" title="1. About Us">
           <p>
             Kerala Groceries UK is operated by <strong>Tasty Kerala Ltd</strong>, a company registered
-            in England and Wales. References to "we", "us", or "our" in these Terms refer to Tasty
+            in England and Wales. References to &quot;we&quot;, &quot;us&quot;, or &quot;our&quot; in these Terms refer to Tasty
             Kerala Ltd trading as Kerala Groceries UK.
           </p>
           <p>
@@ -262,7 +262,7 @@ export default function TermsPage() {
             </li>
             <li>
               <strong>Non-perishable goods</strong> — unopened, undamaged non-perishable items may be
-              returned within 14 days of delivery. Return postage costs are the customer's
+              returned within 14 days of delivery. Return postage costs are the customer&apos;s
               responsibility unless the return is due to our error.
             </li>
           </ul>
@@ -338,7 +338,7 @@ export default function TermsPage() {
 
         <Section id="changes" title="16. Changes to These Terms">
           <p>
-            We may update these Terms and Conditions from time to time. The "Last updated" date at the
+            We may update these Terms and Conditions from time to time. The &quot;Last updated&quot; date at the
             top of this page will reflect any changes. Continued use of our platform after changes are
             posted constitutes your acceptance of the revised Terms.
           </p>

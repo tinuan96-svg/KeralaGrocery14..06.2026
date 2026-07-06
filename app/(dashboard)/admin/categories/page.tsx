@@ -301,7 +301,7 @@ export default function CategoriesPage() {
             ) : categories.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-center py-16 text-gray-400 text-sm">
-                  No categories yet. Click "New Category" to add one.
+                  No categories yet. Click &quot;New Category&quot; to add one.
                 </td>
               </tr>
             ) : (
@@ -561,7 +561,7 @@ export default function CategoriesPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5">
             <h3 className="font-bold text-gray-900 mb-2">Delete category?</h3>
             <p className="text-sm text-gray-600 mb-4">
-              "{deleteTarget.name}" will be permanently deleted. Products in this category will have no category assigned.
+              &quot;{deleteTarget.name}&quot; will be permanently deleted. Products in this category will have no category assigned.
             </p>
             <div className="flex justify-end gap-2">
               <button

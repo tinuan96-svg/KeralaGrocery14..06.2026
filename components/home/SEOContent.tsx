@@ -48,12 +48,12 @@ export default function SEOContent() {
         <h3 className="text-2xl font-semibold mb-4">Why Choose Kerala Groceries UK?</h3>
         <p className="mb-4">
           Welcome to <strong>Kerala Groceries UK</strong>, your one-stop online shop for authentic Kerala and Indian groceries delivered across the United Kingdom.
-          We understand the importance of traditional ingredients and flavors, which is why we've curated an extensive selection of premium quality products
+          We understand the importance of traditional ingredients and flavors, which is why we&apos;ve curated an extensive selection of premium quality products
           that bring the authentic taste of Kerala to your kitchen.
         </p>
         <p className="mb-4">
           Our range includes <strong>authentic Kerala spices</strong>, premium rice varieties, traditional snacks, cooking essentials, and specialty ingredients
-          that are hard to find in regular supermarkets. Whether you're looking for <strong>Kerala masala</strong>, <strong>coconut oil</strong>,
+          that are hard to find in regular supermarkets. Whether you&apos;re looking for <strong>Kerala masala</strong>, <strong>coconut oil</strong>,
           <strong>appam flour</strong>, or <strong>traditional pickles</strong>, we stock everything you need to create delicious Kerala meals at home.
         </p>
         <p className="mb-4">
@@ -62,7 +62,7 @@ export default function SEOContent() {
           Plus, enjoy <strong>free delivery on all orders over £45</strong>.
         </p>
         <p>
-          Shopping with <strong>Tasty Kerala Ltd</strong> means you're choosing quality, authenticity, and convenience.
+          Shopping with <strong>Tasty Kerala Ltd</strong> means you&apos;re choosing quality, authenticity, and convenience.
           Browse our extensive catalog today and experience the taste of home, delivered straight to your door anywhere in the UK.
         </p>
       </div>

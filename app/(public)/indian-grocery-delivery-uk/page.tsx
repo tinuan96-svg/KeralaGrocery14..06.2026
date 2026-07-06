@@ -116,7 +116,7 @@ export default function IndianGroceryDeliveryUKPage() {
 
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">Speed and Reliability</h3>
           <p className="text-gray-700 mb-6">
-            We understand that when you're cooking traditional Indian or Kerala dishes, you need your ingredients quickly. That's why we offer <strong>next-day delivery</strong> for orders placed before 6 PM. Our logistics partners ensure your groceries arrive on time, every time.
+            We understand that when you&apos;re cooking traditional Indian or Kerala dishes, you need your ingredients quickly. That&apos;s why we offer <strong>next-day delivery</strong> for orders placed before 6 PM. Our logistics partners ensure your groceries arrive on time, every time.
           </p>
 
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">Fresh Products, Carefully Packed</h3>
