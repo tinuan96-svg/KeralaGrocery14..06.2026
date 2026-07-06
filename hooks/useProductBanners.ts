@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
+import { resolveProductImage } from '@/lib/utils/image';
 
 const BANNER_LIMIT = 8;
 
@@ -97,6 +98,7 @@ type ProductRow = {
   image_url: string | null;
   image_main: string | null;
   enhanced_image_url: string | null;
+  image_medium: string | null;
   is_featured: boolean | null;
   is_bestseller: boolean | null;
   is_new_arrival: boolean | null;
@@ -109,10 +111,12 @@ type ProductRow = {
 type LookupRow = { id: string; name: string; slug: string | null };
 
 function resolveImage(row: ProductRow): string | null {
-  if (row.image_main?.startsWith('http')) return row.image_main;
-  if (row.enhanced_image_url?.startsWith('http')) return row.enhanced_image_url;
-  if (row.image_url?.startsWith('http')) return row.image_url;
-  return null;
+  return resolveProductImage({
+    image_main: row.image_main,
+    enhanced_image_url: row.enhanced_image_url,
+    image_url: row.image_url,
+    image_medium: row.image_medium,
+  });
 }
 
 function toProduct(row: ProductRow, catMap: Record<string, LookupRow>, brdMap: Record<string, LookupRow>): BannerProduct {
@@ -147,7 +151,7 @@ const BASE_FILTER = {
   is_active: true,
 } as const;
 
-const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at';
+const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,image_medium,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at';
 
 export function useProductBanners(): ProductBannersData {
   const [banners, setBanners] = useState<Record<BannerKey, BannerProduct[]>>({

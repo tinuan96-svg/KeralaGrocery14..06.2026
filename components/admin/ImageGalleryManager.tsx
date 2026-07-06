@@ -4,10 +4,11 @@ import { useState, useRef, useCallback } from 'react';
 import {
   Upload, GripVertical, Wand as Wand2, Check, Loader as Loader2,
   TriangleAlert as AlertTriangle, Star, Trash2, RefreshCw,
-  Image as ImageIcon, Info,
+  Image as ImageIcon, Info, Library, Sparkles,
 } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase/client';
 import type { GalleryImage } from '@/lib/types/database';
+import MediaPicker from './MediaPicker';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -221,6 +222,7 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
   const [batchProgress, setBatchProgress] = useState<{ current: number; total: number } | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [expandedSlot, setExpandedSlot] = useState<string | null>(null);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const slotsRef = useRef(slots);
@@ -232,7 +234,8 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
     setSlots(prev => {
       const next = prev.map(s => s.localId === localId ? { ...s, ...patch } : s);
       slotsRef.current = next;
-      emit(next);
+      // Emit to parent after the state update cycle
+      setTimeout(() => emit(next), 0);
       return next;
     });
   }, [emit]);
@@ -303,12 +306,64 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
       };
     });
 
-    setSlots(prev => {
-      const next = [...prev, ...newSlots];
-      slotsRef.current = next;
-      emit(next);
-      return next;
+    const updatedSlots = [...slotsRef.current, ...newSlots];
+    setSlots(updatedSlots);
+    slotsRef.current = updatedSlots;
+    setTimeout(() => emit(updatedSlots), 0);
+
+    // Auto-trigger enhancement with a slight staggered delay to prevent overwhelming the browser
+    newSlots.forEach((s, idx) => {
+      if (s.stage === 'idle' && s.file) {
+        setTimeout(() => enhanceSlot(s.localId), idx * 800);
+      }
     });
+  };
+
+  const handleMediaSelect = async (url: string, filename: string) => {
+    setShowMediaPicker(false);
+
+    const newSlot: GallerySlot = {
+      dbRow: null,
+      localId: uid(),
+      previewUrl: url,
+      file: null,
+      position: slotsRef.current.length,
+      stage: 'uploaded', // Since it's already in storage
+      failedStage: null,
+      error: null,
+      uploadedUrl: url,
+      enhancedUrl: null,
+      validation: null,
+      diagnostics: null,
+      activeChoice: 'original',
+    };
+
+    // Auto-save to DB as we already have the URL
+    const supabase = getSupabase();
+    const { data: dbRow } = await supabase
+      .from('product_gallery_images')
+      .insert({
+        product_id: productId,
+        image_url: url,
+        original_image_url: url,
+        position: newSlot.position,
+        is_primary: newSlot.position === 0,
+        image_processing_status: 'pending',
+      })
+      .select()
+      .maybeSingle();
+
+    if (dbRow) {
+      newSlot.dbRow = dbRow as GalleryImage;
+    }
+
+    const updatedSlots = [...slotsRef.current, newSlot];
+    setSlots(updatedSlots);
+    slotsRef.current = updatedSlots;
+    setTimeout(() => emit(updatedSlots), 0);
+
+    // Auto-trigger enhancement for selected media
+    enhanceSlot(newSlot.localId);
   };
 
   // ── STEP 2+3 — Upload to Supabase Storage, obtain verified public URL ─────────
@@ -643,11 +698,28 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
   const uploadAll = async () => {
     const pending = slotsRef.current.filter(s => s.stage === 'idle' && s.file);
     if (!pending.length) return;
+
     setBatchProgress({ current: 0, total: pending.length });
-    for (let i = 0; i < pending.length; i++) {
-      setBatchProgress({ current: i + 1, total: pending.length });
-      await uploadSlot(pending[i].localId);
-    }
+
+    // Upload in parallel
+    const CONCURRENCY = 6;
+    const queue = [...pending];
+    let completed = 0;
+
+    const worker = async () => {
+      while (queue.length > 0) {
+        const slot = queue.shift();
+        if (!slot) break;
+        try {
+          await uploadSlot(slot.localId);
+        } finally {
+          completed++;
+          setBatchProgress(prev => prev ? { ...prev, current: completed } : null);
+        }
+      }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, pending.length) }).map(worker));
     setBatchProgress(null);
   };
 
@@ -656,11 +728,33 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
       s => s.stage === 'idle' || s.stage === 'uploaded' || (s.stage === 'failed' && s.file)
     );
     if (!enhanceable.length) return;
+
     setBatchProgress({ current: 0, total: enhanceable.length });
-    for (let i = 0; i < enhanceable.length; i++) {
-      setBatchProgress({ current: i + 1, total: enhanceable.length });
-      await enhanceSlot(enhanceable[i].localId);
-    }
+
+    // Process in parallel with a concurrency limit of 4.
+    // This is significantly faster than sequential processing.
+    const CONCURRENCY = 4;
+    const queue = [...enhanceable];
+    let completed = 0;
+
+    const worker = async () => {
+      while (queue.length > 0) {
+        const slot = queue.shift();
+        if (!slot) break;
+        try {
+          await enhanceSlot(slot.localId);
+        } catch (err) {
+          console.error(`[ImageGallery] Failed to enhance slot ${slot.localId}:`, err);
+        } finally {
+          completed++;
+          setBatchProgress(prev => prev ? { ...prev, current: completed } : null);
+        }
+      }
+    };
+
+    const workers = Array.from({ length: Math.min(CONCURRENCY, enhanceable.length) }).map(worker);
+    await Promise.all(workers);
+
     setBatchProgress(null);
   };
 
@@ -771,6 +865,35 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
 
   return (
     <div className="space-y-5">
+      {/* Quick Actions Header */}
+      {slots.length > 0 && (
+        <div className="flex items-center justify-between pb-2">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+            {slots.length} {slots.length === 1 ? 'Image' : 'Images'}
+          </h3>
+          <div className="flex gap-2">
+            {hasEnhanceable && !batchProgress && (
+              <button
+                type="button"
+                onClick={enhanceAll}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all shadow-md shadow-emerald-600/10 active:scale-95"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Process & Enhance All
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowMediaPicker(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
+            >
+              <Library className="w-3.5 h-3.5 text-emerald-600" />
+              Media Library
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Batch progress */}
       {batchProgress && (
         <div className="space-y-1.5">
@@ -804,7 +927,26 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
           <Upload className={`w-6 h-6 mx-auto mb-1.5 ${dragOver ? 'text-emerald-500' : 'text-gray-300'}`} />
           <p className="text-sm font-medium text-gray-700">Drop images or click to browse</p>
           <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WEBP — up to {MAX_IMAGES} images, max 20 MB each</p>
-          <p className="text-[11px] text-amber-600 mt-1">HEIC support coming soon — please export as JPG</p>
+
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="h-px w-8 bg-gray-100" />
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Or</span>
+            <div className="h-px w-8 bg-gray-100" />
+          </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMediaPicker(true);
+            }}
+            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+          >
+            <Library className="w-4 h-4 text-emerald-600" />
+            Select from Media
+          </button>
+
+          <p className="text-[11px] text-amber-600 mt-3">HEIC support coming soon — please export as JPG</p>
           <input
             ref={fileRef}
             type="file"
@@ -893,10 +1035,16 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
       {slots.length > 0 && (
         <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
           {canAddMore && (
-            <button type="button" onClick={() => fileRef.current?.click()}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-              <Upload className="w-3.5 h-3.5" /> Add Images
-            </button>
+            <>
+              <button type="button" onClick={() => fileRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                <Upload className="w-3.5 h-3.5" /> Add Images
+              </button>
+              <button type="button" onClick={() => setShowMediaPicker(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                <Library className="w-3.5 h-3.5 text-emerald-600" /> Select from Media
+              </button>
+            </>
           )}
 
           {hasUploadable && !batchProgress && (
@@ -908,8 +1056,8 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
 
           {hasEnhanceable && !batchProgress && (
             <button type="button" onClick={enhanceAll}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors">
-              <Wand2 className="w-3.5 h-3.5" /> Enhance All
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-lg shadow-emerald-600/20 active:scale-95">
+              <Sparkles className="w-3.5 h-3.5" /> Process & Enhance All
             </button>
           )}
 
@@ -927,6 +1075,12 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
             </button>
           )}
         </div>
+      )}
+      {showMediaPicker && (
+        <MediaPicker
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={handleMediaSelect}
+        />
       )}
     </div>
   );
@@ -953,6 +1107,12 @@ function FieldRow({ label, field }: { label: string; field: FieldValidation }) {
           <AlertTriangle className="w-3 h-3" /> Changed
         </span>
       )}
+      {showMediaPicker && (
+        <MediaPicker
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={handleMediaSelect}
+        />
+      )}
     </div>
   );
 }
@@ -970,6 +1130,12 @@ function ValidationReportPanel({ validation, passed }: { validation: ValidationR
       <FieldRow label="Brand" field={validation.brand} />
       <FieldRow label="Product Name" field={validation.productName} />
       <FieldRow label="Weight" field={validation.weight} />
+      {showMediaPicker && (
+        <MediaPicker
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={handleMediaSelect}
+        />
+      )}
     </div>
   );
 }
@@ -999,6 +1165,12 @@ function DiagnosticsPanel({ diag }: { diag: ApiDiagnostics }) {
           {diag.errorMessage && <Row label="Error" value={diag.errorMessage} highlight="red" />}
         </div>
       )}
+      {showMediaPicker && (
+        <MediaPicker
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={handleMediaSelect}
+        />
+      )}
     </div>
   );
 }
@@ -1010,6 +1182,12 @@ function Row({ label, value, highlight }: { label: string; value: string; highli
       <span className={`break-all ${highlight === 'red' ? 'text-red-600' : highlight === 'green' ? 'text-green-600' : 'text-gray-700'}`}>
         {value}
       </span>
+      {showMediaPicker && (
+        <MediaPicker
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={handleMediaSelect}
+        />
+      )}
     </div>
   );
 }
@@ -1164,6 +1342,30 @@ function SlotCard({
             </div>
           )}
 
+      {/* OCR choice commit buttons — only for ocr_failed or done with ocr_warning */}
+          {slot.stage === 'ocr_failed' && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-2.5 space-y-2">
+              <p className="text-[10px] font-bold text-red-700 uppercase tracking-wider">Enhancement Rejected</p>
+              <p className="text-xs text-red-600">{slot.error}</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => commitChoice(slot.localId, 'original')}
+                  className="flex-1 px-3 py-1.5 text-[10px] font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Keep Original
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onEnhance()}
+                  className="px-3 py-1.5 text-[10px] font-bold text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  Retry AI
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Validation report — shown for done and ocr_failed */}
           {(slot.stage === 'done' || slot.stage === 'ocr_failed') && slot.validation && (
             <ValidationReportPanel validation={slot.validation} passed={slot.stage === 'done'} />
@@ -1185,7 +1387,7 @@ function SlotCard({
             {canEnhance && (
               <button type="button" onClick={onEnhance}
                 className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors">
-                <Wand2 className="w-3 h-3" /> {slot.stage === 'idle' ? 'Upload & Enhance' : 'Enhance'}
+                <Sparkles className="w-3 h-3" /> {slot.stage === 'idle' ? 'Upload & Process' : 'Process & Enhance'}
               </button>
             )}
             {canReprocess && (
@@ -1229,7 +1431,7 @@ function SlotCard({
           {canEnhance && (
             <button type="button" onClick={e => { e.stopPropagation(); onEnhance(); }}
               className="flex-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg py-1 hover:bg-emerald-100 transition-colors">
-              {slot.stage === 'idle' ? 'Upload & Enhance' : 'Enhance'}
+              {slot.stage === 'idle' ? 'Process' : 'Process'}
             </button>
           )}
           {canReprocess && (
@@ -1269,6 +1471,12 @@ function SlotCard({
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
+      )}
+      {showMediaPicker && (
+        <MediaPicker
+          onClose={() => setShowMediaPicker(false)}
+          onSelect={handleMediaSelect}
+        />
       )}
     </div>
   );

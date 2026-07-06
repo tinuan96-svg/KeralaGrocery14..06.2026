@@ -389,8 +389,10 @@ export default function ProductEditModal({ product, onClose, onSave }: Props) {
       // Derive primary image from gallery (position 0) if available
       const primarySlot = gallerySlots.find(s => s.position === 0) ?? gallerySlots[0] ?? null;
       let finalImageUrl: string | null = null;
+
       if (primarySlot) {
-        finalImageUrl = primarySlot.previewUrl ?? primarySlot.dbRow?.image_url ?? null;
+        // Use the confirmed storage URL, not the local blob preview
+        finalImageUrl = primarySlot.enhancedUrl ?? primarySlot.uploadedUrl ?? primarySlot.dbRow?.image_url ?? null;
       } else {
         // Fall back to legacy single-image flow
         finalImageUrl = imageUrl || null;
@@ -475,6 +477,9 @@ export default function ProductEditModal({ product, onClose, onSave }: Props) {
       )}
     </div>
   );
+
+  const galleryLoaded = tab === 'Image' && !!galleryInitial;
+  const isGalleryBusy = gallerySlots.some(s => s.stage === 'uploading' || s.stage === 'enhancing');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
@@ -909,10 +914,10 @@ export default function ProductEditModal({ product, onClose, onSave }: Props) {
             </button>
             <button
               onClick={handleSave}
-              disabled={saving || uploading}
+              disabled={saving || uploading || isGalleryBusy}
               className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors disabled:opacity-40 inline-flex items-center gap-2"
             >
-              {(saving || uploading) && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {(saving || uploading || isGalleryBusy) && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               Save Changes
             </button>
           </div>
