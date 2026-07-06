@@ -30,13 +30,21 @@ interface ProductRow {
 
 async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
   const supabase = createServerSupabaseClient();
-  const { data } = await supabase
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+  let query = supabase
     .from('products')
     .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id, categories(name)')
-    .eq('slug', slug)
     .eq('approval_status', 'approved')
-    .eq('visibility_status', true)
-    .maybeSingle();
+    .eq('visibility_status', true);
+
+  if (isUuid) {
+    query = query.or(`id.eq.${slug},slug.eq.${slug}`);
+  } else {
+    query = query.eq('slug', slug);
+  }
+
+  const { data } = await query.maybeSingle();
   return (data as unknown as ProductRow) ?? null;
 }
 

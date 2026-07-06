@@ -271,13 +271,21 @@ export async function getProductDetail(
 ): Promise<{ product: RpcProduct | null; error: string | null }> {
   try {
     const supabase = getSupabase();
-    const { data, error } = await supabase
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+
+    let query = supabase
       .from('products')
       .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, categories(name), variants:product_variants(*)')
-      .eq('slug', idOrSlug)
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true)
-      .maybeSingle();
+      .eq('visibility_status', true);
+
+    if (isUuid) {
+      query = query.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
+    } else {
+      query = query.eq('slug', idOrSlug);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) return { product: null, error: error.message };
     if (!data) return { product: null, error: null };

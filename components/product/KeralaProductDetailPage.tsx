@@ -90,11 +90,20 @@ export default function KeralaProductDetailPage({ slug }: Props) {
       if (!p) {
         // Diagnostics for debugging "product not found"
         const supabase = getSupabase();
-        const { data: diag } = await supabase
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+        let diagQuery = supabase
           .from('products')
-          .select('id, slug, centralhub_product_id, approval_status, visibility_status')
-          .eq('slug', slug)
-          .maybeSingle();
+          .select('id, slug, centralhub_product_id, approval_status, visibility_status');
+
+        if (isUuid) {
+          diagQuery = diagQuery.or(`id.eq.${slug},slug.eq.${slug}`);
+        } else {
+          diagQuery = diagQuery.eq('slug', slug);
+        }
+
+        const { data: diag } = await diagQuery.maybeSingle();
+
         console.warn('[ProductDetail] not found:', {
           requestedSlug: slug,
           matchedProduct: diag ?? null,
