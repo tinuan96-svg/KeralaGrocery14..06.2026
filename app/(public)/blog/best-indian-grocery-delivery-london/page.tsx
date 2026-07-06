@@ -47,7 +47,7 @@ export default function BestIndianGroceryDeliveryLondonPage() {
           </div>
 
           <p className="lead">
-            London's diverse population means there's high demand for authentic Indian groceries. Whether you're in Southall, Wembley, Tooting, or anywhere else in London, you can now get Kerala and Indian groceries delivered to your door. This guide compares the best options.
+            London&apos;s diverse population means there&apos;s high demand for authentic Indian groceries. Whether you&apos;re in Southall, Wembley, Tooting, or anywhere else in London, you can now get Kerala and Indian groceries delivered to your door. This guide compares the best options.
           </p>
 
           <h2>Why Use Indian Grocery Delivery in London?</h2>
@@ -59,7 +59,7 @@ export default function BestIndianGroceryDeliveryLondonPage() {
             <li><strong>Wider selection</strong> - access to specialty Kerala products</li>
             <li><strong>Convenience</strong> - delivered to your door at your preferred time</li>
             <li><strong>Better prices</strong> - online stores often have competitive pricing</li>
-            <li><strong>Stock visibility</strong> - see what's available before ordering</li>
+            <li><strong>Stock visibility</strong> - see what&apos;s available before ordering</li>
           </ul>
 
           <h2>What to Look for in an Indian Grocery Delivery Service</h2>
@@ -265,7 +265,7 @@ export default function BestIndianGroceryDeliveryLondonPage() {
 
           <h2>Final Thoughts</h2>
           <p>
-            Indian grocery delivery in London has never been easier or more convenient. Whether you're cooking traditional Kerala dishes or exploring South Indian cuisine, online delivery gives you access to authentic products without the hassle of traveling across London.
+            Indian grocery delivery in London has never been easier or more convenient. Whether you&apos;re cooking traditional Kerala dishes or exploring South Indian cuisine, online delivery gives you access to authentic products without the hassle of traveling across London.
           </p>
           <p>
             Choose a specialist service like <Link href="/" className="text-green-600 hover:underline">Kerala Groceries UK</Link> for the best selection, authentic products, and reliable delivery.

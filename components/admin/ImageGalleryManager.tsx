@@ -1107,12 +1107,6 @@ function FieldRow({ label, field }: { label: string; field: FieldValidation }) {
           <AlertTriangle className="w-3 h-3" /> Changed
         </span>
       )}
-      {showMediaPicker && (
-        <MediaPicker
-          onClose={() => setShowMediaPicker(false)}
-          onSelect={handleMediaSelect}
-        />
-      )}
     </div>
   );
 }
@@ -1130,12 +1124,6 @@ function ValidationReportPanel({ validation, passed }: { validation: ValidationR
       <FieldRow label="Brand" field={validation.brand} />
       <FieldRow label="Product Name" field={validation.productName} />
       <FieldRow label="Weight" field={validation.weight} />
-      {showMediaPicker && (
-        <MediaPicker
-          onClose={() => setShowMediaPicker(false)}
-          onSelect={handleMediaSelect}
-        />
-      )}
     </div>
   );
 }
@@ -1165,12 +1153,6 @@ function DiagnosticsPanel({ diag }: { diag: ApiDiagnostics }) {
           {diag.errorMessage && <Row label="Error" value={diag.errorMessage} highlight="red" />}
         </div>
       )}
-      {showMediaPicker && (
-        <MediaPicker
-          onClose={() => setShowMediaPicker(false)}
-          onSelect={handleMediaSelect}
-        />
-      )}
     </div>
   );
 }
@@ -1182,12 +1164,6 @@ function Row({ label, value, highlight }: { label: string; value: string; highli
       <span className={`break-all ${highlight === 'red' ? 'text-red-600' : highlight === 'green' ? 'text-green-600' : 'text-gray-700'}`}>
         {value}
       </span>
-      {showMediaPicker && (
-        <MediaPicker
-          onClose={() => setShowMediaPicker(false)}
-          onSelect={handleMediaSelect}
-        />
-      )}
     </div>
   );
 }
@@ -1350,7 +1326,7 @@ function SlotCard({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => commitChoice(slot.localId, 'original')}
+                  onClick={() => onCommit('original')}
                   className="flex-1 px-3 py-1.5 text-[10px] font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Keep Original
@@ -1471,12 +1447,6 @@ function SlotCard({
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
-      )}
-      {showMediaPicker && (
-        <MediaPicker
-          onClose={() => setShowMediaPicker(false)}
-          onSelect={handleMediaSelect}
-        />
       )}
     </div>
   );

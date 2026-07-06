@@ -232,7 +232,7 @@ export default function SmsDiagnosticsPage() {
             <p className="text-xs text-amber-200/80 leading-relaxed">
               The error <code className="bg-amber-900/60 px-1 rounded">/v2/Services/00/Verifications was not found</code> means
               {' '}<code className="bg-amber-900/60 px-1 rounded">TWILIO_VERIFY_SERVICE_SID</code> is set to{' '}
-              <code className="bg-amber-900/60 px-1 rounded">"00"</code> — a placeholder, not a real SID.
+              <code className="bg-amber-900/60 px-1 rounded">{"\"00\""}</code> — a placeholder, not a real SID.
               A valid Verify Service SID starts with <strong className="text-amber-300">VA</strong> and is 34 characters long
               (e.g. <code className="bg-amber-900/60 px-1 rounded">VAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code>).
             </p>

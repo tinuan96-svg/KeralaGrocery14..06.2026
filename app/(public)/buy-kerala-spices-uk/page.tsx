@@ -87,7 +87,7 @@ export default async function BuyKeralaSpicesUKPage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Buy Kerala Spices from Us?</h2>
 
           <p className="text-gray-700 mb-6">
-            When you <strong>buy Kerala spices in the UK</strong> from Kerala Groceries, you're choosing authenticity and quality. Our spices are sourced directly from Kerala, ensuring you get the genuine flavors that make Kerala cuisine so special. Whether you're making a traditional fish curry, beef fry, or any Kerala dish, our spices will deliver authentic taste every time.
+            When you <strong>buy Kerala spices in the UK</strong> from Kerala Groceries, you&apos;re choosing authenticity and quality. Our spices are sourced directly from Kerala, ensuring you get the genuine flavors that make Kerala cuisine so special. Whether you&apos;re making a traditional fish curry, beef fry, or any Kerala dish, our spices will deliver authentic taste every time.
           </p>
 
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">Our Kerala Spice Range</h3>
@@ -142,7 +142,7 @@ export default async function BuyKeralaSpicesUKPage() {
 
           <h4 className="text-xl font-semibold text-gray-900 mb-3">Freshness Guaranteed</h4>
           <p className="text-gray-700 mb-6">
-            We know that fresh spices make all the difference in your cooking. All our <strong>Kerala spices</strong> are regularly restocked to ensure maximum freshness and potency. When you order from us, you're getting spices at their peak flavor and aroma.
+            We know that fresh spices make all the difference in your cooking. All our <strong>Kerala spices</strong> are regularly restocked to ensure maximum freshness and potency. When you order from us, you&apos;re getting spices at their peak flavor and aroma.
           </p>
 
           <h4 className="text-xl font-semibold text-gray-900 mb-3">Authentic Kerala Taste</h4>
@@ -152,7 +152,7 @@ export default async function BuyKeralaSpicesUKPage() {
 
           <h4 className="text-xl font-semibold text-gray-900 mb-3">Competitive Prices</h4>
           <p className="text-gray-700 mb-6">
-            We believe authentic Kerala spices should be accessible to everyone. That's why we offer competitive prices without compromising on quality. Plus, enjoy free delivery on orders over £45.
+            We believe authentic Kerala spices should be accessible to everyone. That&apos;s why we offer competitive prices without compromising on quality. Plus, enjoy free delivery on orders over £45.
           </p>
 
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">How to Use Kerala Spices</h3>

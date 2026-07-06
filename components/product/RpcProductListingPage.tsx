@@ -265,7 +265,7 @@ export default function RpcProductListingPage() {
                 <span className="text-xs text-gray-500">Active:</span>
                 {search && (
                   <Badge variant="secondary" className="gap-1 cursor-pointer text-xs" onClick={() => setSearchInput('')}>
-                    "{search}" <X className="w-2.5 h-2.5" />
+                    &quot;{search}&quot; <X className="w-2.5 h-2.5" />
                   </Badge>
                 )}
                 {category && (

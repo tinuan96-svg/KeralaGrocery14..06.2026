@@ -172,7 +172,7 @@ export default function PrivacyPage() {
           <h3 className="font-semibold text-gray-900 mt-4 mb-1">4.4 Supabase (Infrastructure)</h3>
           <p>
             Our platform is built on <strong>Supabase</strong>, a cloud database and authentication
-            provider. Your account and order data is stored on Supabase's encrypted infrastructure,
+            provider. Your account and order data is stored on Supabase&apos;s encrypted infrastructure,
             hosted within the European Economic Area (EEA).
           </p>
 

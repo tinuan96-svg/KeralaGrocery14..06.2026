@@ -478,7 +478,6 @@ export default function ProductEditModal({ product, onClose, onSave }: Props) {
     </div>
   );
 
-  const galleryLoaded = tab === 'Image' && !!galleryInitial;
   const isGalleryBusy = gallerySlots.some(s => s.stage === 'uploading' || s.stage === 'enhancing');
 
   return (

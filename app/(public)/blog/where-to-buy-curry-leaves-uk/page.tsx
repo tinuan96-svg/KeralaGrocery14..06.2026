@@ -31,7 +31,7 @@ export default function WhereToBuyCurryLeavesUKPage() {
               Where to Buy Fresh Curry Leaves in the UK
             </h1>
             <p className="text-xl text-gray-600">
-              Fresh curry leaves are essential for authentic Indian and Kerala cooking. Here's your complete guide to finding and buying curry leaves in the UK.
+              Fresh curry leaves are essential for authentic Indian and Kerala cooking. Here&apos;s your complete guide to finding and buying curry leaves in the UK.
             </p>
             <div className="flex items-center gap-4 text-sm text-gray-500 mt-4">
               <span>Updated: March 28, 2026</span>
@@ -47,7 +47,7 @@ export default function WhereToBuyCurryLeavesUKPage() {
           </div>
 
           <p className="lead">
-            Curry leaves (Murraya koenigii) are an indispensable ingredient in South Indian and Kerala cuisine. Their distinctive aroma and flavor cannot be replicated by any substitute. If you're cooking authentic Indian food in the UK, you need to know where to find fresh curry leaves.
+            Curry leaves (Murraya koenigii) are an indispensable ingredient in South Indian and Kerala cuisine. Their distinctive aroma and flavor cannot be replicated by any substitute. If you&apos;re cooking authentic Indian food in the UK, you need to know where to find fresh curry leaves.
           </p>
 
           <h2>Why Fresh Curry Leaves Matter</h2>
@@ -149,14 +149,14 @@ export default function WhereToBuyCurryLeavesUKPage() {
           <ul>
             <li>Always add to hot oil at the beginning of tempering</li>
             <li>Use fresh leaves whenever possible</li>
-            <li>Don't overcook - they should sizzle and become aromatic</li>
+            <li>Don&apos;t overcook - they should sizzle and become aromatic</li>
             <li>Use 8-10 leaves for most curry recipes</li>
             <li>Remove the stem before cooking (optional)</li>
           </ul>
 
           <h2>Can You Substitute Curry Leaves?</h2>
           <p>
-            Honestly, no. While some recipes suggest bay leaves or basil as substitutes, nothing replicates the unique flavor of curry leaves. If you're making <Link href="/buy-kerala-spices-uk" className="text-green-600 hover:underline">authentic Kerala dishes</Link>, fresh curry leaves are non-negotiable.
+            Honestly, no. While some recipes suggest bay leaves or basil as substitutes, nothing replicates the unique flavor of curry leaves. If you&apos;re making <Link href="/buy-kerala-spices-uk" className="text-green-600 hover:underline">authentic Kerala dishes</Link>, fresh curry leaves are non-negotiable.
           </p>
           <p>
             That said, if you absolutely cannot find fresh curry leaves, dried curry leaves are better than no curry leaves, though the flavor is significantly muted.
@@ -164,14 +164,14 @@ export default function WhereToBuyCurryLeavesUKPage() {
 
           <h2>Ordering Curry Leaves Online</h2>
           <p>
-            For consistent access to fresh curry leaves, ordering online from a specialist <Link href="/indian-grocery-delivery-uk" className="text-green-600 hover:underline">Indian grocery delivery service</Link> is your best bet. You can order in bulk and freeze what you don't immediately need.
+            For consistent access to fresh curry leaves, ordering online from a specialist <Link href="/indian-grocery-delivery-uk" className="text-green-600 hover:underline">Indian grocery delivery service</Link> is your best bet. You can order in bulk and freeze what you don&apos;t immediately need.
           </p>
           <p>
             <strong>Benefits of ordering online:</strong>
           </p>
           <ul>
             <li>Delivered fresh in protective packaging</li>
-            <li>Available even if you don't live near an Asian supermarket</li>
+            <li>Available even if you don&apos;t live near an Asian supermarket</li>
             <li>Can combine with other <Link href="/products" className="text-green-600 hover:underline">Kerala groceries</Link> for efficient shopping</li>
             <li>Free delivery on larger orders</li>
           </ul>
@@ -200,7 +200,7 @@ export default function WhereToBuyCurryLeavesUKPage() {
             Fresh curry leaves transform your cooking from good to authentic. While they can be challenging to find in some parts of the UK, online delivery makes it easy to keep a steady supply in your freezer.
           </p>
           <p>
-            Don't let the lack of local availability stop you from making authentic Kerala and South Indian food. Order online, stock up, and freeze for long-term use.
+            Don&apos;t let the lack of local availability stop you from making authentic Kerala and South Indian food. Order online, stock up, and freeze for long-term use.
           </p>
 
           <h3>Related Articles</h3>

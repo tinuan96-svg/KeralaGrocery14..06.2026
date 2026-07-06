@@ -131,7 +131,7 @@ export default function IndianGroceryDeliveryUKPage() {
 
           <h3 className="text-2xl font-semibold text-gray-900 mb-4">Track Your Order</h3>
           <p className="text-gray-700 mb-6">
-            Once your order is dispatched, you'll receive tracking information so you can monitor your delivery in real-time. Know exactly when to expect your groceries.
+            Once your order is dispatched, you&apos;ll receive tracking information so you can monitor your delivery in real-time. Know exactly when to expect your groceries.
           </p>
         </div>
 

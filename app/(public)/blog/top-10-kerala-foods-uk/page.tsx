@@ -47,7 +47,7 @@ export default function Top10KeralaFoodsUKPage() {
           </div>
 
           <p className="lead">
-            Living in the UK doesn't mean you have to give up your favorite Kerala foods. Thanks to online Kerala grocery stores, you can now get authentic products delivered straight to your door. Here are the top 10 must-have Kerala foods available in the UK.
+            Living in the UK doesn&apos;t mean you have to give up your favorite Kerala foods. Thanks to online Kerala grocery stores, you can now get authentic products delivered straight to your door. Here are the top 10 must-have Kerala foods available in the UK.
           </p>
 
           <h2>1. Kerala Banana Chips (Nenthra Chips)</h2>
@@ -55,7 +55,7 @@ export default function Top10KeralaFoodsUKPage() {
             No list of Kerala foods is complete without mentioning <strong>banana chips</strong>. These crispy, savory snacks made from raw plantains are a Kerala staple. Perfect for tea time or as a crunchy snack any time of day.
           </p>
           <p>
-            You can <Link href="/products" className="text-green-600 hover:underline">buy authentic Kerala banana chips</Link> in various flavors including salted, spicy, and pepper varieties. They're delivered fresh and crispy, maintaining that authentic Kerala taste.
+            You can <Link href="/products" className="text-green-600 hover:underline">buy authentic Kerala banana chips</Link> in various flavors including salted, spicy, and pepper varieties. They&apos;re delivered fresh and crispy, maintaining that authentic Kerala taste.
           </p>
 
           <h2>2. Kerala Matta Rice (Red Rice)</h2>
@@ -68,7 +68,7 @@ export default function Top10KeralaFoodsUKPage() {
 
           <h2>3. Coconut Oil (Velichenna)</h2>
           <p>
-            Pure <strong>coconut oil</strong> is the foundation of Kerala cooking. Whether you're making sambar, avial, or fish curry, authentic coconut oil gives dishes that unmistakable Kerala flavor and aroma.
+            Pure <strong>coconut oil</strong> is the foundation of Kerala cooking. Whether you&apos;re making sambar, avial, or fish curry, authentic coconut oil gives dishes that unmistakable Kerala flavor and aroma.
           </p>
           <p>
             Look for cold-pressed or virgin coconut oil for the best quality. It's also great for hair care and skin care, making it a versatile addition to your home.
@@ -76,10 +76,10 @@ export default function Top10KeralaFoodsUKPage() {
 
           <h2>4. Kerala-Style Curry Powder</h2>
           <p>
-            Authentic <strong>Kerala curry powder</strong> is different from generic curry powder. It's a carefully balanced blend of spices that includes coriander, cumin, turmeric, and other traditional spices in the right proportions.
+            Authentic <strong>Kerala curry powder</strong> is different from generic curry powder. It&apos;s a carefully balanced blend of spices that includes coriander, cumin, turmeric, and other traditional spices in the right proportions.
           </p>
           <p>
-            Having <Link href="/products" className="text-green-600 hover:underline">Kerala-style curry powder</Link> in your pantry means you're always ready to make authentic Kerala fish curry, chicken curry, or vegetable stew.
+            Having <Link href="/products" className="text-green-600 hover:underline">Kerala-style curry powder</Link> in your pantry means you&apos;re always ready to make authentic Kerala fish curry, chicken curry, or vegetable stew.
           </p>
 
           <h2>5. Pickles (Achar)</h2>
@@ -92,7 +92,7 @@ export default function Top10KeralaFoodsUKPage() {
 
           <h2>6. Tapioca (Kappa)</h2>
           <p>
-            <strong>Tapioca</strong>, or kappa as it's known in Kerala, is a beloved staple. While fresh tapioca can be hard to find, frozen tapioca is readily available through <Link href="/indian-grocery-delivery-uk" className="text-green-600 hover:underline">Indian grocery delivery services</Link>.
+            <strong>Tapioca</strong>, or kappa as it&apos;s known in Kerala, is a beloved staple. While fresh tapioca can be hard to find, frozen tapioca is readily available through <Link href="/indian-grocery-delivery-uk" className="text-green-600 hover:underline">Indian grocery delivery services</Link>.
           </p>
           <p>
             Pair it with fish curry for the classic Kerala combination of kappa and meen curry.
@@ -147,7 +147,7 @@ export default function Top10KeralaFoodsUKPage() {
 
           <h2>Final Thoughts</h2>
           <p>
-            Living in the UK doesn't mean you have to compromise on authentic Kerala flavors. With online Kerala grocery delivery, you can enjoy all your favorite foods from home. Stock up on these essentials and bring the taste of Kerala to your kitchen.
+            Living in the UK doesn&apos;t mean you have to compromise on authentic Kerala flavors. With online Kerala grocery delivery, you can enjoy all your favorite foods from home. Stock up on these essentials and bring the taste of Kerala to your kitchen.
           </p>
 
           <div className="bg-green-50 border-2 border-green-600 rounded-xl p-8 my-8 not-prose">
