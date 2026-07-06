@@ -251,12 +251,36 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
+      const serverTotal = cartTotal + deliveryFee;
+      const cardChargeFinal = Math.max(0, parseFloat((serverTotal - walletAmount).toFixed(2)));
+
+      // If the entire total is covered by wallet credit, process as 'paid' immediately
+      if (cardChargeFinal <= 0) {
+        const result = await createOrder('paid');
+        const orderId = result.order.id;
+
+        if (walletAmount > 0 && user) {
+          const supabase = getSupabase();
+          const { data: { session } } = await supabase.auth.getSession();
+          const authToken = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+          await fetch(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/wallet-payment`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+              body: JSON.stringify({ order_id: orderId, wallet_amount: walletAmount }),
+            }
+          ).catch(e => console.error('[Checkout] wallet deduction failed:', e));
+        }
+
+        clearCart();
+        router.push(`/order-success?order=${result.order.order_number}`);
+        return;
+      }
+
+      // Normal card payment flow
       const result      = await createOrder('pending');
       const orderNumber = result.order.order_number;
-      const serverTotal = result.order.total ?? displayTotal;
-
-      // Card charge = server total minus wallet amount (wallet deducted by webhook after auth)
-      const cardChargeFinal = Math.max(0, parseFloat((serverTotal - walletAmount).toFixed(2)));
 
       const supabase    = getSupabase();
       const { data: { session } } = await supabase.auth.getSession();

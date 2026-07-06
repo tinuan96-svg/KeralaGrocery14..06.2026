@@ -88,7 +88,7 @@ Deno.serve(async (req: Request) => {
           payment_reference: downstreamReference || transactionReference,
         })
         .eq("order_number", transactionReference)
-        .select("id, customer_name, customer_phone, total, order_number")
+        .select("id, customer_name, customer_phone, total, order_number, user_id")
         .maybeSingle();
 
       if (error) {
@@ -106,33 +106,56 @@ Deno.serve(async (req: Request) => {
 
       await updateWebhookLog(supabase, logId, "success", null);
 
-      // Send confirmation notification asynchronously
-      if (updatedOrder?.customer_phone) {
+      // Send confirmation notifications asynchronously (WhatsApp & Push)
+      if (updatedOrder) {
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-        const { data: items } = await supabase
-          .from("order_items")
-          .select("product_name, quantity")
-          .eq("order_id", updatedOrder.id);
+        // 1. Send WhatsApp
+        if (updatedOrder.customer_phone) {
+          const { data: items } = await supabase
+            .from("order_items")
+            .select("product_name, quantity")
+            .eq("order_id", updatedOrder.id);
 
-        EdgeRuntime.waitUntil(
-          fetch(`${supabaseUrl}/functions/v1/send-whatsapp-notification`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}` },
-            body: JSON.stringify({
-              customer_name:  updatedOrder.customer_name,
-              user_phone:     updatedOrder.customer_phone,
-              order_id:       updatedOrder.id,
-              order_number:   updatedOrder.order_number,
-              items:          (items ?? []).map(i => ({ name: i.product_name, qty: i.quantity })),
-              total_amount:   updatedOrder.total,
-            }),
-          }).then(async res => {
-            const json = await res.json().catch(() => ({}));
-            if (!json.success) console.error("[worldpay-webhook] notification failed:", json.error);
-          }).catch(err => console.error("[worldpay-webhook] notification error:", err))
-        );
+          EdgeRuntime.waitUntil(
+            fetch(`${supabaseUrl}/functions/v1/send-whatsapp-notification`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}` },
+              body: JSON.stringify({
+                customer_name:  updatedOrder.customer_name,
+                user_phone:     updatedOrder.customer_phone,
+                order_id:       updatedOrder.id,
+                order_number:   updatedOrder.order_number,
+                items:          (items ?? []).map(i => ({ name: i.product_name, qty: i.quantity })),
+                total_amount:   updatedOrder.total,
+              }),
+            }).then(async res => {
+              const json = await res.json().catch(() => ({}));
+              if (!json.success) console.error("[worldpay-webhook] WhatsApp failed:", json.error);
+            }).catch(err => console.error("[worldpay-webhook] WhatsApp error:", err))
+          );
+        }
+
+        // 2. Send Push Notification
+        if (updatedOrder.user_id) {
+          EdgeRuntime.waitUntil(
+            fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}` },
+              body: JSON.stringify({
+                user_id: updatedOrder.user_id,
+                title: "Payment Confirmed! ✅",
+                body: `Your order #${updatedOrder.order_number} for £${updatedOrder.total} is now being processed.`,
+                data: {
+                  order_id: updatedOrder.id,
+                  order_number: updatedOrder.order_number,
+                  url: "https://keralagrocery.com/orders"
+                }
+              }),
+            }).catch(err => console.error("[worldpay-webhook] Push error:", err))
+          );
+        }
       }
 
     } else if (type === "refused" || type === "error" || type === "cancelled") {

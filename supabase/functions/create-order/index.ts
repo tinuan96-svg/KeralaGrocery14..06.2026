@@ -212,7 +212,11 @@ Deno.serve(async (req: Request) => {
     }
 
     // ── Order confirmation notifications (WhatsApp & Push) ──────────────────
-    if (orderData.customer_phone || userId) {
+    // Only notify if payment is confirmed (paid) OR if it's Cash on Delivery.
+    // For card payments, the confirmation is sent by the Worldpay webhook after authorization.
+    const shouldNotifyNow = orderData.payment_status === "paid" || orderData.payment_method === "cod";
+
+    if (shouldNotifyNow && (orderData.customer_phone || userId)) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
