@@ -1,60 +1,55 @@
 package com.keralagrocery.app;
 
 import android.os.Bundle;
-import android.os.Message;
-import android.webkit.WebChromeClient;
+import android.view.KeyEvent;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import androidx.core.view.WindowCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        
-        WebView webView = getBridge().getWebView();
+        final WebView webView = getBridge().getWebView();
         if (webView != null) {
             WebSettings settings = webView.getSettings();
-            // 1. Enable popup support
-            settings.setSupportMultipleWindows(true);
+            settings.setUserAgentString("Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36");
             settings.setJavaScriptEnabled(true);
-            settings.setJavaScriptCanOpenWindowsAutomatically(true);
             settings.setDomStorageEnabled(true);
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-            
-            // 2. Add a WebChromeClient to handle the popup request
-            // Without this, setSupportMultipleWindows(true) does nothing.
-            webView.setWebChromeClient(new WebChromeClient() {
-                @Override
-                public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-                    // Create a temporary WebView to host the popup content
-                    WebView newWebView = new WebView(MainActivity.this);
-                    newWebView.getSettings().setJavaScriptEnabled(true);
-                    newWebView.getSettings().setSupportMultipleWindows(true);
-                    newWebView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-                    
-                    // Crucial: The new window must also have a ChromeClient to handle its own close/redirect
-                    newWebView.setWebChromeClient(new WebChromeClient() {
-                        @Override
-                        public void onCloseWindow(WebView window) {
-                            super.onCloseWindow(window);
-                        }
-                    });
 
-                    // Tell the system to use our original WebView to load the new URL 
-                    // instead of a popup, or handle it as a proper popup.
-                    // For payment gateways, it's often best to let the main WebView handle the redirect.
-                    WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
-                    transport.setWebView(view);
-                    resultMsg.sendToTarget();
-                    return true;
-                }
-            });
+            // Injection Fix: The website has CSS that explicitly hides the bottom menu on Android.
+            // We force it to show by injecting an override style.
+            final String js = "(function() {" +
+                        "var css = 'html.is-native.is-android .kg-mobile-nav { display: grid !important; opacity: 1 !important; visibility: visible !important; } " +
+                        "html.is-native.is-android .kg-web-header { display: block !important; }';" +
+                        "var style = document.createElement('style');" +
+                        "style.innerHTML = css;" +
+                        "document.head.appendChild(style);" +
+                        "})();";
+            
+            // Inject multiple times to handle initial load and client-side navigation
+            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1000);
+            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 3000);
+            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 5000);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+            WebView webView = getBridge().getWebView();
+            if (webView != null && webView.canGoBack()) {
+                webView.goBack();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

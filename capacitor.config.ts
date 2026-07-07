@@ -32,6 +32,10 @@ const config: CapacitorConfig = {
     allowsLinkPreview: false,
   },
 
+  android: {
+    appendUserAgent: 'KeralaGroceryApp/1.0.0',
+  },
+
   loggingBehavior: 'none',
 
   plugins: {

@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "cap:sync": "npx cap sync",
     "cap:ios": "npx cap open ios",
-    "cap:icons": "node scripts/generate-ios-icons.js",
+    "cap:icons": "node scripts/generate-ios-icons.js && node scripts/generate-android-icons.js",
     "cap:splash": "node scripts/generate-splash-screens.js",
     "cap:patch-plist": "node scripts/patch-info-plist.js",
     "ios:setup": "npx cap add ios && node scripts/patch-info-plist.js && cp ios-config/Podfile.patch ios/App/Podfile && cd ios/App && pod install",

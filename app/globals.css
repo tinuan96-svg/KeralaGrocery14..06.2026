@@ -649,14 +649,6 @@
 
 /* ── Capacitor / Native shell overrides ──────────────────────────────────── */
 
-/* Android native: hide the web header and mobile nav because the Android
-   activity_main.xml provides a native header (AppBarLayout) and a native
-   BottomNavigationView that replace them. */
-html.is-native.is-android .kg-web-header,
-html.is-native.is-android .kg-mobile-nav {
-  display: none !important;
-}
-
 /* iOS native: the web header and mobile nav ARE shown — there is no native
    iOS chrome to replace them. Hide only presentational banners. */
 html.is-native .kg-announcement-bar,
