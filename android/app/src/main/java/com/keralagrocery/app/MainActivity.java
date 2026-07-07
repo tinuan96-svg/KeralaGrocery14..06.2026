@@ -1,9 +1,9 @@
 package com.keralagrocery.app;
 
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowCompat;
 import com.getcapacitor.BridgeActivity;
 
@@ -12,6 +12,23 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+
+        // Modern Back Button Handling for Capacitor/WebView
+        // This ensures the hardware back button navigates through the website history
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                WebView webView = getBridge().getWebView();
+                if (webView != null && webView.canGoBack()) {
+                    webView.goBack();
+                } else {
+                    // No history in WebView, minimize or exit app
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                    setEnabled(true);
+                }
+            }
+        });
     }
 
     @Override
@@ -20,12 +37,12 @@ public class MainActivity extends BridgeActivity {
         final WebView webView = getBridge().getWebView();
         if (webView != null) {
             WebSettings settings = webView.getSettings();
+            // Use standard UA to force mobile web view features and show bottom menus
             settings.setUserAgentString("Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36");
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true);
 
-            // Injection Fix: The website has CSS that explicitly hides the bottom menu on Android.
-            // We force it to show by injecting an override style.
+            // CSS Injection to force show the bottom navigation menu hidden by the site on Android
             final String js = "(function() {" +
                         "var css = 'html.is-native.is-android .kg-mobile-nav { display: grid !important; opacity: 1 !important; visibility: visible !important; } " +
                         "html.is-native.is-android .kg-web-header { display: block !important; }';" +
@@ -34,22 +51,9 @@ public class MainActivity extends BridgeActivity {
                         "document.head.appendChild(style);" +
                         "})();";
             
-            // Inject multiple times to handle initial load and client-side navigation
-            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1000);
-            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 3000);
-            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 5000);
+            // Inject after a short delay to ensure DOM is ready
+            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1500);
+            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 4000);
         }
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
-            WebView webView = getBridge().getWebView();
-            if (webView != null && webView.canGoBack()) {
-                webView.goBack();
-                return true;
-            }
-        }
-        return super.onKeyDown(keyCode, event);
     }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   getProducts,
   getFilters,
@@ -13,7 +14,6 @@ import {
 const DEFAULT_LIMIT = 20;
 
 export interface UseRpcProductsReturn {
-  // data
   products: RpcProduct[];
   total: number;
   page: number;
@@ -22,12 +22,10 @@ export interface UseRpcProductsReturn {
   error: string | null;
   filters: RpcFilters;
   filtersLoading: boolean;
-  // filter state
   search: string;
   category: string;
   brand: string;
   sort: RpcSortOption;
-  // actions
   setSearch: (s: string) => void;
   setCategory: (c: string) => void;
   setBrand: (b: string) => void;
@@ -38,9 +36,20 @@ export interface UseRpcProductsReturn {
 }
 
 export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string): UseRpcProductsReturn {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL params
+  const initialSearch = searchParams.get('q') || '';
+  const initialCategory = searchParams.get('category') || '';
+  const initialBrand = searchParams.get('brand') || '';
+  const initialSort = (searchParams.get('sort') as RpcSortOption) || 'newest';
+  const initialPage = parseInt(searchParams.get('page') || '1', 10);
+
   const [products, setProducts] = useState<RpcProduct[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,13 +57,31 @@ export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string): UseRpcP
   const [filters, setFilters] = useState<RpcFilters>({ categories: [], brands: [], price_min: 0, price_max: 9999 });
   const [filtersLoading, setFiltersLoading] = useState(true);
 
-  const [search, setSearchState] = useState('');
-  const [category, setCategoryState] = useState('');
-  const [brand, setBrandState] = useState('');
-  const [sort, setSortState] = useState<RpcSortOption>('newest');
+  const [search, setSearchState] = useState(initialSearch);
+  const [category, setCategoryState] = useState(initialCategory);
+  const [brand, setBrandState] = useState(initialBrand);
+  const [sort, setSortState] = useState<RpcSortOption>(initialSort);
   const [fetchKey, setFetchKey] = useState(0);
 
-  // Load filters once on mount
+  // Sync state with URL when searchParams change (handles Back button)
+  useEffect(() => {
+    setSearchState(searchParams.get('q') || '');
+    setCategoryState(searchParams.get('category') || '');
+    setBrandState(searchParams.get('brand') || '');
+    setSortState((searchParams.get('sort') as RpcSortOption) || 'newest');
+    setPage(parseInt(searchParams.get('page') || '1', 10));
+  }, [searchParams]);
+
+  // Update URL whenever filter state changes
+  const updateUrl = useCallback((newParams: Record<string, string | number | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value) params.set(key, value.toString());
+      else params.delete(key);
+    });
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams]);
+
   useEffect(() => {
     setFiltersLoading(true);
     getFilters().then(({ filters: f }) => {
@@ -63,7 +90,6 @@ export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string): UseRpcP
     });
   }, []);
 
-  // Load products whenever filters/page change
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -92,31 +118,38 @@ export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string): UseRpcP
     });
 
     return () => { abortRef.current?.abort(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search, category, brand, sort, limit, fetchKey, authKey]);
 
-  const goToPage = useCallback((p: number) => setPage(p), []);
+  const goToPage = useCallback((p: number) => {
+    setPage(p);
+    updateUrl({ page: p });
+  }, [updateUrl]);
+
   const retry = useCallback(() => setFetchKey((k) => k + 1), []);
 
   const setSearch = useCallback((s: string) => {
     setSearchState(s);
     setPage(1);
-  }, []);
+    updateUrl({ q: s, page: 1 });
+  }, [updateUrl]);
 
   const setCategory = useCallback((c: string) => {
     setCategoryState(c);
     setPage(1);
-  }, []);
+    updateUrl({ category: c, page: 1 });
+  }, [updateUrl]);
 
   const setBrand = useCallback((b: string) => {
     setBrandState(b);
     setPage(1);
-  }, []);
+    updateUrl({ brand: b, page: 1 });
+  }, [updateUrl]);
 
   const setSort = useCallback((s: RpcSortOption) => {
     setSortState(s);
     setPage(1);
-  }, []);
+    updateUrl({ sort: s, page: 1 });
+  }, [updateUrl]);
 
   const resetFilters = useCallback(() => {
     setSearchState('');
@@ -124,27 +157,15 @@ export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string): UseRpcP
     setBrandState('');
     setSortState('newest');
     setPage(1);
-  }, []);
+    router.push(pathname, { scroll: false });
+  }, [pathname, router]);
 
   return {
-    products,
-    total,
-    page,
-    totalPages,
-    isLoading,
-    error,
-    filters,
-    filtersLoading,
-    search,
-    category,
-    brand,
-    sort,
-    setSearch,
-    setCategory,
-    setBrand,
-    setSort,
-    goToPage,
-    resetFilters,
-    retry,
+    products, total, page, totalPages,
+    isLoading, error,
+    filters, filtersLoading,
+    search, category, brand, sort,
+    setSearch, setCategory, setBrand, setSort,
+    goToPage, resetFilters, retry,
   };
 }
