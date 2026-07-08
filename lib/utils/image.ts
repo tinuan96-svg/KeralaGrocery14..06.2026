@@ -56,10 +56,24 @@ export function resolveProductImage(
     product.enhanced_image_url,
     product.image_url,
   ];
-  for (const url of candidates) {
-    if (url && url.startsWith('http')) {
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  for (let url of candidates) {
+    if (!url) continue;
+
+    // Handle absolute URLs
+    if (url.startsWith('http')) {
       const ts = updatedAt ?? product.updated_at;
       return ts ? `${url}?v=${new Date(ts).getTime()}` : url;
+    }
+
+    // Handle Supabase relative paths (e.g. products/123.jpg or /storage/v1/...)
+    if (supabaseUrl && (url.startsWith('products/') || url.startsWith('categories/') || url.startsWith('/storage/v1/'))) {
+      const path = url.startsWith('/') ? url : `/storage/v1/object/public/product-images/${url}`;
+      const fullUrl = `${supabaseUrl}${path}`;
+      const ts = updatedAt ?? product.updated_at;
+      return ts ? `${fullUrl}?v=${new Date(ts).getTime()}` : fullUrl;
     }
   }
   return null;

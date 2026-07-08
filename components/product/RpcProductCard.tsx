@@ -20,7 +20,7 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
   const slug = product.slug ?? product.id;
   const qty = getQuantity(product.id);
   const inWishlist = isInWishlist(product.id);
-  const imgSrc = product.image_url?.startsWith('http') ? product.image_url : '/placeholder.webp';
+  const imgSrc = product.image_url || '/placeholder.webp';
 
   const cartProduct = {
     id: product.id,

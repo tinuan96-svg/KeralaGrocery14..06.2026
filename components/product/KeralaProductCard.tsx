@@ -21,9 +21,7 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
   const original = product.original_price ?? price;
   const stock = product.stock;
   const discount = product.discount_pct;
-  const image =
-    (product.image_url?.startsWith('http') ? product.image_url : null) ??
-    '/placeholder.webp';
+  const image = product.image_url || '/placeholder.webp';
 
   const qty = getQuantity(product.id);
   const inWishlist = isInWishlist(product.id);

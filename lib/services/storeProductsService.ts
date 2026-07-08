@@ -1,5 +1,6 @@
 import { getSupabase } from '@/lib/supabase/client';
 import type { ProductWithDetails, Category } from '@/lib/types/database';
+import { resolveProductImage } from '@/lib/utils/image';
 
 // Force Refresh: 2026-07-06 07:45
 const PRODUCTS_SELECT = `
@@ -12,6 +13,8 @@ const PRODUCTS_SELECT = `
   image_url,
   image_main,
   image_path,
+  enhanced_image_url,
+  image_medium,
   rating,
   review_count,
   discount_percentage,
@@ -30,6 +33,13 @@ const PRODUCTS_SELECT = `
 `;
 
 function mapProduct(p: any): ProductWithDetails {
+  const imageUrl = resolveProductImage({
+    image_main: p.image_main,
+    enhanced_image_url: p.enhanced_image_url,
+    image_url: p.image_url,
+    image_medium: p.image_medium,
+  });
+
   return {
     id: p.id,
     name: p.name ?? '',
@@ -37,12 +47,8 @@ function mapProduct(p: any): ProductWithDetails {
     description: p.description ?? null,
     price: p.price ?? 0,
     original_price: p.original_price ?? null,
-    image_main: p.image_main?.startsWith('http') ? p.image_main : null,
-    image_url: (
-      (p.image_main?.startsWith('http') ? p.image_main : null) ??
-      (p.image_url?.startsWith('http') ? p.image_url : null) ??
-      null
-    ),
+    image_main: imageUrl,
+    image_url: imageUrl,
     image_path: p.image_path ?? null,
     category_id: p.category_id ?? null,
     brand_id: p.brand_id ?? null,

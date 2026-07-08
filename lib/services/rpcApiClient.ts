@@ -181,10 +181,7 @@ export async function getProducts(
       .select(
         'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight',
         { count: 'exact' }
-      )
-      .eq('approval_status', 'approved')
-      .eq('visibility_status', true)
-      .or('is_deleted.is.null,is_deleted.eq.false');
+      );
 
     if (search) {
       query = query.ilike('name', `%${search}%`);
@@ -210,10 +207,7 @@ export async function getProducts(
     // Count first to avoid "Requested range not satisfiable" on empty result sets
     const countRes = await supabase
       .from('products')
-      .select('id', { count: 'exact', head: true })
-      .eq('approval_status', 'approved')
-      .eq('visibility_status', true)
-      .or('is_deleted.is.null,is_deleted.eq.false');
+      .select('id', { count: 'exact', head: true });
 
     const total = countRes.count ?? 0;
     const totalPages = Math.ceil(total / limit);
@@ -243,12 +237,17 @@ export async function getProducts(
         .select('product_id, image_url, enhanced_image_url, position')
         .in('product_id', missingIds)
         .order('position');
+
       if (galleryRows?.length) {
         const galleryMap = new Map<string, string>();
-        for (const g of galleryRows as { product_id: string; image_url: string | null; enhanced_image_url: string | null; position: number }[]) {
+        for (const g of galleryRows as any[]) {
           if (!galleryMap.has(g.product_id)) {
-            const url = g.enhanced_image_url ?? g.image_url;
-            if (url?.startsWith('http')) galleryMap.set(g.product_id, url);
+            // Use resolveProductImage to handle relative paths and priority
+            const resolved = resolveProductImage({
+              enhanced_image_url: g.enhanced_image_url,
+              image_url: g.image_url,
+            });
+            if (resolved) galleryMap.set(g.product_id, resolved);
           }
         }
         for (const p of products) {
@@ -319,10 +318,13 @@ export async function getProductDetail(
         .order('position')
         .limit(1)
         .maybeSingle();
+
       if (gallery) {
-        const url = (gallery as { image_url: string | null; enhanced_image_url: string | null }).enhanced_image_url
-          ?? (gallery as { image_url: string | null; enhanced_image_url: string | null }).image_url;
-        if (url?.startsWith('http')) product.image_url = url;
+        const resolved = resolveProductImage({
+          enhanced_image_url: (gallery as any).enhanced_image_url,
+          image_url: (gallery as any).image_url,
+        });
+        if (resolved) product.image_url = resolved;
       }
     }
 

@@ -1,4 +1,5 @@
 import { getSupabase } from '@/lib/supabase/client';
+import { resolveProductImage } from '@/lib/utils/image';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -86,6 +87,11 @@ export interface GetProductsResult {
 
 function castRow(row: Record<string, unknown>): StorefrontProduct {
   const stock = Number(row.effective_stock ?? 0);
+  const imageUrl = resolveProductImage({
+    image_url: row.image_url as string,
+    image_main: row.image_main as string,
+  });
+
   return {
     product_id: row.product_id as string,
     store_id: (row.store_id as string | null) ?? null,
@@ -102,8 +108,8 @@ function castRow(row: Record<string, unknown>): StorefrontProduct {
     main_category: (row.main_category as string | null) ?? null,
     parent_category: (row.parent_category as string | null) ?? null,
     product_slug: (row.product_slug as string | null) ?? null,
-    image_url: (row.image_url as string | null) ?? null,
-    image_main: (row.image_main as string | null) ?? null,
+    image_url: imageUrl,
+    image_main: imageUrl,
     product_description: (row.product_description as string | null) ?? null,
     status: (row.status as string | null) ?? null,
     created_at: row.created_at as string,
