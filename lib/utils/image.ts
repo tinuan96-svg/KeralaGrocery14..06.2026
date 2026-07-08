@@ -60,13 +60,16 @@ export function resolveProductImage(
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   for (let url of candidates) {
-    if (!url) continue;
+    if (!url || typeof url !== 'string' || url.trim() === '') continue;
 
     // Handle absolute URLs
     if (url.startsWith('http')) {
       const ts = updatedAt ?? product.updated_at;
       return ts ? `${url}?v=${new Date(ts).getTime()}` : url;
     }
+
+    // Never use local browser blob URLs
+    if (url.startsWith('blob:')) continue;
 
     // Handle Supabase relative paths (e.g. products/123.jpg or /storage/v1/...)
     if (supabaseUrl && (url.startsWith('products/') || url.startsWith('categories/') || url.startsWith('/storage/v1/'))) {

@@ -77,7 +77,10 @@ export default function ProductEditModal({ product, onClose, onSave }: Props) {
   const [seoDesc, setSeoDesc] = useState(product.seo_description ?? '');
   const [seoKeywords, setSeoKeywords] = useState(product.seo_keywords ?? '');
   const [tags, setTags] = useState((product.tags ?? []).join(', '));
-  const [imageUrl, setImageUrl] = useState(product.image_url ?? product.image_main ?? '');
+  const [imageUrl, setImageUrl] = useState(() => {
+    const raw = product.image_url ?? product.image_main ?? '';
+    return raw.startsWith('blob:') ? '' : raw;
+  });
 
   // AI generation state
   const [aiLoading, setAiLoading] = useState<AiLoading>(null);
@@ -395,17 +398,20 @@ export default function ProductEditModal({ product, onClose, onSave }: Props) {
         finalImageUrl = primarySlot.enhancedUrl ?? primarySlot.uploadedUrl ?? primarySlot.dbRow?.image_url ?? null;
       } else {
         // Fall back to legacy single-image flow
-        finalImageUrl = imageUrl || null;
+        finalImageUrl = (imageUrl && !imageUrl.startsWith('blob:')) ? imageUrl : null;
         if (uploadFile) {
           const uploaded = await handleUploadImage();
           if (uploaded) finalImageUrl = uploaded;
         }
-        if (activeImageChoice === 'enhanced' && enhancedUrl) {
+        if (activeImageChoice === 'enhanced' && enhancedUrl && !enhancedUrl.startsWith('blob:')) {
           finalImageUrl = enhancedUrl;
-        } else if (activeImageChoice === 'original' && (originalStoredUrl || finalImageUrl)) {
-          finalImageUrl = originalStoredUrl ?? finalImageUrl;
+        } else if (activeImageChoice === 'original' && ((originalStoredUrl && !originalStoredUrl.startsWith('blob:')) || (finalImageUrl && !finalImageUrl.startsWith('blob:')))) {
+          finalImageUrl = (originalStoredUrl && !originalStoredUrl.startsWith('blob:')) ? originalStoredUrl : finalImageUrl;
         }
       }
+
+      // Final safety check: never save blob URLs
+      if (finalImageUrl?.startsWith('blob:')) finalImageUrl = null;
 
       const costPrice = parseFloat(supplierPrice) || null;
       const sellingPrice = parseFloat(price) || 0;
