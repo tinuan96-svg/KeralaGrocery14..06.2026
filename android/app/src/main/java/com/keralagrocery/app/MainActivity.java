@@ -1,7 +1,9 @@
 package com.keralagrocery.app;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.webkit.WebSettings;
+import android.view.View;
 import android.webkit.WebView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowCompat;
@@ -11,10 +13,11 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+        getWindow().setStatusBarColor(Color.WHITE);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
-        // Modern Back Button Handling for Capacitor/WebView
-        // This ensures the hardware back button navigates through the website history
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -22,7 +25,6 @@ public class MainActivity extends BridgeActivity {
                 if (webView != null && webView.canGoBack()) {
                     webView.goBack();
                 } else {
-                    // No history in WebView, minimize or exit app
                     setEnabled(false);
                     getOnBackPressedDispatcher().onBackPressed();
                     setEnabled(true);
@@ -32,28 +34,81 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        // Force UI refresh on new intent (like deep link return)
+        injectUIFixes();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        injectUIFixes();
+    }
+
+    private void injectUIFixes() {
+        final WebView webView = getBridge().getWebView();
+        if (webView == null) return;
+
+        // Reset User Agent to include our app identifier
+        webView.getSettings().setUserAgentString("Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36 KeralaGroceryApp/1.0.0");
+
+        // Force Bottom Bar Visibility and 5-column layout exactly like the reference image
+        final String js = "(function() {" +
+            "function applyFix() {" +
+            "  var nav = document.querySelector('.kg-mobile-nav');" +
+            "  if (!nav) return;" +
+            "  nav.style.setProperty('display', 'flex', 'important');" +
+            "  nav.style.setProperty('height', '76px', 'important');" +
+            "  nav.style.setProperty('padding-bottom', 'max(env(safe-area-inset-bottom), 16px)', 'important');" +
+            "  nav.style.setProperty('background', '#ffffff', 'important');" +
+            "  nav.style.setProperty('visibility', 'visible', 'important');" +
+            "  nav.style.setProperty('opacity', '1', 'important');" +
+            "  " +
+            "  var container = nav.querySelector('.grid, .flex');" +
+            "  if (container) {" +
+            "    container.style.setProperty('display', 'flex', 'important');" +
+            "    container.style.setProperty('width', '100%', 'important');" +
+            "    container.style.setProperty('height', '100%', 'important');" +
+            "    container.style.setProperty('justify-content', 'space-around', 'important');" +
+            "  }" +
+            "  " +
+            "  var items = nav.querySelectorAll('a');" +
+            "  items.forEach(function(a) {" +
+            "    a.style.setProperty('display', 'flex', 'important');" +
+            "    a.style.setProperty('flex', '1', 'important');" +
+            "    a.style.setProperty('max-width', '20%', 'important');" +
+            "    a.style.setProperty('flex-direction', 'column', 'important');" +
+            "    a.style.setProperty('align-items', 'center', 'important');" +
+            "    a.style.setProperty('justify-content', 'center', 'important');" +
+            "    " +
+            "    var svg = a.querySelector('svg');" +
+            "    if (svg) {" +
+            "      svg.style.setProperty('width', '26px', 'important');" +
+            "      svg.style.setProperty('height', '26px', 'important');" +
+            "    }" +
+            "    " +
+            "    var span = a.querySelector('span');" +
+            "    if (span) {" +
+            "      span.style.setProperty('font-size', '11px', 'important');" +
+            "      span.style.setProperty('font-weight', '700', 'important');" +
+            "    }" +
+            "  });" +
+            "}" +
+            "applyFix();" +
+            "if (!window.kgObserver) {" +
+            "  window.kgObserver = new MutationObserver(applyFix);" +
+            "  window.kgObserver.observe(document.body, { childList: true, subtree: true });" +
+            "}" +
+            "})();";
+
+        webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1000);
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
-        final WebView webView = getBridge().getWebView();
-        if (webView != null) {
-            WebSettings settings = webView.getSettings();
-            // Use standard UA to force mobile web view features and show bottom menus
-            settings.setUserAgentString("Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36");
-            settings.setJavaScriptEnabled(true);
-            settings.setDomStorageEnabled(true);
-
-            // CSS Injection to force show the bottom navigation menu hidden by the site on Android
-            final String js = "(function() {" +
-                        "var css = 'html.is-native.is-android .kg-mobile-nav { display: grid !important; opacity: 1 !important; visibility: visible !important; } " +
-                        "html.is-native.is-android .kg-web-header { display: block !important; }';" +
-                        "var style = document.createElement('style');" +
-                        "style.innerHTML = css;" +
-                        "document.head.appendChild(style);" +
-                        "})();";
-            
-            // Inject after a short delay to ensure DOM is ready
-            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1500);
-            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 4000);
-        }
+        injectUIFixes();
     }
 }

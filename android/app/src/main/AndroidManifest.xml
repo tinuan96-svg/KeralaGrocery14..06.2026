@@ -26,7 +26,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="kgapp" android:host="auth" />
+                <data android:scheme="com.keralagrocery.app" android:host="auth" />
             </intent-filter>
 
         </activity>
