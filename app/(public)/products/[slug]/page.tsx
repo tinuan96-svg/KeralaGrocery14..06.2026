@@ -29,40 +29,58 @@ interface ProductRow {
 }
 
 async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
-  // Force Refresh: 2026-07-06 07:46
-  const supabase = createServerSupabaseClient();
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+  try {
+    // Force Refresh: 2026-07-06 07:46
+    const supabase = createServerSupabaseClient();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
-  let query = supabase
-    .from('products')
-    .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id')
-    .eq('approval_status', 'approved')
-    .eq('visibility_status', true);
+    let query = supabase
+      .from('products')
+      .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id')
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', true);
 
-  if (isUuid) {
-    query = query.or(`id.eq.${slug},slug.eq.${slug}`);
-  } else {
-    query = query.eq('slug', slug);
+    if (isUuid) {
+      query = query.or(`id.eq.${slug},slug.eq.${slug}`);
+    } else {
+      query = query.eq('slug', slug);
+    }
+
+    const { data } = await query.maybeSingle();
+    return (data as unknown as ProductRow) ?? null;
+  } catch (err) {
+    console.error('[fetchProductBySlug] Error:', err);
+    return null;
   }
-
-  const { data } = await query.maybeSingle();
-  return (data as unknown as ProductRow) ?? null;
 }
 
 export async function generateStaticParams() {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.warn('[generateStaticParams] Missing Supabase credentials, skipping static generation');
+      return [];
+    }
+
     const supabase = createServerSupabaseClient();
-    const { data: products } = await supabase
+    const { data: products, error } = await supabase
       .from('products')
       .select('slug')
       .eq('approval_status', 'approved')
       .eq('visibility_status', true);
 
+    if (error) {
+      console.error('[generateStaticParams] DB error:', error.message);
+      return [];
+    }
+
     return (products || []).map((p) => ({
       slug: p.slug,
     }));
   } catch (err) {
-    console.error('[generateStaticParams] Failed to fetch product slugs:', err);
+    console.error('[generateStaticParams] Unexpected failure:', err);
     return [];
   }
 }
