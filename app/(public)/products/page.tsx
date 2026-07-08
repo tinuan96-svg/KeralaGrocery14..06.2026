@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import ProductListingPage from '@/components/product/RpcProductListingPage';
 
@@ -21,5 +22,13 @@ export const metadata: Metadata = {
 };
 
 export default function ProductsPage() {
-  return <ProductListingPage />;
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <ProductListingPage />
+    </Suspense>
+  );
 }

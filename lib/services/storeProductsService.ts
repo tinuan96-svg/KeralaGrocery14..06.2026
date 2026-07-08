@@ -90,7 +90,6 @@ export async function fetchStoreProducts(
     const { data, error } = await supabase
       .from('products')
       .select(PRODUCTS_SELECT)
-      .eq('is_active', true)
       .eq('is_deleted', false)
       .eq('approval_status', 'approved')
       .eq('visibility_status', true)

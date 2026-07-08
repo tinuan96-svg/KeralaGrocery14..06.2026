@@ -50,16 +50,21 @@ async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
 }
 
 export async function generateStaticParams() {
-  const supabase = createServerSupabaseClient();
-  const { data: products } = await supabase
-    .from('products')
-    .select('slug')
-    .eq('approval_status', 'approved')
-    .eq('visibility_status', true);
+  try {
+    const supabase = createServerSupabaseClient();
+    const { data: products } = await supabase
+      .from('products')
+      .select('slug')
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', true);
 
-  return (products || []).map((p) => ({
-    slug: p.slug,
-  }));
+    return (products || []).map((p) => ({
+      slug: p.slug,
+    }));
+  } catch (err) {
+    console.error('[generateStaticParams] Failed to fetch product slugs:', err);
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
