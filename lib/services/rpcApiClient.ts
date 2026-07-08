@@ -184,7 +184,6 @@ export async function getProducts(
       )
       .eq('approval_status', 'approved')
       .eq('visibility_status', true)
-      .eq('is_active', true)
       .or('is_deleted.is.null,is_deleted.eq.false');
 
     if (search) {
@@ -214,7 +213,6 @@ export async function getProducts(
       .select('id', { count: 'exact', head: true })
       .eq('approval_status', 'approved')
       .eq('visibility_status', true)
-      .eq('is_active', true)
       .or('is_deleted.is.null,is_deleted.eq.false');
 
     const total = countRes.count ?? 0;
@@ -351,7 +349,7 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
   try {
     const supabase = getSupabase();
 
-    // Only include categories/brands that have at least one approved, visible, active product
+    // Only include categories/brands that have at least one approved, visible product
     const [catRes, brandRes, priceRes, allCats] = await Promise.all([
       supabase
         .from('products')
