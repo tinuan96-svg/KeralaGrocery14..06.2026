@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -103,22 +103,15 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/account');
-    } else if (user) {
-      fetchOrders();
-    }
-  }, [user, authLoading]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
+    if (!user) return;
     try {
       const supabase = getSupabase();
 
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (ordersError) throw ordersError;
@@ -147,7 +140,15 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/account');
+    } else if (user) {
+      fetchOrders();
+    }
+  }, [user, authLoading, fetchOrders, router]);
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {

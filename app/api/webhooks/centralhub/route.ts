@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
         last_sync_at: new Date().toISOString(),
         updated_at: productData.updated_at || new Date().toISOString(),
         is_deleted: false,
+        is_active: true,
       };
 
       // Only set metadata and visibility if this is a NEW product

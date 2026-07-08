@@ -84,7 +84,6 @@ export async function fetchProducts(): Promise<{
         brands(id, name, slug, logo_url)
       `)
       .eq('is_deleted', false)
-      .eq('is_active', true)
       .eq('approval_status', 'approved')
       .eq('visibility_status', true)
       .order('created_at', { ascending: false }),

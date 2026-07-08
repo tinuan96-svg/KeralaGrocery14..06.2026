@@ -184,7 +184,6 @@ export async function getProducts(
       )
       .eq('approval_status', 'approved')
       .eq('visibility_status', true)
-      .eq('is_active', true)
       .or('is_deleted.is.null,is_deleted.eq.false');
 
     if (search) {
@@ -214,7 +213,6 @@ export async function getProducts(
       .select('id', { count: 'exact', head: true })
       .eq('approval_status', 'approved')
       .eq('visibility_status', true)
-      .eq('is_active', true)
       .or('is_deleted.is.null,is_deleted.eq.false');
 
     const total = countRes.count ?? 0;
@@ -350,7 +348,6 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .select('category_id')
         .eq('approval_status', 'approved')
         .eq('visibility_status', true)
-        .eq('is_active', true)
         .or('is_deleted.is.null,is_deleted.eq.false')
         .not('category_id', 'is', null),
       // Use brand column (populated from CentralHub verbatim during sync)
@@ -359,7 +356,6 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .select('brand')
         .eq('approval_status', 'approved')
         .eq('visibility_status', true)
-        .eq('is_active', true)
         .or('is_deleted.is.null,is_deleted.eq.false')
         .not('brand', 'is', null)
         .neq('brand', ''),
@@ -367,8 +363,7 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .from('products')
         .select('price')
         .eq('approval_status', 'approved')
-        .eq('visibility_status', true)
-        .eq('is_active', true),
+        .eq('visibility_status', true),
       supabase
         .from('categories')
         .select('id, name, is_active')

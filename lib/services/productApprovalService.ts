@@ -343,6 +343,7 @@ export async function approveProduct(
     .update({
       approval_status: 'approved',
       visibility_status: true,
+      is_active: true,
       approved_at: now,
       approved_by: adminUserId,
       updated_at: now,
@@ -555,6 +556,7 @@ export async function bulkApproveDraftProducts(
     .update({
       approval_status: 'approved',
       visibility_status: true,
+      is_active: true,
       approved_at: now,
       approved_by: adminUserId,
       updated_at: now,

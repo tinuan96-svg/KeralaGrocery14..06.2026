@@ -7,16 +7,19 @@ import android.view.View;
 import android.webkit.WebView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowCompat;
+import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
         
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         getWindow().setStatusBarColor(Color.WHITE);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        View decorView = getWindow().getDecorView();
+        WindowCompat.getInsetsController(getWindow(), decorView).setAppearanceLightStatusBars(true);
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override

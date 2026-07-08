@@ -112,7 +112,7 @@ export default function SMSNotificationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery, statusFilter, startDate, endDate]);
 
   useEffect(() => {
     loadData();
