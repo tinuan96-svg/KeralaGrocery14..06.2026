@@ -181,7 +181,11 @@ export async function getProducts(
       .select(
         'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight',
         { count: 'exact' }
-      );
+      )
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', true)
+      .eq('is_active', true)
+      .or('is_deleted.is.null,is_deleted.eq.false');
 
     if (search) {
       query = query.ilike('name', `%${search}%`);
@@ -207,7 +211,11 @@ export async function getProducts(
     // Count first to avoid "Requested range not satisfiable" on empty result sets
     const countRes = await supabase
       .from('products')
-      .select('id', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true })
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', true)
+      .eq('is_active', true)
+      .or('is_deleted.is.null,is_deleted.eq.false');
 
     const total = countRes.count ?? 0;
     const totalPages = Math.ceil(total / limit);
