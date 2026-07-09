@@ -1,70 +1,90 @@
-import { Package, Truck, ShieldCheck } from 'lucide-react';
+import { Package, Truck, ShieldCheck, Star, Award, Zap } from 'lucide-react';
 
 export default function SEOContent() {
   return (
-    <section className="max-w-7xl mx-auto px-4 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Kerala Groceries Online UK
+    <section className="max-w-7xl mx-auto px-4 py-16">
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight">
+          Premium Kerala Groceries Online UK
         </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Authentic Kerala products delivered across the United Kingdom
+        <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+          The UK&apos;s most trusted destination for authentic Kerala products. Bringing the true taste of Gods Own Country directly to your doorstep with fast, reliable delivery.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
-        <div className="text-center p-6 bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-            <Package className="w-8 h-8 text-green-600" />
+      <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="group text-center p-8 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-50 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <Package className="w-10 h-10 text-green-600" />
           </div>
-          <h2 className="text-xl font-semibold mb-3">Fresh Indian &amp; Kerala Products</h2>
-          <p className="text-gray-600">
-            Authentic spices, rice, snacks, and traditional ingredients sourced directly from trusted suppliers. Quality guaranteed.
+          <h2 className="text-2xl font-bold mb-4 text-gray-900">Authentic &amp; Fresh</h2>
+          <p className="text-gray-600 leading-relaxed">
+            From <strong>Palakkadan Matta Rice</strong> to <strong>Organic Coconut Oil</strong>, we source directly from Kerala&apos;s finest producers to ensure 100% authenticity and freshness in every order.
           </p>
         </div>
 
-        <div className="text-center p-6 bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-            <Truck className="w-8 h-8 text-blue-600" />
+        <div className="group text-center p-8 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <Truck className="w-10 h-10 text-blue-600" />
           </div>
-          <h2 className="text-xl font-semibold mb-3">Fast UK Delivery</h2>
-          <p className="text-gray-600">
-            Next day delivery available across the UK. Free delivery on orders over £45. Your Kerala groceries delivered fresh to your doorstep.
+          <h2 className="text-2xl font-bold mb-4 text-gray-900">Express UK Delivery</h2>
+          <p className="text-gray-600 leading-relaxed">
+            Next day and tracked delivery across London, Birmingham, Manchester, and the entire UK. <strong>Free delivery on orders over £45</strong>. Packaged with care to arrive perfectly.
           </p>
         </div>
 
-        <div className="text-center p-6 bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-            <ShieldCheck className="w-8 h-8 text-orange-600" />
+        <div className="group text-center p-8 bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-50 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <ShieldCheck className="w-10 h-10 text-amber-600" />
           </div>
-          <h2 className="text-xl font-semibold mb-3">Trusted Online Grocery Store</h2>
-          <p className="text-gray-600">
-            Operated by Tasty Kerala Ltd, serving the Kerala community across the UK with authentic products and reliable service since day one.
+          <h2 className="text-2xl font-bold mb-4 text-gray-900">5-Star Quality</h2>
+          <p className="text-gray-600 leading-relaxed">
+            Operated by <strong>Tasty Kerala Ltd</strong>. We pride ourselves on exceptional customer service and premium quality control. Join thousands of happy Malayali families in the UK.
           </p>
         </div>
       </div>
 
-      <div className="prose prose-slate max-w-4xl mx-auto bg-gray-50 p-8 rounded-lg">
-        <h3 className="text-2xl font-semibold mb-4">Why Choose Kerala Groceries UK?</h3>
-        <p className="mb-4">
-          Welcome to <strong>Kerala Groceries UK</strong>, your one-stop online shop for authentic Kerala and Indian groceries delivered across the United Kingdom.
-          We understand the importance of traditional ingredients and flavors, which is why we&apos;ve curated an extensive selection of premium quality products
-          that bring the authentic taste of Kerala to your kitchen.
-        </p>
-        <p className="mb-4">
-          Our range includes <strong>authentic Kerala spices</strong>, premium rice varieties, traditional snacks, cooking essentials, and specialty ingredients
-          that are hard to find in regular supermarkets. Whether you&apos;re looking for <strong>Kerala masala</strong>, <strong>coconut oil</strong>,
-          <strong>appam flour</strong>, or <strong>traditional pickles</strong>, we stock everything you need to create delicious Kerala meals at home.
-        </p>
-        <p className="mb-4">
-          As a trusted supplier to the Kerala community in the UK, we pride ourselves on offering <strong>fast delivery</strong>, competitive prices,
-          and exceptional customer service. Orders placed before 6 PM qualify for next day delivery, ensuring your groceries arrive fresh and on time.
-          Plus, enjoy <strong>free delivery on all orders over £45</strong>.
-        </p>
-        <p>
-          Shopping with <strong>Tasty Kerala Ltd</strong> means you&apos;re choosing quality, authenticity, and convenience.
-          Browse our extensive catalog today and experience the taste of home, delivered straight to your door anywhere in the UK.
-        </p>
+      {/* Detailed SEO Text with rich keywords */}
+      <div className="grid lg:grid-cols-2 gap-12 items-center bg-white p-8 md:p-12 rounded-[2.5rem] border border-gray-100 shadow-sm">
+        <div className="space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 text-green-700 text-sm font-bold">
+            <Star className="w-4 h-4 fill-green-700" /> Premium Selection
+          </div>
+          <h3 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">
+            The Ultimate Online Kerala Store in the United Kingdom
+          </h3>
+          <p className="text-gray-600 text-lg leading-relaxed">
+            Welcome to <strong>Kerala Groceries UK</strong>, your premier destination for high-quality Indian and South Indian essentials. We specialize in bringing rare and traditional ingredients from Kerala to your kitchen.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { icon: Zap, text: 'Next Day Delivery' },
+              { icon: Award, text: 'Direct Sourcing' },
+              { icon: ShieldCheck, text: 'Secure Checkout' },
+              { icon: Package, text: 'Eco-Friendly Packing' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2 text-gray-800 font-semibold">
+                <item.icon className="w-5 h-5 text-green-600" />
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="prose prose-slate max-w-none text-gray-600 space-y-4">
+          <p>
+            Looking for <strong>Banana Chips</strong>, <strong>Jackfruit Chips</strong>, or <strong>Kerala Snacks</strong> online? Our curated selection includes the best of Kerala&apos;s munchies, prepared using traditional methods and pure coconut oil.
+          </p>
+          <p>
+            We stock a massive range of <strong>Kerala Masalas</strong> and Spices from top brands like <em>Double Horse</em>, <em>Eastern</em>, <em>Nirapara</em>, and <em>Ajmi</em>. Whether it&apos;s Chicken Masala, Sambar Powder, or the perfect Fish Curry mix, we have it all.
+          </p>
+          <p>
+            For those seeking healthy alternatives, explore our <strong>Cold Pressed Oils</strong>, <strong>Ayurvedic products</strong>, and variety of <strong>Matta Rice</strong> (Palakkadan Vadi Matta). We ensure every product meets our strict quality standards before it reaches your home.
+          </p>
+          <p className="font-medium text-gray-900 border-l-4 border-green-600 pl-4 italic">
+            &quot;Bringing the authentic flavors of Kerala to every Malayali home in the UK is our passion. Quality is our promise.&quot; - Tasty Kerala Ltd Team.
+          </p>
+        </div>
       </div>
     </section>
   );

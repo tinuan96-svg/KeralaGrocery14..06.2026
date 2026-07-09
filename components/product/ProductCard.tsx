@@ -67,7 +67,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
   };
 
   return (
-    <div className="group card-kg flex flex-col h-full overflow-hidden">
+    <div className="group card-kg flex flex-col h-full overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 rounded-2xl border border-transparent hover:border-[#d1ead9]">
 
       {/* Image */}
       <Link href={`/products/${product.slug}`} className="block flex-shrink-0">

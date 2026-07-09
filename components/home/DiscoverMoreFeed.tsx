@@ -80,10 +80,10 @@ export default function DiscoverMoreFeed() {
         <span className="text-xs text-gray-400 font-medium">Keep browsing</span>
       </div>
 
-      {/* Product grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3">
+      {/* Product grid - Increased density */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
         {products.map((product, i) => (
-          <RpcProductCard key={product.id} product={product} priority={i < 4} />
+          <RpcProductCard key={product.id} product={product} priority={i < 6} />
         ))}
       </div>
 

@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useHomepageData } from '@/hooks/useHomepageData';
 import TrendingNow from '@/components/home/TrendingNow';
 import LoyaltyBanner from '@/components/home/LoyaltyBanner';
+import KitchenEssentials from '@/components/home/KitchenEssentials';
 import { ProductGridSkeleton } from '@/components/product/ProductCardSkeleton';
 import { PersonalisedGreeting } from '@/components/layout/CartEnhancements';
 import type { Brand } from '@/lib/types/database';
@@ -24,9 +25,9 @@ const DealsSection = dynamic(() => import('@/components/home/DealsSection'), {
 
 const BestSellers = dynamic(() => import('@/components/home/BestSellers'), {
   loading: () => (
-    <section className="py-3 px-4">
+    <section className="py-3 px-4 max-w-7xl mx-auto">
       <div className="h-5 w-28 bg-gray-200 animate-pulse rounded mb-3" />
-      <ProductGridSkeleton count={5} />
+      <ProductGridSkeleton count={6} />
     </section>
   ),
   ssr: false,
@@ -34,9 +35,9 @@ const BestSellers = dynamic(() => import('@/components/home/BestSellers'), {
 
 const NewArrivals = dynamic(() => import('@/components/home/NewArrivals'), {
   loading: () => (
-    <section className="py-3 px-4">
+    <section className="py-3 px-4 max-w-7xl mx-auto">
       <div className="h-5 w-28 bg-gray-200 animate-pulse rounded mb-3" />
-      <ProductGridSkeleton count={5} />
+      <ProductGridSkeleton count={6} />
     </section>
   ),
   ssr: false,
@@ -66,9 +67,9 @@ function SkeletonSection() {
   return (
     <section className="py-3 px-4">
       <div className="h-5 w-28 bg-gray-200 animate-pulse rounded mb-3" />
-      <div className="flex gap-3 overflow-hidden">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex-shrink-0 w-[160px] h-48 bg-gray-100 animate-pulse rounded-xl" />
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="w-full aspect-[3/4] bg-gray-100 animate-pulse rounded-xl" />
         ))}
       </div>
     </section>
@@ -115,22 +116,25 @@ export default function HomepageSections() {
       {/* 3. Popular Brands */}
       <BrandShowcase brands={brands} />
 
-      {/* 4. Trending Now */}
+      {/* 4. Kitchen Essentials — High visibility dense grid */}
+      {allProducts.length > 0 && <KitchenEssentials products={allProducts} />}
+
+      {/* 5. Trending Now */}
       {trending.length > 0 && <TrendingNow products={trending} />}
 
-      {/* 4. Top Sellers */}
+      {/* 6. Top Sellers */}
       {bestsellers.length > 0 && <BestSellers products={bestsellers} />}
 
-      {/* 5. Wallet Rewards Banner */}
+      {/* 7. Wallet Rewards Banner */}
       <LoyaltyBanner />
 
-      {/* 6. Product Banners (promoted) */}
+      {/* 8. Product Banners (promoted) */}
       <DynamicProductBanners />
 
-      {/* 7. New Arrivals */}
+      {/* 9. New Arrivals */}
       {newArrivals.length > 0 && <NewArrivals products={newArrivals} />}
 
-      {/* 8. Discover More — infinite scroll feed */}
+      {/* 10. Discover More — infinite scroll feed */}
       <DiscoverMoreFeed />
     </>
   );

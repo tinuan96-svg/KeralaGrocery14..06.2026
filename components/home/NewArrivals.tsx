@@ -9,41 +9,40 @@ interface NewArrivalsProps {
 
 export default function NewArrivals({ products }: NewArrivalsProps) {
   if (!products || products.length === 0) return null;
-  const items = products.slice(0, 10);
+  const items = products.slice(0, 12);
 
   return (
-    <section className="ka-section pt-6 pb-4 border-b border-gray-100">
+    <section className="ka-section pt-8 pb-6 border-b border-gray-100">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between px-4 mb-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="ka-icon h-4 w-4 flex-shrink-0" />
+        <div className="flex items-center justify-between px-4 mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+            </div>
             <div>
-              <h2 className="text-[14px] font-extrabold text-gray-900 leading-none">New Arrivals</h2>
-              <p className="text-[10px] text-gray-400 mt-0.5">Just landed in stock</p>
+              <h2 className="text-[18px] font-extrabold text-gray-900 leading-none">New Arrivals</h2>
+              <p className="text-[12px] text-gray-500 mt-1">Fresh from Kerala - Just landed in stock</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-400 font-medium">{items.length} products</span>
-            <Link
-              href="/products?sort=new"
-              className="ka-view-all inline-flex items-center gap-0.5 text-xs font-bold border rounded-full px-3 py-1 hover:opacity-90 transition-opacity whitespace-nowrap"
-            >
-              View All <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
+          <Link
+            href="/products?sort=new"
+            className="ka-view-all inline-flex items-center gap-1 text-sm font-bold text-[#0B5D3B] hover:underline transition-all whitespace-nowrap"
+          >
+            Explore All <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
 
         {/* Mobile carousel */}
-        <div className="flex items-stretch gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-3 snap-x snap-mandatory md:hidden" style={{ scrollPaddingLeft: '16px' }}>
+        <div className="flex items-stretch gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-4 snap-x snap-mandatory md:hidden" style={{ scrollPaddingLeft: '16px' }}>
           {items.map((product, index) => (
-            <div key={product.id} className="flex-shrink-0 w-[160px] snap-start flex flex-col">
+            <div key={product.id} className="flex-shrink-0 w-[170px] snap-start flex flex-col">
               <ProductCard product={product} priority={index < 4} />
             </div>
           ))}
         </div>
 
         {/* Desktop grid */}
-        <div className="hidden md:grid grid-cols-3 lg:grid-cols-5 gap-3 px-4 pb-2">
+        <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 px-4">
           {items.map((product, index) => (
             <ProductCard key={product.id} product={product} priority={index < 4} />
           ))}
