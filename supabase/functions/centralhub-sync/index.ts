@@ -38,9 +38,14 @@ interface CentralHubProduct {
   brand: string | null;
   warehouse_location: string | null;
   weight: number | null;
+  weight_kg: number | null;
+  weight_grams: number | null;
   gtin: string | null;
   unit: string | null;
   slug: string | null;
+  sku: string | null;
+  department: string | null;
+  subcategory: string | null;
 }
 
 interface LocalProduct {
@@ -53,7 +58,7 @@ interface LocalProduct {
   approval_status: string;
 }
 
-const CENTRALHUB_SELECT = "id,name,price,stock,product_type,brand,warehouse_location,weight,gtin,unit,slug";
+const CENTRALHUB_SELECT = "id,name,price,stock,product_type,brand,warehouse_location,weight,weight_kg,weight_grams,gtin,unit,slug,sku,department,subcategory";
 const PAGE_SIZE = 500;
 
 // Admin-managed fields — NEVER overwritten by sync
@@ -359,10 +364,10 @@ Deno.serve(async (req: Request) => {
       const hubMap = new Map<string, CentralHubProduct>();
       for (const hp of hubProducts) hubMap.set(hp.id, hp);
 
-      // Load all local products with centralhub_product_id
+      // Load all local products with centralhub_product_id or sku
       const { data: localRows } = await supabase
         .from("products")
-        .select("id,name,slug,centralhub_product_id,source_product_id,approval_status,price,supplier_price,brand_id,last_sync_at")
+        .select("id,name,slug,sku,centralhub_product_id,source_product_id,approval_status,price,supplier_price,brand_id,last_sync_at,department,main_category,category,sub_category")
         .eq("is_deleted", false);
 
       const linked: Array<{
@@ -377,28 +382,32 @@ Deno.serve(async (req: Request) => {
       const duplicates: Array<{ hubId: string; count: number }> = [];
       const notLinked: Array<{ localId: string; localName: string; approvalStatus: string }> = [];
 
-      // Check duplicates in local
-      const hubIdCount = new Map<string, number>();
-      for (const r of (localRows ?? []) as (LocalProduct & { price: number; supplier_price: number | null; brand_id: string | null; last_sync_at: string | null })[]) {
-        if (r.centralhub_product_id) {
-          hubIdCount.set(r.centralhub_product_id, (hubIdCount.get(r.centralhub_product_id) ?? 0) + 1);
+      // Check duplicates in local by SKU
+      const skuCount = new Map<string, number>();
+      for (const r of (localRows ?? []) as any[]) {
+        if (r.sku) {
+          skuCount.set(r.sku, (skuCount.get(r.sku) ?? 0) + 1);
         }
       }
 
-      // Build local map: hub_id → local product
-      const localByHubId = new Map<string, typeof localRows extends Array<infer T> ? T : never>();
+      // Build local map: SKU → local product (primary)
+      const localBySku = new Map<string, any>();
+      const localByHubId = new Map<string, any>();
       for (const r of (localRows ?? [])) {
-        const row = r as LocalProduct & { price: number; supplier_price: number | null; brand_id: string | null; last_sync_at: string | null };
-        if (row.centralhub_product_id) {
-          localByHubId.set(row.centralhub_product_id, row as never);
-        } else {
+        const row = r as any;
+        if (row.sku) localBySku.set(row.sku, row);
+        if (row.centralhub_product_id) localByHubId.set(row.centralhub_product_id, row);
+
+        if (!row.centralhub_product_id && !row.sku) {
           notLinked.push({ localId: row.id, localName: row.name, approvalStatus: row.approval_status });
         }
       }
 
       // Compare each hub product to its local counterpart
       for (const hp of hubProducts) {
-        const local = localByHubId.get(hp.id) as (LocalProduct & { price: number; supplier_price: number | null; brand_id: string | null; last_sync_at: string | null }) | undefined;
+        // Match by SKU first, then Hub ID
+        const local = (hp.sku ? localBySku.get(hp.sku) : null) || localByHubId.get(hp.id);
+
         if (!local) {
           unmatched.push({ hubId: hp.id, hubName: hp.name });
           continue;
@@ -406,15 +415,17 @@ Deno.serve(async (req: Request) => {
 
         const outOfSyncFields: string[] = [];
         if (local.name !== hp.name) outOfSyncFields.push(`name: local="${local.name}" hub="${hp.name}"`);
+        if (local.sku !== hp.sku) outOfSyncFields.push(`sku: local="${local.sku}" hub="${hp.sku}"`);
+        if (local.department !== hp.department) outOfSyncFields.push(`department: local="${local.department}" hub="${hp.department}"`);
+        if (local.category !== hp.subcategory) outOfSyncFields.push(`category: local="${local.category}" hub="${hp.subcategory}"`);
+
         const supplierPrice = Number(hp.price ?? 0);
-        const expectedSellingPrice = applyMarkup(supplierPrice);
-        // Only flag price if supplier_price differs (selling price is admin-managed but supplier_price is not)
         if (Math.abs(Number(local.supplier_price ?? 0) - supplierPrice) > 0.001) {
           outOfSyncFields.push(`supplier_price: local=${local.supplier_price} hub=${supplierPrice}`);
         }
 
-        if (hubIdCount.get(hp.id)! > 1) {
-          duplicates.push({ hubId: hp.id, count: hubIdCount.get(hp.id)! });
+        if (hp.sku && skuCount.get(hp.sku)! > 1) {
+          duplicates.push({ hubId: hp.id, count: skuCount.get(hp.sku)! });
         }
 
         linked.push({
@@ -423,7 +434,7 @@ Deno.serve(async (req: Request) => {
           hubId: hp.id,
           hubName: hp.name,
           outOfSyncFields,
-          lastSyncAt: (local as unknown as { last_sync_at: string | null }).last_sync_at,
+          lastSyncAt: (local as any).last_sync_at,
         });
       }
 
@@ -679,19 +690,19 @@ Deno.serve(async (req: Request) => {
           });
         }
 
-        // Load existing mapping: centralhub_product_id → local product
-        // Also load source_product_id for legacy records not yet backfilled
+        // Load existing mapping: sku → local product (primary)
+        // Also load centralhub_product_id and source_product_id for secondary matching
         const { data: existingRows } = await supabase
           .from("products")
-          .select("id,centralhub_product_id,source_product_id,name,source_name,slug,approval_status,cost_price,selling_price,supplier_price,price,markup_percentage");
+          .select("id,sku,centralhub_product_id,source_product_id,name,source_name,slug,approval_status,cost_price,selling_price,supplier_price,price,markup_percentage");
 
+        const existingBySku = new Map<string, LocalProduct>();
         const existingByHubId = new Map<string, LocalProduct>();
-        const existingBySourceId = new Map<string, LocalProduct>();
         const allSlugs = new Set<string>();
 
-        for (const r of (existingRows ?? []) as LocalProduct[]) {
+        for (const r of (existingRows ?? []) as (LocalProduct & { sku: string | null })[]) {
+          if (r.sku) existingBySku.set(r.sku, r);
           if (r.centralhub_product_id) existingByHubId.set(r.centralhub_product_id, r);
-          if (r.source_product_id) existingBySourceId.set(r.source_product_id, r);
           if (r.slug) allSlugs.add(r.slug);
         }
 
@@ -717,14 +728,14 @@ Deno.serve(async (req: Request) => {
           for (const hp of chunk) {
             try {
               const hpId = String(hp.id);
+              const hpSku = hp.sku || `CH-${hpId.slice(0, 8)}`; // Fallback if SKU missing, though registry should have it
 
-              // Match by centralhub_product_id first, then fall back to source_product_id (legacy)
-              let ex = existingByHubId.get(hpId);
-              if (!ex) ex = existingBySourceId.get(hpId);
+              // Match by SKU first (Primary), then centralhub_product_id
+              let ex = existingBySku.get(hpSku);
+              if (!ex) ex = existingByHubId.get(hpId);
 
-              // Brand taken verbatim from CentralHub — written to both brand and source_brand
+              // Brand taken verbatim from CentralHub
               const brandName = hp.brand ?? null;
-
               const supplierPrice = Number(hp.price ?? 0);
               const sellingPrice = applyMarkup(supplierPrice);
 
@@ -735,135 +746,115 @@ Deno.serve(async (req: Request) => {
                 price: number;
                 markup_percentage: number | null;
                 source_name: string | null;
+                sku: string | null;
+              };
+
+              // Construct the base payload for Upsert
+              const upsertPayload: Record<string, any> = {
+                centralhub_product_id: hpId,
+                sku: hpSku,
+                source_name: hp.name,
+                source_brand: brandName,
+                brand: brandName,
+
+                // Data Mapping Requirements
+                department: hp.department,
+                main_category: hp.department, // main_category ⬅️ department from CentralHub
+                category: hp.subcategory,
+                sub_category: hp.subcategory, // sub_category ⬅️ subcategory from CentralHub
+
+                // Weight Requirements (defaults if missing)
+                weight_kg: hp.weight_kg ?? hp.weight ?? 0.5,
+                weight_grams: hp.weight_grams ?? 500,
+
+                warehouse_location: hp.warehouse_location || null,
+
+                // Pricing — always update cost; recalculate selling price
+                supplier_price: supplierPrice,
+                cost_price: supplierPrice,
+                selling_price: sellingPrice,
+                price: sellingPrice,
+                markup_percentage: 5,
+
+                last_sync_at: now,
+                updated_at: now,
+                is_deleted: false,
+                is_active: true,
+                approval_status: 'approved',
+                visibility_status: true,
               };
 
               if (ex?.id) {
                 const exRow = ex as unknown as ExRow;
-                const newSellingPrice = applyMarkup(supplierPrice);
 
-                // Build update payload — only non-admin-managed fields
-                const updatePayload: Record<string, unknown> = {
-                  centralhub_product_id: hpId,
-                  source_name: hp.name,
-                  source_brand: brandName,
-                  brand: brandName,
-                  // Pricing — always update cost; recalculate selling price
-                  supplier_price: supplierPrice,
-                  cost_price: supplierPrice,
-                  selling_price: newSellingPrice,
-                  price: newSellingPrice,
-                  markup_percentage: 5,
-                  last_sync_at: now,
-                  updated_at: now,
-                };
-
-                // Detect if admin has manually edited the name (name differs from source_name)
+                // Detect if admin has manually edited the name
                 const nameIsAdminEdited = exRow.source_name != null && exRow.name !== exRow.source_name;
 
                 if (isForce) {
-                  // Force resync: always take CentralHub name regardless of admin edits
-                  if (exRow.name !== hp.name) {
-                    updatePayload.name = hp.name;
-                    nameUpdates++;
-                  }
-                  if (ex.approval_status === "draft" && hp.slug) {
-                    updatePayload.slug = hp.slug;
-                  }
-                  if (hp.weight !== null) updatePayload.weight = hp.weight;
-                  if (hp.stock !== null) updatePayload.stock = hp.stock;
-                  if (hp.unit !== null) updatePayload.unit = hp.unit;
-                  if (hp.product_type !== null) updatePayload.product_type = hp.product_type;
+                  upsertPayload.name = hp.name;
+                  if (hp.slug) upsertPayload.slug = hp.slug;
+                  nameUpdates++;
                 } else {
-                  // Normal sync: only update name if admin hasn't customised it
-                  if (!nameIsAdminEdited && exRow.name !== hp.name) {
-                    updatePayload.name = hp.name;
+                  if (!nameIsAdminEdited) {
+                    upsertPayload.name = hp.name;
                     nameUpdates++;
                   }
-                  if (hp.weight !== null) updatePayload.weight = hp.weight;
-                  if (hp.stock !== null) updatePayload.stock = hp.stock;
-                  if (hp.unit !== null) updatePayload.unit = hp.unit;
-                  if (hp.product_type !== null) updatePayload.product_type = hp.product_type;
                 }
 
-                // Ensure visibility is synced from CentralHub master
-                updatePayload.approval_status = 'approved';
-                updatePayload.visibility_status = true;
+                // Handle other fields that might be null in HP but we want to keep if existing
+                if (hp.stock !== null) upsertPayload.stock = hp.stock;
+                if (hp.unit !== null) upsertPayload.unit = hp.unit;
+                if (hp.product_type !== null) upsertPayload.product_type = hp.product_type;
 
-                // Purge any protected fields that may have crept in
-                for (const pf of PROTECTED_FIELDS) delete updatePayload[pf];
-                // Re-allow pricing and visibility fields
-                updatePayload.supplier_price = supplierPrice;
-                updatePayload.cost_price = supplierPrice;
-                updatePayload.selling_price = newSellingPrice;
-                updatePayload.price = newSellingPrice;
-                updatePayload.approval_status = 'approved';
-                updatePayload.visibility_status = true;
+                // Purge protected fields if not forcing
+                if (!isForce) {
+                  for (const pf of PROTECTED_FIELDS) {
+                    // Pricing and status are actually meant to be synced now as per requirements
+                    if (pf !== 'price' && pf !== 'approval_status' && pf !== 'visibility_status') {
+                       delete upsertPayload[pf];
+                    }
+                  }
+                }
 
-                // Record price change in history if cost changed
+                // Record price history
                 const oldCost = Number(exRow.cost_price ?? exRow.supplier_price ?? 0);
                 const oldSelling = Number(exRow.selling_price ?? exRow.price ?? 0);
-                if (Math.abs(oldCost - supplierPrice) > 0.001 || Math.abs(oldSelling - newSellingPrice) > 0.001) {
+                if (Math.abs(oldCost - supplierPrice) > 0.001 || Math.abs(oldSelling - sellingPrice) > 0.001) {
                   await supabase.from("price_history").insert({
                     product_id: exRow.id,
                     old_cost_price: oldCost,
                     new_cost_price: supplierPrice,
                     old_selling_price: oldSelling,
-                    new_selling_price: newSellingPrice,
+                    new_selling_price: sellingPrice,
                     markup_percentage: 5,
                     changed_by: "sync",
                   });
                 }
-
-                const { error: uErr } = await supabase.from("products").update(updatePayload).eq("id", ex.id);
-                if (uErr) throw new Error(uErr.message);
                 updatedExisting++;
               } else {
-                // New product — insert as draft
-                const baseSlug = slugify(hp.name) || `product-${hpId.slice(-8)}`;
+                // New product setup
+                upsertPayload.name = hp.name;
+                const baseSlug = hp.slug || slugify(hp.name) || `product-${hpId.slice(-8)}`;
                 let finalSlug = baseSlug;
                 if (allSlugs.has(finalSlug)) finalSlug = `${baseSlug}-${hpId.slice(-6)}`;
-                if (allSlugs.has(finalSlug)) finalSlug = `${baseSlug}-${Date.now()}`;
                 allSlugs.add(finalSlug);
+                upsertPayload.slug = finalSlug;
 
-                const newSellingPrice = applyMarkup(supplierPrice);
-                const { error: iErr } = await supabase.from("products").insert({
-                  centralhub_product_id: hpId,
-                  source_product_id: hpId,
-                  source_name: hp.name,
-                  source_brand: brandName,
-                  brand: brandName,
-                  name: hp.name,
-                  slug: finalSlug,
-                  description: null,
-                  short_description: null,
-                  image_url: null,
-                  category_id: null,
-                  supplier_price: supplierPrice,
-                  cost_price: supplierPrice,
-                  selling_price: newSellingPrice,
-                  price: newSellingPrice,
-                  markup_percentage: 5,
-                  original_price: null,
-                  weight: hp.weight ?? null,
-                  unit: hp.unit ?? null,
-                  is_active: true,
-                  is_deleted: false,
-                  is_featured: false,
-                  is_deal: false,
-                  is_new_arrival: false,
-                  is_bestseller: false,
-                  discount_percentage: 0,
-                  sold_count: 0,
-                  rating: 4.5,
-                  review_count: 0,
-                  approval_status: "approved",
-                  visibility_status: true,
-                  last_sync_at: now,
-                  created_at: now,
-                });
-                if (iErr) throw new Error(iErr.message);
+                upsertPayload.stock = hp.stock ?? 0;
+                upsertPayload.unit = hp.unit ?? null;
+                upsertPayload.product_type = hp.product_type ?? null;
+                upsertPayload.created_at = now;
+
                 importedNew++;
               }
+
+              // Execute Upsert targeting SKU
+              const { error: upsertErr } = await supabase
+                .from("products")
+                .upsert(upsertPayload, { onConflict: 'sku' });
+
+              if (upsertErr) throw upsertErr;
+
             } catch (e) {
               failed++;
               errors.push(`${hp.name}: ${(e as Error).message}`);
