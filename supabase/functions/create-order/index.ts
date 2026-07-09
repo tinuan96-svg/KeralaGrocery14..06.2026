@@ -26,6 +26,7 @@ interface CreateOrderRequest {
   delivery_city: string;
   delivery_postcode: string;
   delivery_fee?: number;
+  wallet_amount?: number;
   payment_method: "card" | "cod" | "wallet" | "paypal";
   payment_status: "pending" | "paid";
   payment_reference?: string;
@@ -141,6 +142,7 @@ Deno.serve(async (req: Request) => {
         delivery_postcode:  orderData.delivery_postcode,
         subtotal:           parseFloat(serverSubtotal.toFixed(2)),
         delivery_fee:       deliveryFee,
+        wallet_amount:      orderData.wallet_amount || 0,
         total:              serverTotal,
         payment_method:     orderData.payment_method,
         payment_status:     orderData.payment_status,

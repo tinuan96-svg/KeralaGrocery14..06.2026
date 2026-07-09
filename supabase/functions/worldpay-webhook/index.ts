@@ -88,8 +88,14 @@ Deno.serve(async (req: Request) => {
           payment_reference: downstreamReference || transactionReference,
         })
         .eq("order_number", transactionReference)
-        .select("id, customer_name, customer_phone, total, order_number, user_id")
+        .select("id, customer_name, customer_phone, total, order_number, user_id, wallet_amount")
         .maybeSingle();
+
+      if (!updatedOrder && !error) {
+        console.warn(`[worldpay-webhook] order not found for reference: ${transactionReference}`);
+        await updateWebhookLog(supabase, logId, "ignored", `Order ${transactionReference} not found in database`);
+        return new Response(JSON.stringify({ error: "Order not found" }), { status: 200 });
+      }
 
       if (error) {
         console.error("[worldpay-webhook] DB update failed:", error);
@@ -111,6 +117,28 @@ Deno.serve(async (req: Request) => {
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+        const promises = [];
+
+        // 0. Handle wallet deduction if part of the payment
+        const walletAmt = parseFloat(updatedOrder.wallet_amount?.toString() ?? "0");
+        if (walletAmt > 0 && updatedOrder.user_id) {
+          promises.push(
+            fetch(`${supabaseUrl}/functions/v1/wallet-payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}` },
+              body: JSON.stringify({
+                order_id:      updatedOrder.id,
+                wallet_amount: walletAmt,
+                user_id:       updatedOrder.user_id
+              }),
+            }).then(async res => {
+              const json = await res.json().catch(() => ({}));
+              if (!res.ok) console.error("[worldpay-webhook] Wallet deduction failed:", json.error);
+              else console.log("[worldpay-webhook] Wallet deduction successful");
+            }).catch(err => console.error("[worldpay-webhook] Wallet deduction error:", err))
+          );
+        }
+
         // 1. Send WhatsApp
         if (updatedOrder.customer_phone) {
           const { data: items } = await supabase
@@ -118,7 +146,7 @@ Deno.serve(async (req: Request) => {
             .select("product_name, quantity")
             .eq("order_id", updatedOrder.id);
 
-          EdgeRuntime.waitUntil(
+          promises.push(
             fetch(`${supabaseUrl}/functions/v1/send-whatsapp-notification`, {
               method: "POST",
               headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}` },
@@ -139,7 +167,7 @@ Deno.serve(async (req: Request) => {
 
         // 2. Send Push Notification
         if (updatedOrder.user_id) {
-          EdgeRuntime.waitUntil(
+          promises.push(
             fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
               method: "POST",
               headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}` },
@@ -155,6 +183,11 @@ Deno.serve(async (req: Request) => {
               }),
             }).catch(err => console.error("[worldpay-webhook] Push error:", err))
           );
+        }
+
+        // Wait for notifications to be dispatched before returning
+        if (promises.length > 0) {
+          await Promise.allSettled(promises);
         }
       }
 

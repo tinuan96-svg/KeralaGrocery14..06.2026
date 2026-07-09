@@ -31,26 +31,40 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     // Authenticate caller
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-    if (authErr || !user) return respond(401, { error: "Unauthorized" });
 
-    const { order_id, wallet_amount } = await req.json();
+    let callerUserId: string | null = null;
+    const isServiceRole = token === serviceRoleKey;
+
+    if (isServiceRole) {
+      console.log("[wallet-payment] called with service_role");
+    } else {
+      const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+      if (authErr || !user) return respond(401, { error: "Unauthorized" });
+      callerUserId = user.id;
+    }
+
+    const { order_id, wallet_amount, user_id: bodyUserId } = await req.json();
 
     if (!order_id || typeof wallet_amount !== "number" || wallet_amount <= 0) {
       return respond(400, { error: "order_id and positive wallet_amount required" });
     }
 
+    const targetUserId = isServiceRole ? bodyUserId : callerUserId;
+    if (!targetUserId) {
+      return respond(400, { error: "user_id required for service_role calls" });
+    }
+
     const walletAmt = parseFloat(wallet_amount.toFixed(2));
 
-    // Fetch order — must belong to this user
+    // Fetch order
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .select("id, user_id, subtotal, total, wallet_amount, order_number")
@@ -58,10 +72,18 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
 
     if (orderErr || !order) return respond(404, { error: "Order not found" });
-    if (order.user_id !== user.id) return respond(403, { error: "Forbidden" });
+
+    // Authorization check
+    if (!isServiceRole && order.user_id !== targetUserId) {
+      return respond(403, { error: "Forbidden" });
+    }
+
+    // Ensure we use the correct user_id from the order if not specified
+    const finalUserId = order.user_id || targetUserId;
 
     // Idempotency: already processed
     if (parseFloat(order.wallet_amount ?? 0) > 0) {
+      console.log(`[wallet-payment] wallet already applied to order ${order.order_number}`);
       return respond(200, { success: true, already_applied: true });
     }
 
@@ -87,7 +109,7 @@ Deno.serve(async (req: Request) => {
     const { data: wallet, error: walletErr } = await supabase
       .from("wallets")
       .select("balance")
-      .eq("user_id", user.id)
+      .eq("user_id", finalUserId)
       .maybeSingle();
 
     if (walletErr) return respond(500, { error: "Failed to fetch wallet" });
@@ -106,7 +128,7 @@ Deno.serve(async (req: Request) => {
     const { error: updateErr } = await supabase
       .from("wallets")
       .update({ balance: newBalance, updated_at: new Date().toISOString() })
-      .eq("user_id", user.id);
+      .eq("user_id", finalUserId);
 
     if (updateErr) return respond(500, { error: "Failed to update wallet" });
 
@@ -114,7 +136,7 @@ Deno.serve(async (req: Request) => {
     const { data: tx, error: txErr } = await supabase
       .from("wallet_transactions")
       .insert({
-        user_id: user.id,
+        user_id: finalUserId,
         type: "wallet_payment",
         source: `order:${order_id}`,
         amount: -walletAmt,
@@ -130,7 +152,7 @@ Deno.serve(async (req: Request) => {
       await supabase
         .from("wallets")
         .update({ balance: currentBalance, updated_at: new Date().toISOString() })
-        .eq("user_id", user.id);
+        .eq("user_id", finalUserId);
       return respond(500, { error: "Failed to record transaction" });
     }
 
@@ -144,7 +166,7 @@ Deno.serve(async (req: Request) => {
     const { data: cashbackLogs } = await supabase
       .from("wallet_cashback_logs")
       .select("id, cashback_amount, used_amount")
-      .eq("user_id", user.id)
+      .eq("user_id", finalUserId)
       .is("expired_at", null)
       .gt("cashback_amount", 0)
       .order("created_at", { ascending: true });
