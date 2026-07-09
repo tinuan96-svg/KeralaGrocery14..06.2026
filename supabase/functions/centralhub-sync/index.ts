@@ -75,8 +75,8 @@ const SYNC_FIELDS = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function applyMarkup(supplierPrice: number, markupPct = 5): number {
-  return Math.round(supplierPrice * (1 + markupPct / 100) * 100) / 100;
+function applyMarkup(supplierPrice: number): number {
+  return Math.round(supplierPrice * 1.05 * 100) / 100;
 }
 
 function slugify(text: string): string {
@@ -739,8 +739,7 @@ Deno.serve(async (req: Request) => {
 
               if (ex?.id) {
                 const exRow = ex as unknown as ExRow;
-                const markupPct = Number(exRow.markup_percentage ?? 5);
-                const newSellingPrice = applyMarkup(supplierPrice, markupPct);
+                const newSellingPrice = applyMarkup(supplierPrice);
 
                 // Build update payload — only non-admin-managed fields
                 const updatePayload: Record<string, unknown> = {
@@ -753,7 +752,7 @@ Deno.serve(async (req: Request) => {
                   cost_price: supplierPrice,
                   selling_price: newSellingPrice,
                   price: newSellingPrice,
-                  markup_percentage: markupPct,
+                  markup_percentage: 5,
                   last_sync_at: now,
                   updated_at: now,
                 };
@@ -803,14 +802,14 @@ Deno.serve(async (req: Request) => {
                 // Record price change in history if cost changed
                 const oldCost = Number(exRow.cost_price ?? exRow.supplier_price ?? 0);
                 const oldSelling = Number(exRow.selling_price ?? exRow.price ?? 0);
-                if (Math.abs(oldCost - supplierPrice) > 0.001) {
+                if (Math.abs(oldCost - supplierPrice) > 0.001 || Math.abs(oldSelling - newSellingPrice) > 0.001) {
                   await supabase.from("price_history").insert({
                     product_id: exRow.id,
                     old_cost_price: oldCost,
                     new_cost_price: supplierPrice,
                     old_selling_price: oldSelling,
                     new_selling_price: newSellingPrice,
-                    markup_percentage: markupPct,
+                    markup_percentage: 5,
                     changed_by: "sync",
                   });
                 }
@@ -933,8 +932,7 @@ Deno.serve(async (req: Request) => {
         for (const row of chunk) {
           try {
             const costPrice = Number(row.cost_price);
-            const markupPct = Number(row.markup_percentage ?? 5);
-            const newSelling = applyMarkup(costPrice, markupPct);
+            const newSelling = applyMarkup(costPrice);
             const oldSelling = Number(row.selling_price ?? row.price ?? 0);
 
             if (Math.abs(oldSelling - newSelling) < 0.001) continue; // no change
@@ -943,6 +941,7 @@ Deno.serve(async (req: Request) => {
               selling_price: newSelling,
               price: newSelling,
               supplier_price: costPrice,
+              markup_percentage: 5,
               updated_at: new Date().toISOString(),
             }).eq("id", row.id);
 
@@ -954,7 +953,7 @@ Deno.serve(async (req: Request) => {
               new_cost_price: costPrice,
               old_selling_price: oldSelling,
               new_selling_price: newSelling,
-              markup_percentage: markupPct,
+              markup_percentage: 5,
               changed_by: "recalculate",
             });
 

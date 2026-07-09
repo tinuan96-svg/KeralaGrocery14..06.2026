@@ -12,6 +12,14 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+/**
+ * Applies a fixed 5% markup to the cost price.
+ */
+function applyMarkup(price: number): number {
+  if (!price || price <= 0) return 0;
+  return Math.round(price * 1.05 * 100) / 100;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const webhookSecret = process.env.CENTRALHUB_WEBHOOK_SECRET;
@@ -56,20 +64,22 @@ export async function POST(req: NextRequest) {
       // Hardened Matching: centralhub_product_id (primary) and gtin (secondary)
       let { data: existing } = await supabase
         .from('products')
-        .select('id, slug, approval_status, visibility_status')
+        .select('id, slug, approval_status, visibility_status, price, cost_price')
         .eq('centralhub_product_id', productData.id)
         .maybeSingle();
 
       if (!existing && productData.gtin) {
         const { data: gtinMatch } = await supabase
           .from('products')
-          .select('id, slug, approval_status, visibility_status')
+          .select('id, slug, approval_status, visibility_status, price, cost_price')
           .eq('gtin', productData.gtin)
           .maybeSingle();
         existing = gtinMatch;
       }
 
       const targetId = existing?.id || productData.id;
+      const costPrice = Number(productData.price || 0);
+      const sellingPrice = applyMarkup(costPrice);
 
       // Construct update payload
       const productUpsert: any = {
@@ -79,9 +89,19 @@ export async function POST(req: NextRequest) {
         name: productData.name,
         brand: productData.brand || null,
         brand_id: productData.brand_id || null,
-        price: productData.price || 0,
-        sale_price: productData.sale_price || null,
-        compare_price: productData.compare_at_price || null,
+
+        // CentralHub price is treated as the COST price.
+        // We apply a fixed 5% markup for the storefront.
+        price: sellingPrice,
+        selling_price: sellingPrice,
+        cost_price: costPrice,
+        supplier_price: costPrice,
+        markup_percentage: 5,
+
+        // Handle optional price fields
+        sale_price: productData.sale_price ? applyMarkup(Number(productData.sale_price)) : null,
+        compare_price: productData.compare_at_price ? applyMarkup(Number(productData.compare_at_price)) : null,
+
         stock: productData.stock || 0,
         in_stock: productData.in_stock ?? true,
         unit: productData.unit || null,
@@ -91,14 +111,30 @@ export async function POST(req: NextRequest) {
         updated_at: productData.updated_at || new Date().toISOString(),
         is_deleted: false,
         is_active: true,
+
         // ALWAYS ensure product is approved and visible when updated from CentralHub
-        // This satisfies the requirement "get it updated on website without moving to drafts"
         approval_status: 'approved',
         visibility_status: true,
       };
 
       if (!existing) {
         productUpsert.slug = productData.slug || `p-${productData.id.slice(0, 8)}`;
+      }
+
+      // Record price history if cost changed
+      if (existing) {
+        const oldCost = Number(existing.cost_price || 0);
+        if (Math.abs(oldCost - costPrice) > 0.001) {
+          await supabase.from('price_history').insert({
+            product_id: existing.id,
+            old_cost_price: oldCost,
+            new_cost_price: costPrice,
+            old_selling_price: Number(existing.price || 0),
+            new_selling_price: sellingPrice,
+            markup_percentage: 5,
+            changed_by: 'webhook_sync',
+          });
+        }
       }
 
       const { error: pError } = await supabase
@@ -118,20 +154,25 @@ export async function POST(req: NextRequest) {
 
       // Handle variants
       if (Array.isArray(variants) && variants.length > 0) {
-        const variantsUpsert = variants.map((v: any) => ({
-          id: v.id,
-          product_id: targetId,
-          variant_name: v.variant_name,
-          price: v.price || 0,
-          cost_price: v.cost_price || 0,
-          stock: v.stock || 0,
-          sku: v.sku || null,
-          barcode: v.barcode || null,
-          unit_value: v.unit_value || null,
-          unit_type: v.unit_type || null,
-          is_active: v.is_active ?? true,
-          updated_at: new Date().toISOString(),
-        }));
+        const variantsUpsert = variants.map((v: any) => {
+          const vCost = Number(v.price || 0);
+          const vSelling = applyMarkup(vCost);
+          return {
+            id: v.id,
+            product_id: targetId,
+            variant_name: v.variant_name,
+            price: vSelling,
+            selling_price: vSelling,
+            cost_price: vCost,
+            stock: v.stock || 0,
+            sku: v.sku || null,
+            barcode: v.barcode || null,
+            unit_value: v.unit_value || null,
+            unit_type: v.unit_type || null,
+            is_active: v.is_active ?? true,
+            updated_at: new Date().toISOString(),
+          };
+        });
 
         const { error: vError } = await supabase
           .from('product_variants')
@@ -147,17 +188,6 @@ export async function POST(req: NextRequest) {
           });
         }
       }
-
-      // Immediate revalidation for storefront
-      if (existing?.slug) {
-        revalidatePath(`/products/${existing.slug}`);
-      }
-      if (productData.slug) {
-        revalidatePath(`/products/${productData.slug}`);
-      }
-      revalidatePath('/products', 'layout');
-      revalidatePath('/');
-    }
 
       // Immediate revalidation for storefront
       if (existing?.slug) {

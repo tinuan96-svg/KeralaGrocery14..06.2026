@@ -82,8 +82,8 @@ const PROTECTED_FIELDS = new Set([
   "is_featured", "is_deal", "is_new_arrival", "is_bestseller",
 ]);
 
-function applyMarkup(supplierPrice: number, markupPct = 5): number {
-  return Math.round(supplierPrice * (1 + markupPct / 100) * 100) / 100;
+function applyMarkup(supplierPrice: number): number {
+  return Math.round(supplierPrice * 1.05 * 100) / 100;
 }
 
 function slugify(text: string): string {
@@ -143,8 +143,7 @@ async function applyProductUpdate(
   // Store brand exactly as received from CentralHub
   const brandName = hp.brand ?? null;
   const supplierPrice = Number(hp.price ?? 0);
-  const markupPct = localProduct ? Number(localProduct.markup_percentage ?? 5) : 5;
-  const newSellingPrice = applyMarkup(supplierPrice, markupPct);
+  const newSellingPrice = applyMarkup(supplierPrice);
 
   const productData: Record<string, any> = {
     source_name: hp.name,
@@ -155,7 +154,7 @@ async function applyProductUpdate(
     cost_price: supplierPrice,
     selling_price: newSellingPrice,
     price: newSellingPrice,
-    markup_percentage: markupPct,
+    markup_percentage: 5,
     stock: totalStock,
     weight: hp.weight ?? null,
     unit: hp.unit ?? null,
@@ -203,14 +202,15 @@ async function applyProductUpdate(
 
     // Record price change in history if cost changed
     const oldCost = Number(localProduct.cost_price ?? 0);
-    if (Math.abs(oldCost - supplierPrice) > 0.001) {
+    const oldSelling = Number(localProduct.selling_price ?? localProduct.price ?? 0);
+    if (Math.abs(oldCost - supplierPrice) > 0.001 || Math.abs(oldSelling - newSellingPrice) > 0.001) {
       await supabase.from("price_history").insert({
         product_id: localId,
         old_cost_price: oldCost,
         new_cost_price: supplierPrice,
-        old_selling_price: Number(localProduct.selling_price ?? localProduct.price ?? 0),
+        old_selling_price: oldSelling,
         new_selling_price: newSellingPrice,
-        markup_percentage: markupPct,
+        markup_percentage: 5,
         changed_by: "realtime_sync",
       });
     }
@@ -252,13 +252,15 @@ async function applyProductUpdate(
   // Handle Variants
   if (hp.variants && hp.variants.length > 0) {
     for (const v of hp.variants) {
-      const variantSellingPrice = applyMarkup(Number(v.price), markupPct);
+      const vCost = Number(v.price || 0);
+      const vSelling = applyMarkup(vCost);
       const { error: vError } = await supabase.from("product_variants").upsert({
         centralhub_variant_id: v.id, // Using CentralHub variant ID to prevent duplicates
         product_id: localId,
         variant_name: v.variant_name,
-        price: variantSellingPrice,
-        cost_price: v.cost_price ?? v.price,
+        price: vSelling,
+        selling_price: vSelling,
+        cost_price: vCost,
         stock: v.stock ?? 0,
         sku: v.sku,
         barcode: v.barcode,
