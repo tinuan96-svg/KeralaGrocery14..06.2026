@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,8 +34,18 @@ export async function POST(req: NextRequest) {
         // Match by centralhub_product_id as the primary sync key
         await supabase
           .from('products')
-          .update({ is_deleted: true, is_active: false })
+          .update({
+            is_deleted: true,
+            is_active: false,
+            visibility_status: false,
+            approval_status: 'rejected',
+            updated_at: new Date().toISOString()
+          })
           .eq('centralhub_product_id', id);
+
+        // Immediate revalidation for storefront
+        revalidatePath('/products', 'layout');
+        revalidatePath('/');
       }
       return NextResponse.json({ ok: true }, { headers: corsHeaders });
     }
@@ -45,14 +56,14 @@ export async function POST(req: NextRequest) {
       // Hardened Matching: centralhub_product_id (primary) and gtin (secondary)
       let { data: existing } = await supabase
         .from('products')
-        .select('id, slug, description, short_description, image_url, category_id, tags, approval_status, visibility_status')
+        .select('id, slug, approval_status, visibility_status')
         .eq('centralhub_product_id', productData.id)
         .maybeSingle();
 
       if (!existing && productData.gtin) {
         const { data: gtinMatch } = await supabase
           .from('products')
-          .select('id, slug, description, short_description, image_url, category_id, tags, approval_status, visibility_status')
+          .select('id, slug, approval_status, visibility_status')
           .eq('gtin', productData.gtin)
           .maybeSingle();
         existing = gtinMatch;
@@ -60,7 +71,7 @@ export async function POST(req: NextRequest) {
 
       const targetId = existing?.id || productData.id;
 
-      // Construct restricted payload
+      // Construct update payload
       const productUpsert: any = {
         id: targetId,
         centralhub_product_id: productData.id,
@@ -80,14 +91,14 @@ export async function POST(req: NextRequest) {
         updated_at: productData.updated_at || new Date().toISOString(),
         is_deleted: false,
         is_active: true,
+        // ALWAYS ensure product is approved and visible when updated from CentralHub
+        // This satisfies the requirement "get it updated on website without moving to drafts"
+        approval_status: 'approved',
+        visibility_status: true,
       };
 
-      // Only set metadata and visibility if this is a NEW product
       if (!existing) {
         productUpsert.slug = productData.slug || `p-${productData.id.slice(0, 8)}`;
-        productUpsert.approval_status = 'draft';
-        productUpsert.visibility_status = false;
-        // Other metadata fields like description, category_id, image_url are left null for local admin to fill
       }
 
       const { error: pError } = await supabase
@@ -109,7 +120,7 @@ export async function POST(req: NextRequest) {
       if (Array.isArray(variants) && variants.length > 0) {
         const variantsUpsert = variants.map((v: any) => ({
           id: v.id,
-          product_id: targetId, // Use the resolved local product ID
+          product_id: targetId,
           variant_name: v.variant_name,
           price: v.price || 0,
           cost_price: v.cost_price || 0,
@@ -136,6 +147,27 @@ export async function POST(req: NextRequest) {
           });
         }
       }
+
+      // Immediate revalidation for storefront
+      if (existing?.slug) {
+        revalidatePath(`/products/${existing.slug}`);
+      }
+      if (productData.slug) {
+        revalidatePath(`/products/${productData.slug}`);
+      }
+      revalidatePath('/products', 'layout');
+      revalidatePath('/');
+    }
+
+      // Immediate revalidation for storefront
+      if (existing?.slug) {
+        revalidatePath(`/products/${existing.slug}`);
+      }
+      if (productData.slug) {
+        revalidatePath(`/products/${productData.slug}`);
+      }
+      revalidatePath('/products', 'layout');
+      revalidatePath('/');
     }
 
     return NextResponse.json({ ok: true }, { headers: corsHeaders });

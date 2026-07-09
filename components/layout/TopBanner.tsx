@@ -19,7 +19,7 @@ export default function TopBanner() {
     }, 4000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [messages.length]);
 
   if (!isVisible) return null;
 

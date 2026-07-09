@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   };
 
-  const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
+  const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       const supabase = getSupabase();
       const { data, error } = await supabase
@@ -105,9 +105,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('[Auth] fetchProfile unexpected error:', e.message);
       return null;
     }
-  };
+  }, []);
 
-  const applySession = async (s: Session | null) => {
+  const applySession = useCallback(async (s: Session | null) => {
     console.log('[Auth] applySession — hasSession:', !!s, '| userId:', s?.user?.id ?? 'none');
     setSession(s);
     setUser(s?.user ?? null);
@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       setProfile(null);
     }
-  };
+  }, [fetchProfile]);
 
   // ── Boot ───────────────────────────────────────────────────────────────────
 
@@ -229,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
       cleanupNative.then(fn => fn?.());
     };
-  }, []);
+  }, [applySession]);
 
   // ── Auth methods ───────────────────────────────────────────────────────────
 

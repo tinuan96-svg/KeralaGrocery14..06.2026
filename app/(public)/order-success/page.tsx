@@ -58,7 +58,7 @@ function OrderSuccessContent() {
     } else {
       setLoading(false);
     }
-  }, [authLoading, user, orderNumber]);
+  }, [authLoading, user, orderNumber, router]);
 
   const loadOrder = async (orderNum: string) => {
     try {

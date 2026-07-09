@@ -6,7 +6,7 @@ import { trackProductView, type RecentlyViewedItem } from './RecentlyViewed';
 export default function RecentlyViewedTracker({ product }: { product: RecentlyViewedItem }) {
   useEffect(() => {
     trackProductView(product);
-  }, [product.id]);
+  }, [product]);
 
   return null;
 }

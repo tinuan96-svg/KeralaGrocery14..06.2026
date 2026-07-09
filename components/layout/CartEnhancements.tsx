@@ -134,7 +134,7 @@ export function StickyMiniCart() {
     }
     setLastCount(cartCount);
     return () => { if (hideTimer.current) clearTimeout(hideTimer.current); };
-  }, [cartCount]);
+  }, [cartCount, lastCount]);
 
   if (cartCount === 0) return null;
 

@@ -2,10 +2,10 @@
 // Force Bolt Refresh: July 08, 2026 06:45
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     unoptimized: true,
@@ -22,7 +22,6 @@ const nextConfig = {
     ],
   },
   experimental: {
-    serverActions: true,
     optimizePackageImports: ['lucide-react'],
   },
   webpack: (config, { dev }) => {
@@ -39,8 +38,8 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  swcMinify: false, // Disabled for Bolt performance/stability
-  reactStrictMode: false, // Disabled for Bolt performance
+  swcMinify: true, // Re-enabled for production
+  reactStrictMode: true, // Re-enabled for quality
 };
 
 module.exports = nextConfig;

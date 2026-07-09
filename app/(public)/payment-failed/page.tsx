@@ -19,7 +19,7 @@ function PaymentFailedContent() {
     if (!user) { router.replace('/account'); return; }
     const order = searchParams.get('order');
     if (order) setOrderNumber(order);
-  }, [authLoading, user, searchParams]);
+  }, [authLoading, user, searchParams, router]);
 
   if (authLoading || !user) {
     return (

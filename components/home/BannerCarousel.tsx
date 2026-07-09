@@ -116,21 +116,21 @@ function Carousel({ banners }: { banners: Banner[] }) {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
   const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi]);
 
-  function startAutoplay() {
+  const stopAutoplay = useCallback(() => {
+    if (autoplayRef.current) {
+      clearInterval(autoplayRef.current);
+      autoplayRef.current = null;
+    }
+  }, []);
+
+  const startAutoplay = useCallback(() => {
     stopAutoplay();
     autoplayRef.current = setInterval(() => {
       if (!isHovering.current) {
         emblaApi?.scrollNext();
       }
     }, AUTOPLAY_DELAY);
-  }
-
-  function stopAutoplay() {
-    if (autoplayRef.current) {
-      clearInterval(autoplayRef.current);
-      autoplayRef.current = null;
-    }
-  }
+  }, [emblaApi, stopAutoplay]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -141,7 +141,7 @@ function Carousel({ banners }: { banners: Banner[] }) {
 
     startAutoplay();
     return () => stopAutoplay();
-  }, [emblaApi]);
+  }, [emblaApi, startAutoplay, stopAutoplay]);
 
   if (banners.length === 1) {
     return (

@@ -22,52 +22,62 @@ export const metadata: Metadata = {
 // export const dynamic = 'force-dynamic';
 
 async function getBrands(): Promise<BrandEntry[]> {
-  const supabase = createServerSupabaseClient();
+  try {
+    const supabase = createServerSupabaseClient();
 
-  const { data } = await supabase
-    .from('products')
-    .select('brand, image_url, image_main, approval_status, visibility_status, is_active, is_deleted')
-    .eq('is_deleted', false);
+    const { data, error } = await supabase
+      .from('products')
+      .select('brand, image_url, image_main, approval_status, visibility_status, is_active, is_deleted')
+      .eq('is_deleted', false);
 
-  const rows = (data ?? []) as {
-    brand: string | null;
-    image_url: string | null;
-    image_main: string | null;
-    approval_status: string;
-    visibility_status: boolean;
-    is_active: boolean;
-  }[];
-
-  const visible = rows.filter(
-    (r) => r.approval_status === 'approved' && r.visibility_status && r.is_active
-  );
-
-  const brandMap = new Map<string, { count: number; imageUrl: string | null; displayName: string }>();
-
-  for (const row of visible) {
-    const raw = row.brand?.trim() ?? '';
-    if (!raw) continue;
-    const key = raw.toLowerCase();
-    const img =
-      (row.image_main?.startsWith('http') ? row.image_main : null) ??
-      (row.image_url?.startsWith('http') ? row.image_url : null);
-
-    const existing = brandMap.get(key);
-    if (existing) {
-      existing.count++;
-      if (!existing.imageUrl && img) existing.imageUrl = img;
-    } else {
-      brandMap.set(key, { count: 1, imageUrl: img, displayName: raw });
+    if (error) {
+      console.error('[getBrands] Supabase error:', error.message);
+      return [];
     }
-  }
 
-  return Array.from(brandMap.values())
-    .map(({ displayName, count, imageUrl }) => ({
-      name: displayName,
-      productCount: count,
-      imageUrl,
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    const rows = (data ?? []) as {
+      brand: string | null;
+      image_url: string | null;
+      image_main: string | null;
+      approval_status: string;
+      visibility_status: boolean;
+      is_active: boolean;
+    }[];
+
+    const visible = rows.filter(
+      (r) => r.approval_status === 'approved' && r.visibility_status && r.is_active
+    );
+
+    const brandMap = new Map<string, { count: number; imageUrl: string | null; displayName: string }>();
+
+    for (const row of visible) {
+      const raw = row.brand?.trim() ?? '';
+      if (!raw) continue;
+      const key = raw.toLowerCase();
+      const img =
+        (row.image_main?.startsWith('http') ? row.image_main : null) ??
+        (row.image_url?.startsWith('http') ? row.image_url : null);
+
+      const existing = brandMap.get(key);
+      if (existing) {
+        existing.count++;
+        if (!existing.imageUrl && img) existing.imageUrl = img;
+      } else {
+        brandMap.set(key, { count: 1, imageUrl: img, displayName: raw });
+      }
+    }
+
+    return Array.from(brandMap.values())
+      .map(({ displayName, count, imageUrl }) => ({
+        name: displayName,
+        productCount: count,
+        imageUrl,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  } catch (err) {
+    console.error('[getBrands] Unexpected error:', err);
+    return [];
+  }
 }
 
 export default async function BrandsPage() {
