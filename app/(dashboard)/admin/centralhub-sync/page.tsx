@@ -714,7 +714,7 @@ export default function CentralHubSyncPage() {
               <div>
                 <p className="font-semibold text-gray-800 mb-1">Sync identifier</p>
                 <ul className="space-y-0.5 text-gray-500">
-                  <li>• Products matched by <code className="bg-gray-100 px-0.5 rounded">centralhub_product_id</code> (UUID)</li>
+                  <li>• Products matched by <code className="bg-gray-100 px-0.5 rounded">centralhub_product_id</code></li>
                   <li>• Never matched by name, slug, or SKU</li>
                   <li>• Stable across renames on CentralHub</li>
                 </ul>
@@ -722,7 +722,7 @@ export default function CentralHubSyncPage() {
               <div>
                 <p className="font-semibold text-gray-800 mb-1">Fields updated on sync</p>
                 <ul className="space-y-0.5 text-gray-500">
-                  <li>• name, brand, weight, stock, unit</li>
+                  <li>• name, brand, weight, stock, stock_quantity, unit</li>
                   <li>• supplier_price → recalculates selling price</li>
                   <li>• product_type, last_sync_at</li>
                 </ul>

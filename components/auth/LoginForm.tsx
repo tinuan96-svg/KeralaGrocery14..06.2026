@@ -20,8 +20,10 @@ const OTP_TTL = 60;
 
 // ── Utils ────────────────────────────────────────────────────────────────────
 
-function toE164(raw: string): string {
+function toE164(raw: string): string | null {
+  if (!raw || !raw.trim()) return null;
   const cleaned = raw.replace(/\D/g, '');
+  if (cleaned.length < 10) return null; // Too short for a real number
   if (raw.startsWith('+')) return '+' + cleaned;
   if (cleaned.startsWith('07') && cleaned.length === 11) return '+44' + cleaned.slice(1);
   if (cleaned.startsWith('44')) return '+' + cleaned;
@@ -128,18 +130,29 @@ export default function LoginForm() {
 
     setIsSubmitting(true);
     try {
-      const { error: signUpErr } = await signUp(email, password);
+      const { data, error: signUpErr } = await signUp(email, password);
       if (signUpErr) {
         toast({ title: 'Signup failed', description: signUpErr.message, variant: 'destructive' });
         return;
       }
+
+      const phone = toE164(phoneInput.trim());
       await saveProfile({
         name: name.trim(),
         email,
-        phone: phoneInput.trim() ? toE164(phoneInput.trim()) : null,
+        phone,
         phone_verified: false,
       });
-      toast({ title: 'Account created!', description: 'Welcome to Kerala Grocery UK.' });
+
+      if (!data.session) {
+        toast({
+          title: 'Verification email sent',
+          description: 'Please check your inbox to confirm your account.',
+        });
+        setMode('select');
+      } else {
+        toast({ title: 'Account created!', description: 'Welcome to Kerala Grocery UK.' });
+      }
     } catch {
       toast({ title: 'Error', description: 'Something went wrong.', variant: 'destructive' });
     } finally {
@@ -158,6 +171,10 @@ export default function LoginForm() {
       return;
     }
     const e164 = toE164(phoneInput.trim());
+    if (!e164) {
+      toast({ title: 'Invalid Phone', description: 'Please enter a valid UK phone number', variant: 'destructive' });
+      return;
+    }
     setIsSubmitting(true);
     try {
       console.log('SEND PHONE:', e164);
@@ -182,6 +199,10 @@ export default function LoginForm() {
   const handleResend = async () => {
     if (countdown > 0) return;
     const e164 = toE164(phoneInput.trim());
+    if (!e164) {
+      toast({ title: 'Invalid Phone', description: 'Please enter a valid UK phone number', variant: 'destructive' });
+      return;
+    }
     setIsSubmitting(true);
     try {
       console.log('SEND PHONE (resend):', e164);

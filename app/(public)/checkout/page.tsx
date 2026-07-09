@@ -23,7 +23,7 @@ import { maxWalletUsable } from '@/lib/services/walletService';
 import { useAddresses } from '@/hooks/useAddresses';
 import type { CustomerAddress } from '@/lib/services/addressService';
 
-type PaymentMethod = 'worldpay' | 'cod';
+type PaymentMethod = 'worldpay';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -210,7 +210,7 @@ export default function CheckoutPage() {
     delivery_postcode:  formData.postcode,
     delivery_fee:       deliveryFee,
     wallet_amount:      walletAmount,
-    payment_method:     paymentMethod === 'worldpay' ? 'card' : 'cod',
+    payment_method:     'card',
     payment_status:     status,
     payment_reference:  ref,
     notes:              formData.notes,
@@ -315,38 +315,6 @@ export default function CheckoutPage() {
       const message = err instanceof Error ? err.message : 'Payment failed. Please try again.';
       toast({ title: 'Payment Failed', description: message, variant: 'destructive' });
       paymentInitiated.current = false;
-      setIsProcessing(false);
-    }
-  };
-
-  const handleCOD = async () => {
-    if (!validateForm()) return;
-    if (isProcessing) return;
-    setIsProcessing(true);
-    try {
-      const result = await createOrder('pending');
-      const orderId = result.order.id;
-
-      // Apply wallet deduction immediately for COD
-      if (walletAmount > 0 && user) {
-        const supabase = getSupabase();
-        const { data: { session } } = await supabase.auth.getSession();
-        const authToken = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        await fetch(
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/wallet-payment`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-            body: JSON.stringify({ order_id: orderId, wallet_amount: walletAmount }),
-          }
-        ).catch(e => console.error('[Checkout] wallet deduction failed:', e));
-      }
-
-      clearCart();
-      router.push(`/order-success?order=${result.order.order_number}`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to place order. Please try again.';
-      toast({ title: 'Order Failed', description: message, variant: 'destructive' });
       setIsProcessing(false);
     }
   };
@@ -605,31 +573,15 @@ export default function CheckoutPage() {
 
               <div className="grid sm:grid-cols-2 gap-3 mb-5">
                 <button type="button" onClick={() => setPaymentMethod('worldpay')}
-                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
-                    paymentMethod === 'worldpay' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                    paymentMethod === 'worldpay' ? 'border-green-500' : 'border-gray-300'}`}>
-                    {paymentMethod === 'worldpay' && <div className="w-2 h-2 rounded-full bg-green-500" />}
+                  className="flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left border-green-500 bg-green-50">
+                  <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center border-green-500">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
                   </div>
                   <div>
                     <p className="font-semibold text-sm text-gray-900">Pay by Card</p>
                     <p className="text-xs text-gray-500">Visa, Mastercard &amp; more</p>
                   </div>
                   <CreditCard className="w-5 h-5 text-blue-600 ml-auto flex-shrink-0" />
-                </button>
-
-                <button type="button" onClick={() => setPaymentMethod('cod')}
-                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
-                    paymentMethod === 'cod' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
-                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                    paymentMethod === 'cod' ? 'border-green-500' : 'border-gray-300'}`}>
-                    {paymentMethod === 'cod' && <div className="w-2 h-2 rounded-full bg-green-500" />}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-gray-900">Cash on Delivery</p>
-                    <p className="text-xs text-gray-500">Pay when you receive</p>
-                  </div>
-                  <Banknote className="w-5 h-5 text-green-600 ml-auto flex-shrink-0" />
                 </button>
               </div>
 
@@ -665,26 +617,6 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {paymentMethod === 'cod' && (
-                <Button
-                  className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl text-sm transition-colors"
-                  disabled={isProcessing}
-                  onClick={handleCOD}>
-                  {isProcessing ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                      </svg>
-                      Placing Order...
-                    </span>
-                  ) : walletAmount > 0 ? (
-                    `Place Order · £${cardCharge.toFixed(2)} cash + £${walletAmount.toFixed(2)} wallet`
-                  ) : (
-                    `Place Order · £${displayTotal.toFixed(2)}`
-                  )}
-                </Button>
-              )}
             </section>
 
             <div className="flex flex-wrap items-center justify-center gap-6 py-2">
@@ -801,8 +733,8 @@ export default function CheckoutPage() {
         <Button
           className="bg-[#0B5D3B] hover:bg-green-700 text-white font-bold px-6 h-11 rounded-xl text-sm"
           disabled={isProcessing}
-          onClick={paymentMethod === 'worldpay' ? handleWorldpayPayment : handleCOD}>
-          {isProcessing ? 'Processing...' : paymentMethod === 'worldpay' ? 'Pay Now' : 'Place Order'}
+          onClick={handleWorldpayPayment}>
+          {isProcessing ? 'Processing...' : 'Pay Now'}
         </Button>
       </div>
     </div>

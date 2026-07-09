@@ -170,11 +170,10 @@ export default function TermsPage() {
           <p>We accept the following payment methods:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li><strong>Debit/credit card</strong> — processed securely via Worldpay (PCI-DSS compliant)</li>
-            <li><strong>Cash on Delivery (COD)</strong> — available for selected delivery areas</li>
             <li><strong>KG Wallet</strong> — digital wallet credits (see Section 7)</li>
           </ul>
           <p>
-            Payment must be completed at the time of ordering (except for Cash on Delivery).
+            Payment must be completed at the time of ordering.
             We do not store your full card details on our servers.
           </p>
         </Section>

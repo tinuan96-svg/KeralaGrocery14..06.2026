@@ -32,8 +32,11 @@ interface Order {
   delivery_address: string;
   delivery_city: string;
   delivery_postcode: string;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
+  courier_name?: string | null;
   items?: OrderItem[];
-}
+}}
 
 function OrderStatusTimeline({ status }: { status: string }) {
   const statuses = ['pending', 'processing', 'shipped', 'delivered'];
@@ -251,6 +254,32 @@ export default function OrdersPage() {
                   <Separator className="my-4" />
 
                   <OrderStatusTimeline status={order.order_status} />
+
+                  {order.tracking_number && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-3">
+                        <Truck className="h-5 w-5 text-blue-600" />
+                        <div className="flex-1">
+                          <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">Tracking Information</p>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                            <p className="text-sm font-bold text-blue-900">
+                              {order.courier_name || 'DHL eCommerce UK'}: {order.tracking_number}
+                            </p>
+                            {order.tracking_url && (
+                              <a
+                                href={order.tracking_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
+                              >
+                                Track Package <Truck className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <Separator className="my-4" />
 

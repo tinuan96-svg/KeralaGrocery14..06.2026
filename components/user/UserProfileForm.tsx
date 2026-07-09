@@ -21,7 +21,7 @@ interface UserProfile {
 }
 
 export default function UserProfileForm() {
-  const { user } = useAuth();
+  const { user, saveProfile } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -145,19 +145,14 @@ export default function UserProfileForm() {
     setSaving(true);
 
     try {
-      const supabase = getSupabase();
-      const { error } = await supabase
-        .from('user_profiles')
-        .upsert({
-          id: user?.id,
-          name: profile.name,
-          email: profile.email,
-          phone: profile.phone,
-          address: profile.address,
-          city: profile.city,
-          postcode: profile.postcode.toUpperCase(),
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await saveProfile({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        address: profile.address,
+        city: profile.city,
+        postcode: profile.postcode.toUpperCase(),
+      });
 
       if (error) throw error;
 

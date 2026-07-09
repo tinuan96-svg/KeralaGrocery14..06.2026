@@ -27,7 +27,7 @@ interface CreateOrderRequest {
   delivery_postcode: string;
   delivery_fee?: number;
   wallet_amount?: number;
-  payment_method: "card" | "cod" | "wallet" | "paypal";
+  payment_method: "card" | "wallet" | "paypal";
   payment_status: "pending" | "paid";
   payment_reference?: string;
   notes?: string;
@@ -214,9 +214,9 @@ Deno.serve(async (req: Request) => {
     }
 
     // ── Order confirmation notifications (WhatsApp & Push) ──────────────────
-    // Only notify if payment is confirmed (paid) OR if it's Cash on Delivery.
+    // Only notify if payment is confirmed (paid).
     // For card payments, the confirmation is sent by the Worldpay webhook after authorization.
-    const shouldNotifyNow = orderData.payment_status === "paid" || orderData.payment_method === "cod";
+    const shouldNotifyNow = orderData.payment_status === "paid";
 
     if (shouldNotifyNow && (orderData.customer_phone || userId)) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

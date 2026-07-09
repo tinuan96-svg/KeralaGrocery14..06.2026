@@ -36,6 +36,9 @@ interface Order {
   payment_status: string;
   order_status: string;
   created_at: string;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
+  courier_name?: string | null;
   items: OrderItem[];
 }
 
@@ -105,7 +108,6 @@ function OrderSuccessContent() {
     card: 'Debit/Credit Card',
     paypal: 'PayPal',
     wallet: 'KG Wallet',
-    cod: 'Cash on Delivery',
   };
 
   return (
@@ -188,10 +190,20 @@ function OrderSuccessContent() {
                   {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
                 </span>
               </div>
-              {order.payment_method === 'cod' && (
-                <p className="text-sm text-gray-600 mt-2 bg-orange-50 p-3 rounded">
-                  Please keep £{Number(order.total).toFixed(2)} ready for payment on delivery
-                </p>
+
+              {order.tracking_number && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Tracking</p>
+                  <p className="text-sm font-bold text-gray-900">
+                    {order.courier_name || 'DHL eCommerce UK'}: {order.tracking_number}
+                  </p>
+                  {order.tracking_url && (
+                    <a href={order.tracking_url} target="_blank" rel="noopener noreferrer"
+                       className="text-xs text-green-600 hover:underline font-bold mt-1 inline-block">
+                      Track Package →
+                    </a>
+                  )}
+                </div>
               )}
             </div>
           </Card>

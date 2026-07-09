@@ -29,7 +29,9 @@ const PRODUCTS_SELECT = `
   sold_count,
   created_at,
   category_id,
-  brand_id
+  brand_id,
+  stock,
+  stock_quantity
 `;
 
 function mapProduct(p: any): ProductWithDetails {
@@ -53,7 +55,8 @@ function mapProduct(p: any): ProductWithDetails {
     category_id: p.category_id ?? null,
     brand_id: p.brand_id ?? null,
     created_at: p.created_at ?? '',
-    stock: 999,
+    stock: p.stock ?? p.stock_quantity ?? 0,
+    stock_quantity: p.stock_quantity ?? p.stock ?? 0,
     is_active: p.is_active ?? true,
     discount_percentage: p.discount_percentage ?? undefined,
     is_bestseller: p.is_bestseller ?? undefined,

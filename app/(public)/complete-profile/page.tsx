@@ -14,8 +14,10 @@ import { Phone, Clock, CircleCheck as CheckCircle2, ShieldCheck } from 'lucide-r
 
 const OTP_TTL = 60;
 
-function toE164(raw: string): string {
+function toE164(raw: string): string | null {
+  if (!raw || !raw.trim()) return null;
   const cleaned = raw.replace(/\D/g, '');
+  if (cleaned.length < 10) return null;
   if (raw.startsWith('+')) return '+' + cleaned;
   if (cleaned.startsWith('07') && cleaned.length === 11) return '+44' + cleaned.slice(1);
   if (cleaned.startsWith('44')) return '+' + cleaned;
@@ -91,6 +93,10 @@ function CompleteProfileContent() {
       return;
     }
     const e164 = toE164(phoneInput.trim());
+    if (!e164) {
+      toast({ title: 'Invalid Phone', description: 'Enter a valid UK phone number', variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
       console.log('SEND PHONE:', e164);
@@ -114,6 +120,10 @@ function CompleteProfileContent() {
   const handleResend = async () => {
     if (countdown > 0) return;
     const e164 = toE164(phoneInput.trim());
+    if (!e164) {
+      toast({ title: 'Invalid Phone', description: 'Enter a valid UK phone number', variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
     try {
       console.log('SEND PHONE (resend):', e164);

@@ -91,7 +91,7 @@ export function GroceryStoreSchema() {
     image: 'https://keralagrocery.com/logo_KG_Trans.png',
     priceRange: '£',
     currenciesAccepted: 'GBP',
-    paymentAccepted: 'Credit Card, Debit Card, Cash on Delivery',
+    paymentAccepted: 'Credit Card, Debit Card',
     address: {
       '@type': 'PostalAddress',
       streetAddress: '21 Weald Bridge Nursery',

@@ -22,7 +22,7 @@ interface CreateOrderData {
   subtotal: number;
   delivery_fee: number;
   total: number;
-  payment_method: 'paypal' | 'card' | 'wallet' | 'cod';
+  payment_method: 'paypal' | 'card' | 'wallet';
   notes?: string;
   items: OrderItem[];
 }

@@ -58,6 +58,9 @@ export interface Product {
   warehouse_location?: string | null;
   gtin?: string | null;
   is_archived?: boolean;
+  centralhub_product_id?: string | null;
+  stock_quantity?: number;
+  sale_price?: number | null;
 }
 
 export interface ProductVariant {
@@ -128,6 +131,9 @@ export interface ProductWithDetails {
   warehouse_location?: string | null;
   gtin?: string | null;
   is_archived?: boolean;
+  centralhub_product_id?: string | null;
+  stock_quantity?: number;
+  sale_price?: number | null;
 }
 
 export interface Banner {
@@ -170,11 +176,18 @@ export interface Order {
   subtotal: number;
   delivery_fee: number;
   total: number;
-  payment_method: 'paypal' | 'card' | 'wallet' | 'cod';
+  payment_method: 'paypal' | 'card' | 'wallet';
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   order_status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   notes?: string | null;
   created_at: string;
+  shipment_status?: string | null;
+  tracking_number?: string | null;
+  tracking_url?: string | null;
+  shipment_label_url?: string | null;
+  courier_name?: string | null;
+  shipment_booked_at?: string | null;
+  last_synced_at?: string | null;
 }
 
 export interface OrderItem {
