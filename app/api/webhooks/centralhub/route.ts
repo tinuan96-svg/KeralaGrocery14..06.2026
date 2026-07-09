@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
         brand_id: productData.brand_id || null,
         price: productData.price || 0,
         sale_price: productData.sale_price || null,
-        compare_at_price: productData.compare_at_price || null,
+        compare_price: productData.compare_at_price || null,
         stock: productData.stock || 0,
         in_stock: productData.in_stock ?? true,
         unit: productData.unit || null,
