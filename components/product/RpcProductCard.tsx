@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ShoppingCart, Plus, Minus, Heart } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
@@ -60,13 +61,13 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
       <Link href={`/products/${slug}`} className="block flex-shrink-0">
         <div className="relative w-full bg-white overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_55%_40%,_#f0f9f4_0%,_#ffffff_70%)] pointer-events-none" />
-          <img
+          <Image
             src={imgSrc}
             alt={product.display_title}
-            loading={priority ? 'eager' : 'lazy'}
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-[1.06]"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.webp'; }}
+            fill
+            priority={priority}
+            className="object-contain p-2 transition-transform duration-500 group-hover:scale-[1.06]"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
           />
 
           {product.discount_pct > 0 && (

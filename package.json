@@ -15,7 +15,8 @@
     "cap:patch-plist": "node scripts/patch-info-plist.js",
     "ios:setup": "npx cap add ios && node scripts/patch-info-plist.js && cp ios-config/Podfile.patch ios/App/Podfile && cd ios/App && pod install",
     "git:push": "node scripts/git-sync.js",
-    "sync-and-push": "npm install && npm run build && npx cap sync && npm run git:push"
+    "sync-and-push": "npm install && npm run build && npx cap sync && npm run git:push",
+    "postbuild": "npm run git:push"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",

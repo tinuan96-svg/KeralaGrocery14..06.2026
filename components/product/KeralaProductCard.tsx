@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { memo } from 'react';
 import { Heart, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
@@ -65,13 +66,13 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
       <Link href={`/products/${slug}`} className="block flex-shrink-0">
         <div className="relative w-full bg-white overflow-hidden rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] pointer-events-none" />
-          <img
+          <Image
             src={image}
             alt={product.display_title}
-            loading={priority ? 'eager' : 'lazy'}
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-[1.07] z-10"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.webp'; }}
+            fill
+            priority={priority}
+            className="object-contain p-2 transition-transform duration-500 group-hover:scale-[1.07] z-10"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
           />
 
           {discount > 0 && (
