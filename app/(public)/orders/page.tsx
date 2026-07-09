@@ -36,7 +36,7 @@ interface Order {
   tracking_url?: string | null;
   courier_name?: string | null;
   items?: OrderItem[];
-}}
+}
 
 function OrderStatusTimeline({ status }: { status: string }) {
   const statuses = ['pending', 'processing', 'shipped', 'delivered'];
