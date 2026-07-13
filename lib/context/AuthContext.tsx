@@ -108,7 +108,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const applySession = useCallback(async (s: Session | null) => {
-    console.log('[Auth] applySession — hasSession:', !!s, '| userId:', s?.user?.id ?? 'none');
     setSession(s);
     setUser(s?.user ?? null);
     saveUser(s?.user ?? null);
@@ -116,10 +115,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (s?.user) {
       setProfile(undefined);
       const p = await fetchProfile(s.user.id);
-      console.log(
-        '[Auth] profile settled — userId:', s.user.id,
-        '| result:', p ? `found (phone_verified:${p.phone_verified}, phone:${p.phone ?? 'none'})` : 'null (no row)'
-      );
       setProfile(p);
     } else {
       setProfile(null);
@@ -137,7 +132,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {}
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
-      console.log('[Auth] getSession resolved — hasSession:', !!s, '| userId:', s?.user?.id ?? 'none');
       (async () => {
         await applySession(s);
         setLoading(false);
@@ -148,7 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
-      console.log('[Auth] onAuthStateChange event:', event, '| userId:', s?.user?.id ?? 'none');
       (async () => {
         await applySession(s);
         setLoading(false);
@@ -161,14 +154,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!Capacitor.isNativePlatform()) return;
 
       const handleUrl = async (urlStr: string) => {
-        console.log('[Auth] Processing URL:', urlStr);
-
         const isCustomScheme = urlStr.startsWith('com.keralagrocery.app://auth');
         const isWebCallback = urlStr.includes('keralagrocery.com/auth/callback');
 
         if (isCustomScheme || isWebCallback) {
-          console.log('[Auth] Detected redirect URL:', urlStr);
-
           const closeBrowser = async () => {
             try { await Browser.close(); } catch (e) {}
           };
@@ -200,14 +189,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       const listener = await App.addListener('appUrlOpen', async (data) => {
-        console.log('[Auth] appUrlOpen event:', data.url);
         await handleUrl(data.url);
       });
 
       // Safety net: Close browser when app becomes active (in case redirect didn't trigger close)
       await App.addListener('appStateChange', ({ isActive }) => {
         if (isActive) {
-          console.log('[Auth] App became active, ensuring browser is closed');
           Browser.close().catch(() => {});
         }
       });
@@ -215,7 +202,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check for launch URL in case app was opened from cold start via deep link
       App.getLaunchUrl().then((launchUrl) => {
         if (launchUrl?.url) {
-          console.log('[Auth] App launched with URL:', launchUrl.url);
           handleUrl(launchUrl.url);
         }
       });

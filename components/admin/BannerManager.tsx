@@ -92,7 +92,6 @@ export default function BannerManager() {
     };
 
     const operation = editingId ? 'update' : 'create';
-    console.log('[BannerManager] Save triggered', { operation, payload, bannerId: editingId });
 
     setSaving(true);
     setError('');

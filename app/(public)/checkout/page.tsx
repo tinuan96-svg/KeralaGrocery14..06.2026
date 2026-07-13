@@ -147,13 +147,11 @@ export default function CheckoutPage() {
     if (authLoading) return;
     if (profile === undefined) return; // profile fetch still in-flight
     if (!user) {
-      console.log('[Checkout] no user — redirecting to /account');
       router.replace('/account');
       return;
     }
     const isAdmin = !!(user?.app_metadata?.is_admin);
     if (!isAdmin && (!profile || !profile.phone_verified)) {
-      console.log('[Checkout] phone not verified — redirecting to /complete-profile');
       router.replace('/complete-profile?returnTo=/checkout');
     }
   }, [authLoading, user, profile, router]);
