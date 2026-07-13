@@ -18,7 +18,7 @@ export default function KichuSpeechBubble({ text, onClose }: Props) {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed bottom-[150px] left-6 sm:bottom-[170px] sm:left-10 z-[60] max-w-[220px] pointer-events-auto"
+          className="relative mb-4 z-[60] max-w-[220px] pointer-events-auto"
         >
           <div className="relative bg-white border-2 border-[#0B5D3B] rounded-[2rem] rounded-bl-none shadow-2xl p-4 pr-10">
             <p className="text-xs sm:text-sm font-bold text-gray-800 leading-tight italic">

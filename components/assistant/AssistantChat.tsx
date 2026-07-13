@@ -120,7 +120,7 @@ export default function AssistantChat() {
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
-          className="fixed bottom-24 left-6 z-[100] w-[360px] sm:w-[420px] h-[580px] bg-white/90 backdrop-blur-xl rounded-[3rem] border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
+          className="fixed bottom-[calc(var(--nav-height,60px)+20px)] left-4 sm:left-10 z-[100] w-[calc(100%-2rem)] sm:w-[420px] h-[580px] max-h-[70vh] bg-white/90 backdrop-blur-xl rounded-[3rem] border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
         >
           {/* Header - Kerala Green Gradient */}
           <div className="bg-gradient-to-br from-[#0B5D3B] to-[#064e3b] p-6 text-white flex items-center justify-between shadow-lg">
