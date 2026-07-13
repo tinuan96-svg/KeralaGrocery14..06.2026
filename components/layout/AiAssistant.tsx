@@ -287,8 +287,8 @@ export default function AiAssistant() {
                 src="/ai-character.png"
                 alt="AI Assistant"
                 fill
-                className="object-cover scale-[1.8]"
-                style={{ objectPosition: '20% 45%' }}
+                className="object-cover scale-[2.8]"
+                style={{ objectPosition: 'center 42%' }}
                 priority
                 onError={(e) => {
                   (e.currentTarget as any).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👩‍💼%3C/text%3E%3C/svg%3E";
@@ -327,8 +327,8 @@ export default function AiAssistant() {
                     alt=""
                     width={80}
                     height={80}
-                    className="object-cover scale-[2.2]"
-                    style={{ objectPosition: '20% 45%' }}
+                    className="object-cover scale-[3.2]"
+                    style={{ objectPosition: 'center 42%' }}
                     onError={(e) => {
                       (e.currentTarget as any).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👩‍💼%3C/text%3E%3C/svg%3E";
                     }}
