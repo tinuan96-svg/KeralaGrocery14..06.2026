@@ -4,7 +4,6 @@ import PromoBannerCarousel from '@/components/home/PromoBannerCarousel';
 import HomepageSections from '@/components/home/HomepageSections';
 import AmazonStyleGrid from '@/components/home/AmazonStyleGrid';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
-import { EmailCapture } from '@/components/home/EmailCapture';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
@@ -65,10 +64,6 @@ export default function HomePage() {
       <HomepageSections />
 
       <WhyChooseUs />
-
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <EmailCapture />
-      </div>
 
       <SEOContent />
       <LocalSEOFooter />
