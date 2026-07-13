@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingBag, Truck, Shield, Lock, CreditCard, Banknote, ChevronRight, Package, CircleCheck as CheckCircle, Wallet, MapPin, BookOpen } from 'lucide-react';
+import { ShoppingBag, Truck, Shield, Lock, CreditCard, Banknote, ChevronRight, Package, CircleCheck as CheckCircle, Wallet, MapPin, BookOpen, Zap } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSupabase } from '@/lib/supabase/client';
@@ -751,16 +751,21 @@ export default function CheckoutPage() {
 
                 {/* Cashback estimate for this order */}
                 {walletSettings && (
-                  <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 flex items-center justify-between gap-2 mt-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center">
-                        <Wallet className="w-3 h-3 text-emerald-700" />
+                  <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 space-y-2 mt-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center">
+                          <Zap className="w-3 h-3 text-emerald-700" />
+                        </div>
+                        <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Earn Credit</span>
                       </div>
-                      <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Earn Credit</span>
+                      <span className="text-xs font-black text-emerald-700">
+                        +£{getEstimatedCashback(Math.max(0, cartTotal - walletAmount), walletSettings).toFixed(2)}
+                      </span>
                     </div>
-                    <span className="text-xs font-black text-emerald-700">
-                      +£{getEstimatedCashback(Math.max(0, cartTotal - walletAmount), walletSettings).toFixed(2)}
-                    </span>
+                    <p className="text-[9px] text-emerald-600 leading-tight italic">
+                      Cashback will be added to your <span className="font-bold">Pending Balance</span> instantly and released once delivered!
+                    </p>
                   </div>
                 )}
               </div>
