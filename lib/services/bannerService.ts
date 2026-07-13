@@ -41,6 +41,7 @@ export const BANNER_TYPE_META: Record<BannerType, { label: string; color: string
   new_arrivals:      { label: 'New',        color: 'text-teal-700',   bg: 'bg-teal-100'   },
   brand_promotion:   { label: 'Brand',      color: 'text-gray-700',   bg: 'bg-gray-100'   },
   marketing_strip:   { label: 'Strip',      color: 'text-purple-700', bg: 'bg-purple-100' },
+  marketing_square:  { label: 'Square',     color: 'text-indigo-700', bg: 'bg-indigo-100' },
 };
 
 // ── Public queries ────────────────────────────────────────────────────────────

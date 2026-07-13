@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
+import { Label } from '@/components/ui/label';
 import {
   fetchAllBanners, fetchBannerStats, upsertBanner, deleteBanner,
   uploadBannerImage, BANNER_TYPE_META,
@@ -15,6 +16,7 @@ const BANNER_TYPES: BannerType[] = [
   'product_promotion','flash_deal','cashback_promotion',
   'free_delivery','seasonal','new_arrivals','brand_promotion',
   'marketing_strip',
+  'marketing_square',
 ];
 
 const GRADIENT_PRESETS = [
