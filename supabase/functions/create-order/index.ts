@@ -139,10 +139,9 @@ Deno.serve(async (req: Request) => {
         customer_name:      orderData.customer_name,
         customer_email:     orderData.customer_email,
         customer_phone:     orderData.customer_phone,
-        delivery_address:   orderData.delivery_address,
-        delivery_city:      orderData.delivery_city,
-        delivery_postcode:  orderData.delivery_postcode,
-        subtotal:           parseFloat(serverSubtotal.toFixed(2)),
+        delivery_address:   formData.address,
+        delivery_city:      formData.city,
+        delivery_postcode:  formData.postcode,
         delivery_fee:       deliveryFee,
         wallet_amount:      orderData.wallet_amount || 0,
         total:              serverTotal,
@@ -158,6 +157,49 @@ Deno.serve(async (req: Request) => {
     if (orderError) {
       console.error("[create-order] insert order failed:", orderError);
       return respond(500, { error: "Failed to create order" });
+    }
+
+    // ── Calculate and Record Pending Cashback ────────────────────────────────
+    if (userId) {
+      try {
+        // Fetch wallet settings to get the rate
+        const { data: settings } = await supabase.from('wallet_settings').select('*').eq('id', 1).single();
+        if (settings) {
+          // Get current user tier
+          const { data: cycle } = await supabase
+            .from('wallet_cycles')
+            .select('tier')
+            .eq('user_id', userId)
+            .eq('processed', false)
+            .maybeSingle();
+
+          const tier = cycle?.tier || 'bronze';
+          const rate = tier === 'gold' ? settings.gold_rate : tier === 'silver' ? settings.silver_rate : settings.bronze_rate;
+
+          // Cashback is earned ONLY on the cash portion (Total - Wallet applied)
+          const cashPortion = Math.max(0, serverTotal - (orderData.wallet_amount || 0) - deliveryFee);
+          const pendingCashback = parseFloat((cashPortion * rate).toFixed(2));
+
+          if (pendingCashback > 0) {
+            // Store pending cashback in the order or a dedicated table
+            // For now, we add to the wallet's pending_balance
+            await supabase.rpc('add_pending_wallet_balance', {
+              p_user_id: userId,
+              p_amount: pendingCashback
+            });
+
+            // Store it in the order as well for record keeping
+            await supabase.from('orders').update({
+              custom_attributes: {
+                ...(order.custom_attributes || {}),
+                pending_cashback: pendingCashback
+              }
+            }).eq('id', order.id);
+          }
+        }
+      } catch (err) {
+        console.error('[create-order] Pending cashback calculation failed:', err);
+      }
     }
 
     // ── Insert order items using server-resolved prices ───────────────────────

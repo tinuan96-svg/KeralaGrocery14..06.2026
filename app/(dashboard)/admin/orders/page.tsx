@@ -79,6 +79,15 @@ export default function AdminOrdersPage() {
     try {
       const result = await updateOrderStatus(orderNumber, status);
       if (result.success) {
+        // Release cashback if delivered manually
+        if (status === 'delivered') {
+          const supabase = getSupabase();
+          // Find order ID first
+          const { data: ord } = await supabase.from('orders').select('id').eq('order_number', orderNumber).single();
+          if (ord) {
+            await supabase.rpc('release_order_cashback', { p_order_id: ord.id });
+          }
+        }
         toast.success(`Order #${orderNumber} set to ${status}`);
         load();
       } else {

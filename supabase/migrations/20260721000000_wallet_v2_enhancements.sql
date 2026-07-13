@@ -76,3 +76,50 @@ WHERE cl.expired_at IS NULL
   AND cl.expiry_date = (CURRENT_DATE + interval '3 days')
   AND cl.used_amount < cl.cashback_amount
   AND p.phone_verified = true;
+
+-- 5. Helper to add to pending balance
+CREATE OR REPLACE FUNCTION add_pending_wallet_balance(p_user_id uuid, p_amount numeric)
+RETURNS void AS $$
+BEGIN
+  INSERT INTO wallets (user_id, balance, pending_balance)
+  VALUES (p_user_id, 0, p_amount)
+  ON CONFLICT (user_id) DO UPDATE
+  SET pending_balance = wallets.pending_balance + p_amount;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 6. Helper to release pending balance
+CREATE OR REPLACE FUNCTION release_order_cashback(p_order_id uuid)
+RETURNS void AS $$
+DECLARE
+  v_user_id uuid;
+  v_pending numeric;
+BEGIN
+  -- Get user and pending amount from order
+  SELECT user_id, (custom_attributes->>'pending_cashback')::numeric
+  INTO v_user_id, v_pending
+  FROM orders
+  WHERE id = p_order_id;
+
+  IF v_user_id IS NOT NULL AND v_pending > 0 THEN
+    -- Update wallet
+    UPDATE wallets
+    SET
+      balance = balance + v_pending,
+      pending_balance = GREATEST(0, pending_balance - v_pending)
+    WHERE user_id = v_user_id;
+
+    -- Record transaction
+    INSERT INTO wallet_transactions (
+      user_id, type, amount, description, order_id, balance_after
+    ) VALUES (
+      v_user_id,
+      'cashback_credit',
+      v_pending,
+      'Order cashback released ✅',
+      p_order_id,
+      (SELECT balance FROM wallets WHERE user_id = v_user_id)
+    );
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -53,6 +53,12 @@ export async function POST(req: NextRequest) {
 
       if (updateErr) throw updateErr;
 
+      // 2.1 Release pending cashback if delivered
+      if (nextStatus === 'delivered') {
+        const { error: rpcErr } = await supabase.rpc('release_order_cashback', { p_order_id: order.id });
+        if (rpcErr) console.error('[courier-webhook] Cashback release failed:', rpcErr);
+      }
+
       // 3. Trigger SMS Notification
       if (order.customer_phone) {
         const message = nextStatus === 'delivered'
