@@ -123,7 +123,11 @@ export default function AiAssistant() {
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-24 right-6 z-50 w-14 h-14 bg-[#0B5D3B] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
       >
-        {isOpen ? <X className="w-6 h-6" /> : <Bot className="w-7 h-7" />}
+        {isOpen ? (
+          <X className="w-6 h-6" />
+        ) : (
+          <span className="text-3xl filter drop-shadow-sm transform -rotate-12 group-hover:rotate-0 transition-transform">🥥</span>
+        )}
         <span className="absolute -top-1 -right-1 flex h-4 w-4">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-4 w-4 bg-yellow-500 text-[10px] items-center justify-center font-bold">AI</span>
