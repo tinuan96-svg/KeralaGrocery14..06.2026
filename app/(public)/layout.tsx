@@ -8,7 +8,6 @@ import FloatingCartButton from '@/components/layout/FloatingCartButton';
 import CookieBanner from '@/components/layout/CookieBanner';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import KichuAssistant from '@/components/assistant/KichuAssistant';
-import { StickyMiniCart } from '@/components/layout/CartEnhancements';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
@@ -32,7 +31,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       <Footer />
       <FloatingCartButton />
       <KichuAssistant />
-      <StickyMiniCart />
       <MobileNav />
       <CookieBanner />
     </div>
