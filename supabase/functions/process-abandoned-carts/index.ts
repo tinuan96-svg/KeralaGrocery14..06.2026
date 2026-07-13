@@ -18,7 +18,7 @@ Deno.serve(async (req: Request) => {
   );
 
   try {
-    console.log("Processing abandoned carts...");
+    console.log("Processing abandoned carts (WhatsApp Recovery)...");
 
     // 1. Get abandoned carts from the view
     const { data: abandonedCarts, error: viewError } = await supabase
@@ -41,22 +41,26 @@ Deno.serve(async (req: Request) => {
 
       if (alreadyNotified) continue;
 
-      // 3. Send SMS via Twilio
-      const message = `Hi ${cart.customer_name}, your items are waiting at Kerala Grocery! 🛒 Use code RECOVER5 for £5 off your order over £45. Shop now: https://keralagrocery.com/cart`;
+      // 3. Send WhatsApp via the central notification function
+      const message = `🛒 *Your items are waiting!* 🛒\n\nHi ${cart.customer_name}, we noticed you left some authentic Kerala favorites in your cart. \n\n🎁 Use code *RECOVER5* for £5 OFF your order over £45!\n\nFinish shopping here: https://keralagrocery.com/cart`;
 
       try {
-        const smsRes = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-sms`, {
+        const notifyRes = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-whatsapp-notification`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
           },
-          body: JSON.stringify({ phone: cart.phone, message }),
+          body: JSON.stringify({
+            phone: cart.phone,
+            message,
+            channel: 'whatsapp' // Force WhatsApp for abandoned carts as per suggestion
+          }),
         });
 
-        const smsData = await smsRes.json();
+        const notifyData = await notifyRes.json();
 
-        if (smsData.success) {
+        if (notifyData.success) {
           // 4. Log the notification
           await supabase.from("abandoned_cart_recovery_logs").insert({
             user_id: cart.user_id,
@@ -64,8 +68,9 @@ Deno.serve(async (req: Request) => {
             status: "sent"
           });
           sentCount++;
+          console.log(`[AbandonedCart] Notified ${cart.customer_name} via WhatsApp`);
         } else {
-          throw new Error(smsData.error || "SMS delivery failed");
+          throw new Error(notifyData.error || "WhatsApp delivery failed");
         }
       } catch (err) {
         console.error(`Failed to notify user ${cart.user_id}:`, err);

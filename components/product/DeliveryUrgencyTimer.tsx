@@ -1,59 +1,82 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Truck } from 'lucide-react';
+import { Truck, Clock, Zap } from 'lucide-react';
 
-export default function DeliveryUrgencyTimer() {
-  const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
+interface Props {
+  cutoffTime?: string; // HH:mm format, e.g. "16:00"
+}
+
+export default function DeliveryUrgencyTimer({ cutoffTime = "16:00" }: Props) {
+  const [timeLeft, setTimeLeft] = useState<{ hours: number, minutes: number, seconds: number } | null>(null);
+  const [isPastCutoff, setIsPastCutoff] = useState(false);
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
+    const calculateTime = () => {
       const now = new Date();
-      // Cutoff time is 2:00 PM (14:00) every day for next-day delivery
-      const cutoff = new Date();
-      cutoff.setHours(14, 0, 0, 0);
+      const [hours, minutes] = cutoffTime.split(':').map(Number);
 
+      const cutoff = new Date();
+      cutoff.setHours(hours, minutes, 0, 0);
+
+      // If past cutoff today, target tomorrow's cutoff
       if (now > cutoff) {
-        // If past today's cutoff, next cutoff is tomorrow at 2:00 PM
-        cutoff.setDate(cutoff.getDate() + 1);
+        setIsPastCutoff(true);
+        return;
       }
 
       const diff = cutoff.getTime() - now.getTime();
 
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / 1000 / 60) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
 
-      return { hours, minutes, seconds };
+      setTimeLeft({ hours: h, minutes: m, seconds: s });
+      setIsPastCutoff(false);
     };
 
-    setTimeLeft(calculateTimeLeft());
-
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
+    calculateTime();
+    const timer = setInterval(calculateTime, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [cutoffTime]);
+
+  if (isPastCutoff) {
+    return (
+      <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center gap-3">
+        <Truck className="h-5 w-5 text-blue-600 flex-shrink-0" />
+        <p className="text-xs font-medium text-blue-800">
+          Order now for <span className="font-bold underline">Dispatch Tomorrow</span> morning!
+        </p>
+      </div>
+    );
+  }
 
   if (!timeLeft) return null;
 
   return (
-    <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-center gap-3 animate-pulse-slow">
-      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-        <Clock className="w-5 h-5 text-amber-600" />
+    <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 flex flex-col gap-2 shadow-sm">
+      <div className="flex items-center gap-2">
+        <Zap className="h-4 w-4 text-amber-600 fill-amber-600 animate-pulse" />
+        <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Fast Delivery</span>
       </div>
-      <div>
-        <p className="text-sm font-bold text-amber-900">
-          Want it tomorrow?
-        </p>
-        <p className="text-xs text-amber-700">
-          Order within <span className="font-bold text-amber-900">
-            {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
-          </span> for next-day delivery!
-        </p>
+
+      <div className="flex items-center gap-3">
+        <div className="flex items-baseline gap-1">
+          <span className="text-lg font-black text-amber-900 tabular-nums">{timeLeft.hours}h</span>
+          <span className="text-lg font-black text-amber-900 tabular-nums">{timeLeft.minutes}m</span>
+          <span className="text-sm font-bold text-amber-700 tabular-nums">{timeLeft.seconds}s</span>
+        </div>
+
+        <div className="h-8 w-px bg-amber-200" />
+
+        <div className="flex flex-col">
+          <p className="text-[11px] font-bold text-amber-900 leading-none">Order within this time</p>
+          <p className="text-[10px] font-medium text-amber-700 mt-1">
+            for <span className="text-green-700 font-bold">Next Day Delivery!</span>
+          </p>
+        </div>
       </div>
-      <Truck className="w-5 h-5 text-amber-400 ml-auto opacity-50" />
     </div>
   );
 }

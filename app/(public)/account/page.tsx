@@ -24,6 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import LoginForm from '@/components/auth/LoginForm';
 import UserProfileForm from '@/components/user/UserProfileForm';
 import { getSupabase } from '@/lib/supabase/client';
+import BuyItAgain from '@/components/product/BuyItAgain';
 
 export default function AccountPage() {
   const { user, profile, loading, signOut } = useAuth();
@@ -323,6 +324,7 @@ export default function AccountPage() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
+          <BuyItAgain />
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
