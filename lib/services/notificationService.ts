@@ -64,7 +64,7 @@ export const sendNotification = async ({
     }
 
     const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-    const apiUrl = `${base}/functions/v1/send-whatsapp-notification`;
+    const apiUrl = `${base}/functions/v1/send-sms-notification`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
