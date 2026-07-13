@@ -8,7 +8,8 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   images: {
-    unoptimized: true,
+    loader: 'custom',
+    loaderFile: './lib/utils/supabaseImageLoader.ts',
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       { protocol: 'https', hostname: 'placehold.co' },
