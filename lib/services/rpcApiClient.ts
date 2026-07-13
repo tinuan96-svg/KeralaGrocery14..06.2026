@@ -180,6 +180,30 @@ export async function getProducts(
 
     const offset = (page - 1) * limit;
 
+    // Use fuzzy search RPC if searching
+    if (search) {
+      const { data, error, count } = await supabase
+        .rpc('search_products_fuzzy', {
+          search_query: search,
+          limit_val: limit,
+          offset_val: offset
+        }, { count: 'exact' });
+
+      if (error) {
+        console.error('[rpcApiClient] fuzzy search error:', error);
+      } else {
+        const products = (data ?? []).map((r: any) => mapRow(r, categoryMap));
+        const total = count ?? products.length;
+        return {
+          products,
+          total,
+          page,
+          totalPages: Math.ceil(total / limit),
+          error: null
+        };
+      }
+    }
+
     let query = supabase
       .from('products')
       .select(
