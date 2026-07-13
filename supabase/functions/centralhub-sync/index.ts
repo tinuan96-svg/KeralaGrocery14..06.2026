@@ -605,22 +605,15 @@ Deno.serve(async (req: Request) => {
       }
 
       // Also backfill products not yet linked: copy source_brand → brand where brand is still null
-      const { error: fallbackErr } = await supabase.rpc
-        ? await supabase.from("products").select("id, source_brand").is("brand", null).neq("source_brand", null)
-        : { error: null };
-      // Simple raw update for unlinked products that have source_brand but no brand
-      await supabase
-        .from("products")
-        .update({ brand: supabase.rpc as unknown as string })
-        .is("brand", null)
-        .not("source_brand", "is", null);
-      // Use direct SQL equivalent via a targeted update
-      const { data: unlinked } = await supabase
+      // Use a targeted update for unlinked products that have source_brand but no brand
+      const { data: unlinked, error: fallbackErr } = await supabase
         .from("products")
         .select("id, source_brand")
         .is("brand", null)
         .not("source_brand", "is", null)
         .neq("source_brand", "");
+
+      if (fallbackErr) errors.push(`Fallback fetch error: ${fallbackErr.message}`);
 
       for (const row of (unlinked ?? []) as { id: string; source_brand: string }[]) {
         try {
@@ -771,7 +764,7 @@ Deno.serve(async (req: Request) => {
 
                 warehouse_location: hp.warehouse_location || null,
 
-                // Pricing — always update cost; recalculate selling price
+                // Pricing — update supplier cost; local selling price protected for existing products
                 supplier_price: supplierPrice,
                 cost_price: supplierPrice,
                 selling_price: sellingPrice,
@@ -782,8 +775,8 @@ Deno.serve(async (req: Request) => {
                 updated_at: now,
                 is_deleted: false,
                 is_active: true,
-                approval_status: 'approved',
-                visibility_status: true,
+                approval_status: 'draft',
+                visibility_status: false,
               };
 
               if (ex?.id) {
@@ -811,10 +804,7 @@ Deno.serve(async (req: Request) => {
                 // Purge protected fields if not forcing
                 if (!isForce) {
                   for (const pf of PROTECTED_FIELDS) {
-                    // Pricing and status are actually meant to be synced now as per requirements
-                    if (pf !== 'price' && pf !== 'approval_status' && pf !== 'visibility_status') {
-                       delete upsertPayload[pf];
-                    }
+                    delete upsertPayload[pf];
                   }
                 }
 
@@ -850,10 +840,10 @@ Deno.serve(async (req: Request) => {
                 importedNew++;
               }
 
-              // Execute Upsert targeting SKU
+              // Execute Upsert targeting centralhub_product_id
               const { data: upserted, error: upsertErr } = await supabase
                 .from("products")
-                .upsert(upsertPayload, { onConflict: 'sku' })
+                .upsert(upsertPayload, { onConflict: 'centralhub_product_id' })
                 .select("id, short_description")
                 .single();
 
