@@ -67,11 +67,11 @@ function ProductCard({
 
   if (featured) {
     return (
-      <div className={`snap-start flex-shrink-0 w-[180px] sm:w-[200px]`}>
-        <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-br ${config.accentColor} p-0.5 h-full`}>
-          <div className="bg-white rounded-[14px] h-full p-3 flex flex-col">
+      <div className={`snap-start flex-shrink-0 w-[165px] sm:w-[200px]`}>
+        <div className={`relative rounded-2xl overflow-hidden bg-gradient-to-br ${config.accentColor} p-0.5 h-full shadow-sm`}>
+          <div className="bg-white rounded-[14px] h-full p-2.5 flex flex-col">
             <Link href={`/products/${product.slug}`} className="block group">
-              <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3">
+              <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 mb-2">
                 <picture className="absolute inset-0">
                   {webp && <source srcSet={webp} type="image/webp" />}
                   <source srcSet={jpeg} type="image/jpeg" />
@@ -87,21 +87,18 @@ function ProductCard({
                   />
                 </picture>
                 {hasDiscount && (
-                  <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  <span className="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">
                     -{product.discount}%
                   </span>
                 )}
               </div>
-              <p className="text-xs font-bold text-gray-900 line-clamp-2 leading-snug">{product.name}</p>
-              {product.brd_name && (
-                <p className="text-[10px] text-gray-400 mt-0.5 truncate">{product.brd_name}</p>
-              )}
+              <p className="text-[11px] font-bold text-gray-900 line-clamp-2 leading-tight h-[28px] overflow-hidden">{product.name}</p>
             </Link>
             <div className="mt-2 flex items-center justify-between">
-              <div>
-                <span className="text-sm font-bold text-gray-900">{formatPrice(product.price)}</span>
+              <div className="flex flex-col">
+                <span className="text-[12px] font-black text-gray-900 leading-none">{formatPrice(product.price)}</span>
                 {hasDiscount && (
-                  <span className="text-[10px] text-gray-400 line-through block">
+                  <span className="text-[9px] text-gray-400 line-through">
                     {formatPrice(product.original_price!)}
                   </span>
                 )}
@@ -110,25 +107,24 @@ function ProductCard({
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => removeFromCart(product.id)}
-                    className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-base font-bold hover:bg-green-700 transition-colors leading-none"
+                    className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-bold hover:bg-green-700 transition-colors"
                   >
                     −
                   </button>
-                  <span className="text-xs font-semibold w-4 text-center">{qty}</span>
+                  <span className="text-[11px] font-bold w-3 text-center">{qty}</span>
                   <button
                     onClick={() => addToCart(cartProduct)}
-                    className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-colors"
+                    className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-colors"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-2.5 h-2.5" />
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => addToCart(cartProduct)}
                   disabled={product.stock === 0}
-                  className="flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-200 disabled:text-gray-400 text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors"
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 text-white text-[9px] font-black px-2 py-1.5 rounded-lg transition-colors shadow-sm"
                 >
-                  <Plus className="w-3 h-3" />
                   ADD
                 </button>
               )}
@@ -140,9 +136,9 @@ function ProductCard({
   }
 
   return (
-    <div className="snap-start flex-shrink-0 w-[140px] sm:w-[155px] group">
+    <div className="snap-start flex-shrink-0 w-[130px] sm:w-[155px] group">
       <Link href={`/products/${product.slug}`} className="block">
-        <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 group-hover:border-green-200 transition-colors">
+        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 group-hover:border-green-200 transition-all shadow-sm">
           <picture className="absolute inset-0">
             {webp && <source srcSet={webp} type="image/webp" />}
             <source srcSet={jpeg} type="image/jpeg" />
@@ -158,32 +154,24 @@ function ProductCard({
             />
           </picture>
           {hasDiscount && (
-            <span className="absolute top-1.5 left-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">
               -{product.discount}%
-            </span>
-          )}
-          {product.stock <= 3 && product.stock > 0 && (
-            <span className="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-              {product.stock} left
             </span>
           )}
         </div>
       </Link>
 
-      <div className="mt-2 px-0.5">
+      <div className="mt-2 px-1">
         <Link href={`/products/${product.slug}`}>
-          <p className="text-xs font-medium text-gray-800 line-clamp-2 leading-tight hover:text-green-700 transition-colors min-h-[2.5rem]">
+          <p className="text-[11px] font-bold text-gray-800 line-clamp-2 leading-tight hover:text-green-700 transition-colors h-[28px] overflow-hidden">
             {product.name}
           </p>
         </Link>
-        {product.brd_name && (
-          <p className="text-[10px] text-gray-400 mt-0.5 truncate">{product.brd_name}</p>
-        )}
         <div className="flex items-center justify-between mt-1.5">
-          <div>
-            <span className="text-sm font-bold text-gray-900">{formatPrice(product.price)}</span>
+          <div className="flex flex-col">
+            <span className="text-[12px] font-black text-gray-900 leading-none">{formatPrice(product.price)}</span>
             {hasDiscount && (
-              <span className="text-[10px] text-gray-400 line-through ml-1">
+              <span className="text-[9px] text-gray-400 line-through">
                 {formatPrice(product.original_price!)}
               </span>
             )}
@@ -192,28 +180,27 @@ function ProductCard({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => removeFromCart(product.id)}
-                className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-base font-bold hover:bg-green-700 transition-colors leading-none"
+                className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-bold"
                 aria-label="Decrease"
               >
                 −
               </button>
-              <span className="text-xs font-semibold w-4 text-center text-gray-900">{qty}</span>
+              <span className="text-[11px] font-bold w-3 text-center text-gray-900">{qty}</span>
               <button
                 onClick={() => addToCart(cartProduct)}
-                className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-colors"
+                className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center"
                 aria-label="Increase"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="w-2.5 h-2.5" />
               </button>
             </div>
           ) : (
             <button
               onClick={() => addToCart(cartProduct)}
               disabled={product.stock === 0}
-              className="flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-200 disabled:text-gray-400 text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors"
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 text-white text-[9px] font-black px-2 py-1.5 rounded-lg shadow-sm"
               aria-label={`Add ${product.name} to cart`}
             >
-              <Plus className="w-3 h-3" />
               ADD
             </button>
           )}

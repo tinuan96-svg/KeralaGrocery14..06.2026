@@ -37,7 +37,7 @@ export default function TrendingNow({ products }: TrendingNowProps) {
         {/* Mobile carousel */}
         <div className="flex items-stretch gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-4 snap-x snap-mandatory md:hidden" style={{ scrollPaddingLeft: '16px' }}>
           {items.map((product, index) => (
-            <div key={product.id} className="flex-shrink-0 w-[170px] snap-start flex flex-col">
+            <div key={product.id} className="flex-shrink-0 w-[135px] sm:w-[170px] snap-start flex flex-col">
               <ProductCard product={product} priority={index < 3} />
             </div>
           ))}

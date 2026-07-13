@@ -136,12 +136,12 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
       </Link>
 
       {/* Info */}
-      <div className="flex flex-col flex-1 px-2.5 pt-1.5 pb-2.5">
+      <div className="flex flex-col flex-1 px-2 pt-1.5 pb-2">
 
         {/* Category */}
-        <div className="h-[16px] flex items-center overflow-hidden mb-1">
+        <div className="h-[14px] flex items-center overflow-hidden mb-1">
           {product.category?.name && (
-            <span className="inline-flex text-[9px] font-bold text-[#0B5D3B] bg-[#f4faf6] border border-[#d1ead9] rounded-full px-1.5 py-px leading-none truncate max-w-full">
+            <span className="inline-flex text-[8px] font-black uppercase tracking-tight text-[#0B5D3B] bg-[#f4faf6] border border-[#d1ead9] rounded-full px-1.5 py-0 leading-none truncate max-w-full">
               {product.category.name}
             </span>
           )}
@@ -149,18 +149,18 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
 
         {/* Name */}
         <Link href={`/products/${product.slug}`} className="mb-1 block">
-          <h3 className="text-[12px] font-semibold leading-[1.3] text-gray-800 hover:text-[#0B5D3B] transition-colors line-clamp-2 overflow-hidden">
+          <h3 className="text-[11px] font-bold leading-[1.3] text-gray-800 hover:text-[#0B5D3B] transition-colors line-clamp-2 h-[28px] overflow-hidden">
             {displayName}
           </h3>
         </Link>
 
         {/* Price */}
-        <div className="flex items-baseline gap-1 mb-2">
-          <span className="text-[14px] font-extrabold text-[#0B5D3B] leading-none">
+        <div className="flex items-center h-5 mb-1.5">
+          <span className="text-[13px] font-black text-[#0B5D3B] leading-none">
             £{price.toFixed(2)}
           </span>
           {discount > 0 && (
-            <span className="text-[10px] text-gray-400 line-through leading-none">
+            <span className="text-[9px] text-gray-400 line-through leading-none ml-1">
               £{originalPrice.toFixed(2)}
             </span>
           )}
@@ -173,36 +173,31 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
               disabled={stock === 0}
               onClick={handleAdd}
               aria-label={`Add ${product.name} to cart`}
-              className="w-full flex items-center justify-center gap-1.5 btn-brand disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none text-[12px] h-8 rounded-xl font-bold"
+              className="w-full flex items-center justify-center gap-1 bg-[#0B5D3B] hover:bg-[#0d6b44] disabled:bg-gray-100 disabled:text-gray-400 text-white font-black text-[10px] h-7 rounded-lg transition-all active:scale-95 shadow-sm"
             >
               {stock === 0 ? (
                 'Out of Stock'
               ) : (
-                <><ShoppingCart className="h-3 w-3" /> Add to Cart</>
+                <>ADD</>
               )}
             </button>
           ) : (
             <div
-              className="flex items-center justify-between bg-[#f4faf6] rounded-xl border-2 border-[#0B5D3B] h-8 px-1"
+              className="flex items-center justify-between bg-[#f4faf6] rounded-lg border border-[#0B5D3B] h-7 px-1"
               role="group"
-              aria-label="Quantity controls"
             >
               <button
                 onClick={handleDecrease}
-                aria-label="Decrease quantity"
-                className="w-6 h-6 rounded-lg bg-white border border-[#d1ead9] flex items-center justify-center hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-all active:scale-90"
+                className="w-5 h-5 rounded-md bg-white border border-[#d1ead9] flex items-center justify-center hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-all active:scale-90"
               >
-                <Minus className="h-2.5 w-2.5" />
+                <Minus className="h-2 w-2" />
               </button>
-              <span className="font-extrabold text-[#0B5D3B] text-[13px]" aria-label={`Quantity: ${qty}`}>
-                {qty}
-              </span>
+              <span className="font-black text-[#0B5D3B] text-[11px]">{qty}</span>
               <button
                 onClick={handleIncrease}
-                aria-label="Increase quantity"
-                className="w-6 h-6 rounded-lg bg-[#0B5D3B] flex items-center justify-center hover:bg-[#0d6b44] transition-all active:scale-90 text-white"
+                className="w-5 h-5 rounded-md bg-[#0B5D3B] flex items-center justify-center hover:bg-[#0d6b44] transition-all active:scale-90 text-white"
               >
-                <Plus className="h-2.5 w-2.5" />
+                <Plus className="h-2 w-2" />
               </button>
             </div>
           )}

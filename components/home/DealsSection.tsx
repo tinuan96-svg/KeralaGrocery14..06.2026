@@ -58,7 +58,7 @@ export default function DealsSection({ products }: DealsSectionProps) {
         {/* Carousel */}
         <div className="flex items-stretch gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-3 snap-x snap-mandatory" style={{ scrollPaddingLeft: '16px' }}>
           {dealsProducts.map((product, index) => (
-            <div key={product.id} className="flex-shrink-0 w-[176px] snap-start flex flex-col">
+            <div key={product.id} className="flex-shrink-0 w-[135px] sm:w-[176px] snap-start flex flex-col">
               <ProductCard product={product} priority={index < 4} />
             </div>
           ))}

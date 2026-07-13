@@ -100,31 +100,31 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
       </button>
 
       {/* ── Info — fixed-height slots ──────────────────────────────── */}
-      <div className="flex flex-col flex-1 px-2.5 pt-2 pb-2.5">
+      <div className="flex flex-col flex-1 px-2 pt-1.5 pb-2">
 
         {/* Category — h-5 always reserved */}
-        <div className="h-5 flex items-center overflow-hidden mb-1">
+        <div className="h-[14px] flex items-center overflow-hidden mb-1">
           {product.category && (
-            <span className="inline-flex text-[10px] font-semibold text-green-700 bg-green-50 border border-green-100 rounded-full px-2 py-0.5 leading-none truncate max-w-full">
+            <span className="inline-flex text-[8px] font-black uppercase tracking-tight text-green-700 bg-green-50 border border-green-100 rounded-full px-1.5 py-0 leading-none truncate max-w-full">
               {product.category}
             </span>
           )}
         </div>
 
-        {/* Name — h-[34px], 2 lines max */}
-        <Link href={`/products/${slug}`} className="mb-1.5 block">
-          <p className="text-[12px] font-semibold leading-[1.4] text-gray-800 hover:text-green-700 transition-colors line-clamp-2 h-[34px] overflow-hidden">
+        {/* Name — h-[28px], 2 lines max */}
+        <Link href={`/products/${slug}`} className="mb-1 block">
+          <p className="text-[11px] font-bold leading-[1.3] text-gray-800 hover:text-green-700 transition-colors line-clamp-2 h-[28px] overflow-hidden">
             {product.display_title}
           </p>
         </Link>
 
-        {/* Price — h-6 */}
-        <div className="flex items-center h-6 mb-1.5">
-          <span className="text-[13px] font-extrabold text-gray-900 leading-none">
+        {/* Price — h-5 */}
+        <div className="flex items-center h-5 mb-1.5">
+          <span className="text-[13px] font-black text-gray-900 leading-none">
             £{product.price.toFixed(2)}
           </span>
           {product.discount_pct > 0 && product.original_price && (
-            <span className="text-[10px] text-gray-400 line-through leading-none ml-1">
+            <span className="text-[9px] text-gray-400 line-through leading-none ml-1">
               £{product.original_price.toFixed(2)}
             </span>
           )}
@@ -136,29 +136,27 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
             <button
               disabled={!product.in_stock}
               onClick={handleAdd}
-              className="w-full flex items-center justify-center gap-1 bg-[#0B5D3B] hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 text-white font-bold rounded-xl text-[11px] h-8 transition-all active:scale-95"
+              className="w-full flex items-center justify-center gap-1 bg-[#0B5D3B] hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 text-white font-black rounded-lg text-[10px] h-7 transition-all active:scale-95 shadow-sm"
             >
-              {product.in_stock ? (
-                <><ShoppingCart className="h-3 w-3" /> Add to Cart</>
-              ) : 'Out of Stock'}
+              {product.in_stock ? 'ADD' : 'Out of Stock'}
             </button>
           ) : (
             <div
-              className="flex items-center justify-between bg-green-50 rounded-xl border-2 border-[#0B5D3B] h-8 px-1"
+              className="flex items-center justify-between bg-green-50 rounded-lg border border-[#0B5D3B] h-7 px-1"
               role="group"
             >
               <button
                 onClick={handleDecrease}
-                className="w-6 h-6 rounded-lg bg-white border border-green-400 flex items-center justify-center hover:bg-red-50 hover:border-red-400 hover:text-red-600 transition-all active:scale-90"
+                className="w-5 h-5 rounded-md bg-white border border-green-400 flex items-center justify-center hover:bg-red-50 hover:border-red-400 hover:text-red-600 transition-all active:scale-90"
               >
-                <Minus className="h-3 w-3" />
+                <Minus className="h-2 w-2" />
               </button>
-              <span className="font-extrabold text-[#0B5D3B] text-[13px]">{qty}</span>
+              <span className="font-black text-[#0B5D3B] text-[11px]">{qty}</span>
               <button
                 onClick={handleIncrease}
-                className="w-6 h-6 rounded-lg bg-[#0B5D3B] flex items-center justify-center hover:bg-green-700 transition-all active:scale-90 text-white"
+                className="w-5 h-5 rounded-md bg-[#0B5D3B] flex items-center justify-center hover:bg-green-700 transition-all active:scale-90 text-white"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-2 w-2" />
               </button>
             </div>
           )}
