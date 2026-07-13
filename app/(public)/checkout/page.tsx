@@ -321,7 +321,22 @@ export default function CheckoutPage() {
         const orderId = result.order.id;
 
         if (walletAmount > 0 && user) {
-          // ... (existing wallet deduction call) ...
+          const supabase = getSupabase();
+          const { data: { session } } = await supabase.auth.getSession();
+          const authToken = session?.access_token;
+
+          await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/wallet-payment`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+              order_id: orderId,
+              wallet_amount: walletAmount,
+              user_id: user.id
+            })
+          }).catch(err => console.error('[Checkout] wallet-payment failed:', err));
         }
 
         // Send SMS notification for wallet-only payments
