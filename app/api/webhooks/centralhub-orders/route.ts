@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
         const orderNumber = existing.order_number || orderData.order_number;
 
         if (phone && orderNumber) {
-          const notificationUrl = `${supabaseUrl}/functions/v1/send-whatsapp-notification`;
+          const notificationUrl = `${supabaseUrl}/functions/v1/send-sms-notification`;
 
           let message = '';
           let type = '';

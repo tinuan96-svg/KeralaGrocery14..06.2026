@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { CircleCheck as CheckCircle2, Package, Truck, Chrome as Home, Receipt } from 'lucide-react';
 import Image from 'next/image';
 import { getOrderByNumber } from '@/lib/actions/orders';
+import { useCart } from '@/lib/context/CartContext';
 
 interface OrderItem {
   id: string;
@@ -46,6 +47,7 @@ function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { clearCart } = useCart();
   const orderNumber = searchParams.get('order');
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,12 +58,16 @@ function OrderSuccessContent() {
       router.replace('/account');
       return;
     }
+
+    // Safety check: always clear cart upon landing on success page
+    clearCart();
+
     if (orderNumber) {
       loadOrder(orderNumber);
     } else {
       setLoading(false);
     }
-  }, [authLoading, user, orderNumber, router]);
+  }, [authLoading, user, orderNumber, router, clearCart]);
 
   const loadOrder = async (orderNum: string) => {
     try {

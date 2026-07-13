@@ -93,7 +93,7 @@ export async function createOrder(orderData: CreateOrderData) {
 
     if (orderData.customer_phone) {
       try {
-        const notificationUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-whatsapp-notification`;
+        const notificationUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-sms-notification`;
         await fetch(notificationUrl, {
           method: 'POST',
           headers: {
@@ -105,10 +105,11 @@ export async function createOrder(orderData: CreateOrderData) {
             message: `Your order #${orderNumber} has been placed successfully.\n\nWe'll notify you when it's on the way!`,
             type: 'order_placed',
             orderNumber: orderNumber,
+            channel: 'sms'
           }),
         });
       } catch (error) {
-        console.error('Failed to send WhatsApp notification:', error);
+        console.error('Failed to send SMS notification:', error);
       }
     }
 
@@ -238,7 +239,7 @@ export async function updateOrderStatus(
 
     if (order?.customer_phone && (orderStatus === 'shipped' || orderStatus === 'delivered')) {
       try {
-        const notificationUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-whatsapp-notification`;
+        const notificationUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-sms-notification`;
 
         const message = orderStatus === 'shipped'
           ? `Your order is on its way! Order #${orderNumber} has been shipped.`
@@ -252,10 +253,16 @@ export async function updateOrderStatus(
             'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ phone: order.customer_phone, message, type, orderNumber }),
+          body: JSON.stringify({
+            phone: order.customer_phone,
+            message,
+            type,
+            orderNumber,
+            channel: 'sms'
+          }),
         });
       } catch (error) {
-        console.error('Failed to send WhatsApp notification:', error);
+        console.error('Failed to send SMS notification:', error);
       }
     }
 

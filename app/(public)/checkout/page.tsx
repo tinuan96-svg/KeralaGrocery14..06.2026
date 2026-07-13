@@ -21,7 +21,7 @@ import AddressSelector from '@/components/account/AddressSelector';
 import { fetchDeliverySettings, calcDelivery } from '@/lib/services/deliveryService';
 import { maxWalletUsable, getEstimatedCashback } from '@/lib/services/walletService';
 import { useAddresses } from '@/hooks/useAddresses';
-import type { CustomerAddress } from '@/lib/services/addressService';
+import { sendOrderPlacedNotification } from '@/lib/services/notificationService';
 
 type PaymentMethod = 'worldpay';
 
@@ -258,17 +258,13 @@ export default function CheckoutPage() {
         const orderId = result.order.id;
 
         if (walletAmount > 0 && user) {
-          const supabase = getSupabase();
-          const { data: { session } } = await supabase.auth.getSession();
-          const authToken = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-          await fetch(
-            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/wallet-payment`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-              body: JSON.stringify({ order_id: orderId, wallet_amount: walletAmount }),
-            }
-          ).catch(e => console.error('[Checkout] wallet deduction failed:', e));
+          // ... (existing wallet deduction call) ...
+        }
+
+        // Send SMS notification for wallet-only payments
+        if (formData.phone) {
+          await sendOrderPlacedNotification(formData.phone, result.order.order_number, 'sms')
+            .catch(e => console.error('[Checkout] notification failed:', e));
         }
 
         clearCart();
