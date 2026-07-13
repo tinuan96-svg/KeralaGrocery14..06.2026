@@ -45,6 +45,9 @@ export default function AiAssistant() {
   const { wallet } = useWallet();
   const isAdmin = !!(user?.app_metadata?.is_admin);
 
+  // Deep Audit Fix: Completely hide the assistant for Admins as requested
+  if (isAdmin) return null;
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

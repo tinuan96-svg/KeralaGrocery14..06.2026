@@ -25,7 +25,6 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const isAdmin = context?.user_role === 'admin';
     const userName = context?.user_name || 'Customer';
 
     // 1. Initial request to OpenAI
@@ -40,31 +39,28 @@ Deno.serve(async (req: Request) => {
         messages: [
           {
             role: "system",
-            content: `You are the Kerala Grocery AI Assistant.
-            CURRENT USER: ${userName} (Role: ${context?.user_role || 'guest'})
+            content: `You are the Kerala Grocery AI Shopping Assistant.
+            CURRENT USER: ${userName}
             USER CONTEXT: Wallet Balance: £${context?.wallet_balance || 0}, Cart Items: ${context?.cart_count || 0}.
 
-            GOALS:
-            - Customers: Help them shop, check order status, explain wallet benefits, and share recipes.
-            - Admins: Act as a Business Analyst. Provide sales summaries and inventory alerts.
+            GOAL:
+            Help users shop, find authentic Kerala products, check their order status, explain wallet benefits, and share recipes.
 
             FORMATTING RULES:
             - NEVER use long, blocky paragraphs.
             - Use bullet points (•) for lists.
-            - Use **bold** for product names, prices, or key numbers.
+            - Use **bold** for product names, prices, or key terms.
             - Add a blank line between sections.
 
             KNOWLEDGE BASE:
-            - Delivery: Next-day for orders before 6 PM. Free over £45.
-            - Loyalty: Earn cashback on every card payment. Spend up to 50% of balance per order.
+            - Delivery: Next-day delivery for orders before 6 PM. Free delivery on orders over £45.
+            - Loyalty: Earn cashback on every card payment. Customers can spend up to 50% of their balance per order.
+            - Support: Email admin@keralagrocery.com or call 07769867549.
 
-            ADMIN ONLY TOOLS:
-            - Use "get_business_stats" when the admin asks for sales, totals, or order summaries.
-
-            CUSTOMER TOOLS:
-            - Use "search_inventory" for products.
-            - Use "get_order_status" for tracking (ask for Order #).
-            - Use "get_recipes" for cooking ideas.`
+            TOOLS:
+            1. Use "search_inventory" when a user asks for products or categories.
+            2. Use "get_order_status" when a user asks about their order status, tracking, or delivery updates.
+            3. Use "get_recipes" when a user asks for cooking ideas or traditional dishes.`
           },
           ...messages
         ],
@@ -73,18 +69,25 @@ Deno.serve(async (req: Request) => {
             type: "function",
             function: {
               name: "search_inventory",
-              description: "Search for Kerala grocery products",
-              parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
+              description: "Search for Kerala grocery products in the store inventory",
+              parameters: {
+                type: "object",
+                properties: { query: { type: "string" } },
+                required: ["query"]
+              }
             }
           },
           {
             type: "function",
             function: {
               name: "get_order_status",
-              description: "Check order status",
+              description: "Check the status and tracking info of a specific order",
               parameters: {
                 type: "object",
-                properties: { order_number: { type: "string" }, contact_info: { type: "string" } },
+                properties: {
+                  order_number: { type: "string" },
+                  contact_info: { type: "string" }
+                },
                 required: ["order_number", "contact_info"]
               }
             }
@@ -92,9 +95,13 @@ Deno.serve(async (req: Request) => {
           {
             type: "function",
             function: {
-              name: "get_business_stats",
-              description: "ADMIN ONLY: Get summary of sales and orders for today",
-              parameters: { type: "object", properties: { timeframe: { type: "string", enum: ["today", "yesterday", "week"] } } }
+              name: "get_recipes",
+              description: "Find traditional Kerala recipes and cooking guides",
+              parameters: {
+                type: "object",
+                properties: { query: { type: "string" } },
+                required: ["query"]
+              }
             }
           }
         ],
@@ -120,21 +127,31 @@ Deno.serve(async (req: Request) => {
         if (functionName === "search_inventory") {
           const { data: p } = await supabase.rpc('search_products_fuzzy', { search_query: args.query, limit_val: 5 });
           toolResult = p || [];
-          actions = (p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p }));
+          const newActions = (p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p }));
+          actions = [...actions, ...newActions];
         } else if (functionName === "get_order_status") {
-          const { data: o } = await supabase.from('orders').select('*').eq('order_number', args.order_number).maybeSingle();
-          toolResult = o || { error: "Not found" };
-        } else if (functionName === "get_business_stats" && isAdmin) {
-          const { data: stats } = await supabase.from('orders')
-            .select('total')
-            .eq('payment_status', 'paid')
-            .gte('created_at', new Date().toISOString().split('T')[0]);
+          const { data: o } = await supabase
+            .from('orders')
+            .select('order_number, order_status, payment_status, customer_name, tracking_number, courier_name, created_at')
+            .eq('order_number', args.order_number)
+            .or(`customer_email.eq.${args.contact_info},customer_phone.eq.${args.contact_info}`)
+            .maybeSingle();
+          toolResult = o || { error: "Order not found" };
+        } else if (functionName === "get_recipes") {
+          toolResult = [
+            { title: "Authentic Kerala Fish Curry", slug: "kerala-fish-curry", difficulty: "Medium", prepTime: "15 mins" },
+            { title: "Traditional Palakkadan Matta Rice", slug: "palakkadan-matta-rice-guide", difficulty: "Easy", prepTime: "5 mins" }
+          ].filter(r => r.title.toLowerCase().includes(args.query.toLowerCase()) || args.query.toLowerCase().includes('fish') || args.query.toLowerCase().includes('rice'));
 
-          const totalRevenue = stats?.reduce((s, x) => s + Number(x.total), 0) || 0;
-          toolResult = { order_count: stats?.length || 0, revenue: totalRevenue };
+          const newActions = toolResult.map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r }));
+          actions = [...actions, ...newActions];
         }
 
-        toolMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(toolResult) });
+        toolMessages.push({
+          role: "tool",
+          tool_call_id: toolCall.id,
+          content: JSON.stringify(toolResult)
+        });
       }
 
       const finalResponse = await fetch("https://api.openai.com/v1/chat/completions", {
