@@ -20,8 +20,22 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
   const [results, setResults] = useState<RpcProduct[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const saved = localStorage.getItem('kg-search-history');
+    if (saved) setHistory(JSON.parse(saved));
+  }, []);
+
+  const addToHistory = (term: string) => {
+    const termTrimmed = term.trim();
+    if (!termTrimmed) return;
+    const newHistory = [termTrimmed, ...history.filter(h => h !== termTrimmed)].slice(0, 5);
+    setHistory(newHistory);
+    localStorage.setItem('kg-search-history', JSON.stringify(newHistory));
+  };
 
   useClickAway(containerRef, () => setIsOpen(false));
 
@@ -55,6 +69,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
+      addToHistory(query.trim());
       router.push(`/products?search=${encodeURIComponent(query.trim())}`);
       setIsOpen(false);
       onSearch?.(query);
@@ -70,7 +85,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
           placeholder={placeholder || "Search Kerala groceries..."}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query.length >= 2 && setIsOpen(true)}
+          onFocus={() => setIsOpen(true)}
           className={`w-full pl-10 pr-4 py-2.5 rounded-2xl border-2 border-[#d1ead9] focus:border-[#0B5D3B] focus:ring-0 text-sm bg-[#f4faf6] focus:bg-white transition-all duration-200 outline-none placeholder:text-gray-400 text-gray-800 ${inputClassName}`}
         />
         {loading && (
@@ -82,7 +97,31 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
 
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-          {results.length > 0 ? (
+          {query.length < 2 && history.length > 0 && (
+            <div className="py-2">
+              <div className="px-4 py-1.5 bg-gray-50 border-y border-gray-100 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Recent Searches</span>
+                <button
+                  onClick={() => { setHistory([]); localStorage.removeItem('kg-search-history'); }}
+                  className="text-[10px] font-bold text-red-500 hover:underline"
+                >
+                  Clear All
+                </button>
+              </div>
+              {history.map((term, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setQuery(term); addToHistory(term); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left text-sm text-gray-600 transition-colors"
+                >
+                  <Search className="w-3.5 h-3.5 text-gray-300" />
+                  <span>{term}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {query.length >= 2 && results.length > 0 ? (
             <div className="py-2">
               <div className="px-4 py-1.5 bg-gray-50 border-y border-gray-100 flex items-center justify-between">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Top Results</span>
