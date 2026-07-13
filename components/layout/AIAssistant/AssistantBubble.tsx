@@ -28,9 +28,9 @@ export default function AssistantBubble() {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed bottom-[160px] right-8 z-[60] max-w-[240px]"
+          className="fixed bottom-[160px] left-8 z-[60] max-w-[240px]"
         >
-          <div className="relative bg-white border-2 border-[#0B5D3B] rounded-[2.5rem] rounded-br-none shadow-2xl p-5 pr-10">
+          <div className="relative bg-white border-2 border-[#0B5D3B] rounded-[2.5rem] rounded-bl-none shadow-2xl p-5 pr-10">
             <p className="text-sm font-black text-gray-900 leading-tight whitespace-pre-line italic">
               &quot;{bubbleText}&quot;
             </p>
@@ -43,7 +43,7 @@ export default function AssistantBubble() {
             </button>
 
             {/* Tail pointing to Kichu */}
-            <div className="absolute -bottom-2 right-4 w-6 h-6 bg-white border-r-2 border-b-2 border-[#0B5D3B] rotate-45" />
+            <div className="absolute -bottom-2 left-4 w-6 h-6 bg-white border-r-2 border-b-2 border-[#0B5D3B] rotate-45" />
           </div>
         </motion.div>
       )}
