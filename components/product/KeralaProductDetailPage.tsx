@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Star, Truck, Shield, RefreshCw, BadgeCheck, Clock, Leaf, ChevronRight, CircleAlert as AlertCircle } from 'lucide-react';
+import { Star, Truck, Shield, RefreshCw, BadgeCheck, Clock, Leaf, ChevronRight, Zap, CircleAlert as AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import ProductGallery from '@/components/product/ProductGallery';
 import ProductActions from '@/components/product/ProductActions';
 import StickyCartBar from '@/components/product/StickyCartBar';
@@ -311,28 +312,39 @@ export default function KeralaProductDetailPage({ slug }: Props) {
               </div>
             )}
 
-            <div className="flex items-center gap-2">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star key={s} className={`w-4 h-4 ${s <= 4 ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
-              ))}
-              <span className="text-sm text-gray-400">(4.5)</span>
-            </div>
-
             {/* Price */}
-            <div className="bg-[#F8F6F2] rounded-2xl p-4 space-y-2">
-              <div className="flex items-baseline gap-3 flex-wrap">
-                <span className="text-4xl font-bold text-[#0B5D3B]">£{currentPrice.toFixed(2)}</span>
+            <div className="bg-[#f0fdf4] border border-emerald-100 rounded-3xl p-6 shadow-sm space-y-3">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-5xl font-black text-[#0B5D3B] tracking-tighter">£{currentPrice.toFixed(2)}</span>
+                  {discount > 0 && (
+                    <span className="text-xl text-gray-400 line-through font-bold opacity-60">£{original.toFixed(2)}</span>
+                  )}
+                </div>
                 {discount > 0 && (
-                  <>
-                    <span className="text-xl text-gray-400 line-through font-medium">£{original.toFixed(2)}</span>
-                    <Badge className="bg-[#FF7A00] hover:bg-[#FF7A00] text-white text-xs font-bold px-2.5 py-1">
-                      {discount}% OFF
-                    </Badge>
-                  </>
+                  <div className="bg-red-600 text-white px-3 py-1.5 rounded-xl text-sm font-black shadow-lg shadow-red-500/20 animate-bounce-subtle">
+                    {discount}% OFF
+                  </div>
                 )}
               </div>
+
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-1">
+                  {[1, 2, 3, 4].map((s) => (
+                    <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                  <Star className="w-4 h-4 fill-yellow-400/30 text-yellow-400/30" />
+                </div>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">4.5 Rating</span>
+                <Separator orientation="vertical" className="h-3 bg-gray-200 mx-1" />
+                <span className="text-xs font-bold text-emerald-700 uppercase tracking-widest">Verified Quality</span>
+              </div>
+
               {discount > 0 && (
-                <p className="text-sm text-[#0B5D3B] font-semibold">You save £{savings}!</p>
+                <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm bg-white/60 w-fit px-3 py-1 rounded-lg border border-emerald-100/50">
+                  <Zap className="w-3.5 h-3.5 fill-emerald-700" />
+                  Save £{savings} on this item
+                </div>
               )}
             </div>
 

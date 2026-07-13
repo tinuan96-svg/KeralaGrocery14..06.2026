@@ -141,17 +141,17 @@ export default function ProductGallery({
                 fetchPriority="high"
                 loading="eager"
                 decoding="async"
-                className="w-full h-full object-contain p-8"
+                className="w-full h-full object-contain scale-[1.12] transition-transform duration-500 group-hover:scale-[1.20]"
                 style={
                   isZoomed
                     ? {
-                        transform: 'scale(2.2)',
+                        transform: 'scale(2.3)',
                         transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
                         transition: 'transform 0.08s ease-out',
                       }
                     : mobileZoomed
                     ? {
-                        transform: 'scale(2.4)',
+                        transform: 'scale(2.5)',
                         transformOrigin: `${mobileZoomOrigin.x}% ${mobileZoomOrigin.y}%`,
                         transition: 'transform 0.22s ease-out',
                       }
