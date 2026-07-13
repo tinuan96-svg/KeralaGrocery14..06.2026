@@ -46,6 +46,7 @@ BEGIN
     AND p.is_deleted = false
     AND p.visibility_status = true
     AND p.centralhub_product_id IS NOT NULL
+    AND p.price > 0
   ORDER BY similarity_score DESC, p.created_at DESC
   LIMIT limit_val
   OFFSET offset_val;

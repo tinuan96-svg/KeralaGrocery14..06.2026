@@ -149,6 +149,9 @@ Deno.serve(async (req: Request) => {
                 .select('id, name, slug, price, stock, brand, image_url, image_main')
                 .ilike('name', `%${args.query}%`)
                 .eq('is_deleted', false)
+                .eq('approval_status', 'approved')
+                .eq('visibility_status', true)
+                .gt('price', 0)
                 .limit(5);
 
               if (!fallbackErr && fallbackData && fallbackData.length > 0) {
