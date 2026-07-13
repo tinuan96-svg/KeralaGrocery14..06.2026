@@ -190,6 +190,7 @@ export default function KeralaProductDetailPage({ slug }: Props) {
   }
 
   const productWD = toProductWithDetails(product);
+  const { settings, activeCycle } = useWallet();
 
   // Use selected variant data if available
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
@@ -199,6 +200,12 @@ export default function KeralaProductDetailPage({ slug }: Props) {
   const original = product.original_price ?? currentPrice;
   const discount = product.discount_pct;
   const savings  = (original - currentPrice).toFixed(2);
+
+  // Calculate potential cashback
+  const rate = activeCycle
+    ? (activeCycle.tier === 'gold' ? settings?.gold_rate : activeCycle.tier === 'silver' ? settings?.silver_rate : settings?.bronze_rate)
+    : (settings?.bronze_rate ?? 0.01);
+  const potentialCashback = (currentPrice * (rate || 0.01)).toFixed(2);
 
   const stockStatus = inStock
     ? currentStock <= 5
@@ -343,7 +350,10 @@ export default function KeralaProductDetailPage({ slug }: Props) {
                 </div>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">4.5 Rating</span>
                 <Separator orientation="vertical" className="h-3 bg-gray-200 mx-1" />
-                <span className="text-xs font-bold text-emerald-700 uppercase tracking-widest">Verified Quality</span>
+                <div className="flex items-center gap-1 text-[10px] font-black text-emerald-700 uppercase tracking-widest bg-white/60 px-2 py-0.5 rounded-lg border border-emerald-100">
+                  <Wallet className="w-3 h-3 fill-emerald-700" />
+                  Earn £{potentialCashback}
+                </div>
               </div>
 
               {discount > 0 && (
