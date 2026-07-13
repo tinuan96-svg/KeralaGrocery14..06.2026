@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useAnimation, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useAnimation, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import { useAssistant } from '../AssistantContext';
