@@ -67,6 +67,11 @@ export interface GetRpcProductsParams {
   brand?: string | null;
   sort?: RpcSortOption;
   status?: string;
+  is_featured?: boolean;
+  is_bestseller?: boolean;
+  is_new_arrival?: boolean;
+  is_hot_product?: boolean;
+  is_deal?: boolean;
 }
 
 export interface GetRpcProductsResult {
@@ -227,6 +232,12 @@ export async function getProducts(
       // Filter by brand column (canonical, from CentralHub); also match source_brand as fallback
       query = query.or(`brand.ilike.${brand},source_brand.ilike.${brand}`);
     }
+
+    if (params.is_featured) query = query.eq('is_featured', true);
+    if (params.is_bestseller) query = query.eq('is_bestseller', true);
+    if (params.is_new_arrival) query = query.eq('is_new_arrival', true);
+    if (params.is_hot_product) query = query.eq('is_hot_product', true);
+    if (params.is_deal) query = query.eq('is_deal', true);
 
     switch (sort) {
       case 'oldest':     query = query.order('created_at', { ascending: true });  break;

@@ -27,28 +27,30 @@ export function useHomepageData(): HomepageData {
     let cancelled = false;
 
     async function loadData() {
-      const [{ products }, cats] = await Promise.all([
-        fetchStoreProducts(),
+      const [
+        { products: trendingItems },
+        { products: dealItems },
+        { products: bestsellerItems },
+        { products: arrivalItems },
+        { products: allItems },
+        cats
+      ] = await Promise.all([
+        fetchStoreProducts({ is_featured: true, limit: 12 }),
+        fetchStoreProducts({ is_deal: true, limit: 12 }),
+        fetchStoreProducts({ is_bestseller: true, limit: 12 }),
+        fetchStoreProducts({ is_new_arrival: true, limit: 12 }),
+        fetchStoreProducts({ limit: 40 }), // For "Kitchen Essentials" and general pool
         fetchHomepageCategories(),
       ]);
 
       if (cancelled) return;
 
-      // Group products into logical sections based on flags or simple distribution
-      // in a real app, these would come from specialized queries, but here we
-      // derive them from the main pool for efficiency.
-      const trendingItems = products.filter(p => p.is_featured || p.is_hot_product).slice(0, 10);
-      const dealItems = products.filter(p => p.is_deal || (p.discount_percentage && p.discount_percentage > 0)).slice(0, 10);
-      const bestsellerItems = products.filter(p => p.is_bestseller).slice(0, 10);
-      const arrivalItems = products.filter(p => p.is_new_arrival).slice(0, 10);
+      setTrending(trendingItems.length > 0 ? trendingItems : allItems.slice(0, 10));
+      setDeals(dealItems.length > 0 ? dealItems : allItems.slice(10, 20));
+      setBestsellers(bestsellerItems.length > 0 ? bestsellerItems : allItems.slice(20, 30));
+      setNewArrivals(arrivalItems.length > 0 ? arrivalItems : allItems.slice(30, 40));
 
-      // Fallbacks if sections are empty
-      setTrending(trendingItems.length > 0 ? trendingItems : products.slice(0, 10));
-      setDeals(dealItems.length > 0 ? dealItems : products.slice(10, 20));
-      setBestsellers(bestsellerItems.length > 0 ? bestsellerItems : products.slice(20, 30));
-      setNewArrivals(arrivalItems.length > 0 ? arrivalItems : products.slice(30, 40));
-
-      setAllProducts(products);
+      setAllProducts(allItems);
       setCategories(cats);
       setIsLoading(false);
     }

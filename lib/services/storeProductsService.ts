@@ -78,6 +78,12 @@ function mapProduct(p: any): ProductWithDetails {
 
 export interface FetchStoreProductsOptions {
   stockOnly?: boolean;
+  limit?: number;
+  is_featured?: boolean;
+  is_bestseller?: boolean;
+  is_new_arrival?: boolean;
+  is_hot_product?: boolean;
+  is_deal?: boolean;
 }
 
 export interface FetchStoreProductsResult {
@@ -89,16 +95,25 @@ export async function fetchStoreProducts(
   _options: FetchStoreProductsOptions = {}
 ): Promise<FetchStoreProductsResult> {
   try {
-    const supabase = getSupabase();
-
-    const { data, error } = await supabase
+    let query = supabase
       .from('products')
       .select(PRODUCTS_SELECT)
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .neq('visibility_status', false)
-      .not('centralhub_product_id', 'is', null)
-      .order('created_at', { ascending: false });
+      .not('centralhub_product_id', 'is', null);
+
+    if (_options.is_featured) query = query.eq('is_featured', true);
+    if (_options.is_bestseller) query = query.eq('is_bestseller', true);
+    if (_options.is_new_arrival) query = query.eq('is_new_arrival', true);
+    if (_options.is_hot_product) query = query.eq('is_hot_product', true);
+    if (_options.is_deal) query = query.eq('is_deal', true);
+
+    if (_options.limit) {
+      query = query.limit(_options.limit);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('[storeProductsService] Error fetching products:', error);
