@@ -32,6 +32,7 @@ export interface RpcProduct {
   status: string | null;
   created_at: string | null;
   discount_pct: number;
+  markup_percentage?: number | null;
   in_stock: boolean;
   display_title: string;
   variants?: ProductVariantOption[];
@@ -130,6 +131,7 @@ function mapRow(
     status:            'active',
     created_at:      (row.created_at as string | null) ?? null,
     discount_pct:    discountPct,
+    markup_percentage: row.markup_percentage != null ? Number(row.markup_percentage) : null,
     in_stock:        Number(row.stock ?? row.stock_quantity ?? 0) > 0,
     display_title:   displayTitle,
   };
@@ -179,7 +181,7 @@ export async function getProducts(
     let query = supabase
       .from('products')
       .select(
-        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_quantity',
+        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_quantity',
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
@@ -289,7 +291,7 @@ export async function getProductDetail(
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_quantity')
+      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_quantity')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .neq('visibility_status', false)

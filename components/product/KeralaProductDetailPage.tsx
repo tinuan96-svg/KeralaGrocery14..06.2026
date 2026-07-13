@@ -10,6 +10,7 @@ import ProductActions from '@/components/product/ProductActions';
 import StickyCartBar from '@/components/product/StickyCartBar';
 import MobileStickyBar from '@/components/product/MobileStickyBar';
 import ProductAccordions from '@/components/product/ProductAccordions';
+import ProfitGenerativeBanner from '@/components/product/ProfitGenerativeBanner';
 import KeralaProductCard from '@/components/product/KeralaProductCard';
 import RecentlyViewedTracker from '@/components/product/RecentlyViewedTracker';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
@@ -400,6 +401,9 @@ export default function KeralaProductDetailPage({ slug }: Props) {
             categoryName={product.category ?? undefined}
           />
         </div>
+
+        {/* High-margin profit generative spotlight */}
+        <ProfitGenerativeBanner />
 
         {/* Related products */}
         {related.length > 0 && (
