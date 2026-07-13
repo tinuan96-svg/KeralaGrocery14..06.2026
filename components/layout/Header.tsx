@@ -11,6 +11,7 @@ import { useCartCount } from '@/hooks/useCartOptimized';
 import { useWishlistCount } from '@/hooks/useWishlistOptimized';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import LiveSearch from '@/components/home/LiveSearch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,27 +59,14 @@ export default function Header() {
         <div className="md:hidden absolute inset-x-0 top-0 z-10 bg-white flex items-center px-3 gap-2"
           style={{ height: 'calc(60px + env(safe-area-inset-top, 0px))', paddingTop: 'env(safe-area-inset-top, 0px)' }}
         >
-          <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2 min-w-0">
-            <div className="flex-1 relative min-w-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0B5D3B]" />
-              <input
-                type="search"
-                placeholder="Search rice, spices, pickles…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-                className="w-full pl-10 pr-3 py-2.5 rounded-2xl border-2 border-[#0B5D3B] bg-[#f4faf6] text-sm text-gray-900 placeholder-gray-400 outline-none focus:bg-white transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              className="btn-brand text-white text-sm px-4 py-2.5 rounded-2xl flex-shrink-0 font-bold"
-            >
-              Go
-            </button>
-          </form>
+          <LiveSearch
+            className="flex-1"
+            onSearch={() => setMobileSearchOpen(false)}
+            placeholder="Search rice, spices..."
+            inputClassName="border-[#0B5D3B]"
+          />
           <button
-            onClick={() => { setMobileSearchOpen(false); setSearchQuery(''); }}
+            onClick={() => { setMobileSearchOpen(false); }}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 flex-shrink-0 transition-colors"
             aria-label="Close search"
           >
@@ -127,18 +115,10 @@ export default function Header() {
           </nav>
 
           {/* ── Desktop search ── */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-[380px] hidden md:block">
-            <div className="relative group">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-[#0B5D3B] transition-colors" />
-              <input
-                type="search"
-                placeholder="Search Kerala groceries…"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl border-2 border-[#d1ead9] focus:border-[#0B5D3B] focus:ring-0 text-sm bg-[#f4faf6] focus:bg-white transition-all duration-200 outline-none placeholder:text-gray-400 text-gray-800"
-              />
-            </div>
-          </form>
+          <LiveSearch
+            className="flex-1 max-w-[380px] hidden md:block"
+            placeholder="Search Kerala groceries…"
+          />
 
           {/* ── Action buttons ── */}
           <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
