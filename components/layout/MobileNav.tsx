@@ -14,11 +14,14 @@ export default function MobileNav() {
   const balance = parseFloat(wallet?.balance?.toString() ?? '0');
   const hasCashback = user && !walletLoading && balance > 0;
 
-  const isActive = (href: string) =>
-    href === '/' ? pathname === '/' : pathname.startsWith(href);
+  const isActive = (href: string) => {
+    if (!pathname) return false;
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
-  const isWalletActive =
-    pathname.startsWith('/wallet') || pathname.startsWith('/account/wallet');
+  const isWalletActive = pathname?.startsWith('/account/wallet') || pathname?.startsWith('/wallet');
+  const isProfileActive = (pathname?.startsWith('/account') || pathname?.startsWith('/profile')) && !isWalletActive;
 
   return (
     <nav
@@ -53,12 +56,16 @@ export default function MobileNav() {
           aria-label="Wallet"
         >
           {/* Elevated pill with dynamic glow */}
-          <div className={[
-            'relative flex items-center justify-center w-14 h-11 rounded-[20px] transition-all duration-300 mb-1',
-            isWalletActive
-              ? 'bg-[#0B5D3B] shadow-[0_4px_12px_rgba(11,93,59,0.3)] scale-110'
-              : 'bg-white border border-gray-100 shadow-sm',
-          ].join(' ')}>
+          <div
+            style={{
+              backgroundColor: isWalletActive ? '#0B5D3B' : '#ffffff',
+              boxShadow: isWalletActive ? '0 4px 12px rgba(11,93,59,0.3)' : undefined
+            }}
+            className={[
+              'relative flex items-center justify-center w-14 h-11 rounded-[20px] transition-all duration-300 mb-1',
+              isWalletActive ? 'scale-110' : 'border border-gray-100 shadow-sm',
+            ].join(' ')}
+          >
             <Wallet className={[
               'h-[22px] w-[24px] transition-all duration-300',
               isWalletActive ? 'text-white' : 'text-[#0B5D3B]',
@@ -79,7 +86,7 @@ export default function MobileNav() {
         <NavItem
           href="/account"
           label="Profile"
-          active={isActive('/account') && !isWalletActive}
+          active={isProfileActive}
           icon={<User />}
         />
       </div>

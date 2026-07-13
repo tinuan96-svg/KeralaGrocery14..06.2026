@@ -71,16 +71,18 @@ public class MainActivity extends BridgeActivity {
             "  nav.style.setProperty('display', 'flex', 'important');" +
             "  nav.style.setProperty('height', '76px', 'important');" +
             "  nav.style.setProperty('padding-bottom', 'max(env(safe-area-inset-bottom), 16px)', 'important');" +
-            "  nav.style.setProperty('background', '#ffffff', 'important');" +
+            "  nav.style.setProperty('background', 'rgba(255,255,255,0.95)', 'important');" +
+            "  nav.style.setProperty('backdrop-filter', 'blur(20px)', 'important');" +
             "  nav.style.setProperty('visibility', 'visible', 'important');" +
             "  nav.style.setProperty('opacity', '1', 'important');" +
             "  " +
-            "  var container = nav.querySelector('.grid, .flex');" +
+            "  var container = nav.querySelector('.flex, .grid');" +
             "  if (container) {" +
             "    container.style.setProperty('display', 'flex', 'important');" +
             "    container.style.setProperty('width', '100%', 'important');" +
             "    container.style.setProperty('height', '100%', 'important');" +
             "    container.style.setProperty('justify-content', 'space-around', 'important');" +
+            "    container.style.setProperty('align-items', 'center', 'important');" +
             "  }" +
             "  " +
             "  var items = nav.querySelectorAll('a');" +

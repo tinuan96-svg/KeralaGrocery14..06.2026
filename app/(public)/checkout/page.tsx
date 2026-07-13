@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useWallet } from '@/hooks/useWallet';
@@ -161,6 +162,16 @@ export default function CheckoutPage() {
   // Note: cartTotal and displayTotal are for display only. The server
   // recalculates the true total from database prices.
   const displayTotal = cartTotal + deliveryFee;
+
+  // Redirect to cart if empty
+  useEffect(() => {
+    if (!authLoading && cart.length === 0) {
+      const timer = setTimeout(() => {
+        router.replace('/cart');
+      }, 3000); // Give user 3 seconds to read the "out of stock" alert
+      return () => clearTimeout(timer);
+    }
+  }, [cart.length, authLoading, router]);
 
   // Amount charged to card (displayTotal minus wallet portion)
   const cardCharge = Math.max(0, parseFloat((displayTotal - walletAmount).toFixed(2)));
@@ -401,14 +412,29 @@ export default function CheckoutPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-4">
-        <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
-          <ShoppingBag className="w-10 h-10 text-gray-400" />
+      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6 px-4 bg-white">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center relative"
+        >
+          <ShoppingBag className="w-12 h-12 text-gray-300" />
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-4 border-white"
+          />
+        </motion.div>
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-black text-gray-900">Your cart is empty</h2>
+          <p className="text-gray-500 max-w-xs mx-auto">
+            The items in your cart are no longer available. Redirecting you to the shop...
+          </p>
         </div>
-        <h2 className="text-xl font-bold text-gray-800">Your cart is empty</h2>
-        <p className="text-gray-500 text-sm">Add some items before checking out</p>
         <Link href="/products">
-          <Button className="bg-green-600 hover:bg-green-700 text-white mt-2">Continue Shopping</Button>
+          <Button className="bg-[#0B5D3B] hover:bg-green-700 text-white font-bold px-8 h-12 rounded-2xl shadow-lg active:scale-95 transition-all">
+            Continue Shopping
+          </Button>
         </Link>
       </div>
     );
