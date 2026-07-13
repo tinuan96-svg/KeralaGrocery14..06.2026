@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { RefreshCw, TriangleAlert as AlertTriangle, ChevronRight, TrendingUp, ShoppingCart, Users, Package, Activity, CircleCheck as CheckCircle, ArrowUpRight, Bell, Zap, DollarSign, ChartBar as BarChart3, ClipboardCheck, Tag, Image as ImageIcon, Layers, Globe, Clock, ShieldCheck, Wifi, WifiOff, Star, Truck } from 'lucide-react';
+import { RefreshCw, TriangleAlert as AlertTriangle, ChevronRight, TrendingUp, ShoppingCart, Users, Package, Activity, CircleCheck as CheckCircle, ArrowUpRight, Bell, Zap, DollarSign, ChartBar as BarChart3, ClipboardCheck, Tag, Image as ImageIcon, Layers, Globe, Clock, ShieldCheck, Wifi, WifiOff, Star, Truck, LayoutGrid } from 'lucide-react';
 import {
   fetchProfitSummary, fetchReserveData, fetchOrderKpis, fetchCentralhubStatus,
   type DateRange, type ProfitSummary, type ReserveData, type OrderKpis,
