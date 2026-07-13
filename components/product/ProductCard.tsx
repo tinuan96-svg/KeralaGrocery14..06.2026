@@ -85,7 +85,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
               decoding="async"
               fetchPriority={priority ? 'high' : 'auto'}
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.webp'; }}
-              className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-[1.07]"
+              className="w-full h-full object-contain transition-transform duration-500 scale-[1.18] group-hover:scale-[1.28]"
             />
           </picture>
 
