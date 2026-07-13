@@ -54,12 +54,16 @@ BEGIN
   FROM order_items
   WHERE order_id = NEW.id;
 
-  -- 2. Construct the full JSON payload
+  -- 2. Construct the full JSON payload with mapped status fields for CentralHub
   payload := jsonb_build_object(
     'table', 'orders',
     'type', 'INSERT', -- Use INSERT type so CentralHub treats it as a fresh record update
     'store_slug', 'keralagroceries',
-    'record', to_jsonb(NEW) || jsonb_build_object('items', items)
+    'record', to_jsonb(NEW) || jsonb_build_object(
+      'items', items,
+      'status', NEW.order_status, -- Map local order_status to generic status
+      'fulfillment_status', NEW.order_status
+    )
   );
 
   -- 3. Push to CentralHub production URL

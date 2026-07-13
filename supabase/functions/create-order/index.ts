@@ -324,9 +324,13 @@ Deno.serve(async (req: Request) => {
             "x-webhook-secret": centralhubSecret || "",
           },
           body: JSON.stringify({
+            table: "orders",
             type: "INSERT",
+            store_slug: "keralagroceries",
             record: {
               ...order,
+              status: order.order_status,
+              fulfillment_status: order.order_status,
               items: orderItems,
             },
           }),
