@@ -28,6 +28,7 @@ Deno.serve(async (req: Request) => {
     const userName = context?.user_name || 'friend';
 
     // 1. Initial request to OpenAI
+    console.log("Requesting tool choice from OpenAI...");
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -36,7 +37,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        stream: false, // Explicitly disable streaming for the tool-choice phase
+        stream: false,
         messages: [
           {
             role: "system",
@@ -100,15 +101,20 @@ Deno.serve(async (req: Request) => {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("OpenAI Initial Error:", errorBody);
-      throw new Error(`OpenAI Error: ${response.status} ${errorBody}`);
+      console.error("OpenAI Tool Choice Error:", errorBody);
+      return new Response(JSON.stringify({ error: `OpenAI Initial Error: ${response.status} ${errorBody}` }), { status: response.status, headers: corsHeaders });
     }
 
     const data = await response.json();
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error("No choices returned from OpenAI");
+    }
+
     const message = data.choices[0].message;
 
     // 2. Handle Tool Calls
-    if (message.tool_calls) {
+    if (message.tool_calls && message.tool_calls.length > 0) {
+      console.log(`Executing ${message.tool_calls.length} tool calls...`);
       const toolMessages = [...messages, message];
       let actions: any[] = [];
 
@@ -117,63 +123,75 @@ Deno.serve(async (req: Request) => {
         const args = JSON.parse(toolCall.function.arguments);
         let toolResult;
 
-        if (functionName === "search_inventory") {
-          const { data: p } = await supabase.rpc('search_products_fuzzy', { search_query: args.query, limit_val: 5 });
-          // Map to a cleaner format for the LLM
-          toolResult = (p || []).map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            price: `£${Number(item.price).toFixed(2)}`,
-            stock: item.stock > 0 ? `${item.stock} in stock` : 'Out of Stock',
-            brand: item.brand,
-            category: item.category
-          }));
-          actions.push(...(p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p })));
-        } else if (functionName === "get_order_status") {
-          // Security: Check both order number AND contact info
-          const contact = String(args.contact_info || '').trim().toLowerCase();
-          const { data: o } = await supabase
-            .from('orders')
-            .select('id, order_number, order_status, total, created_at, customer_email, customer_phone')
-            .eq('order_number', args.order_number)
-            .maybeSingle();
+        try {
+          if (functionName === "search_inventory") {
+            const { data: p, error: pErr } = await supabase.rpc('search_products_fuzzy', { search_query: args.query, limit_val: 5 });
+            if (pErr) throw pErr;
 
-          if (o && (o.customer_email.toLowerCase().includes(contact) || o.customer_phone.includes(contact))) {
-            toolResult = {
-              order_number: o.order_number,
-              status: o.order_status,
-              total: `£${Number(o.total).toFixed(2)}`,
-              date: new Date(o.created_at).toLocaleDateString()
-            };
-            actions.push({ type: 'ORDER_INFO', order: o });
-          } else {
-            toolResult = { error: "Order not found or contact information does not match. Please provide the email or phone number used for the order." };
+            toolResult = (p || []).map((item: any) => ({
+              id: item.id,
+              name: item.name,
+              price: `£${Number(item.price).toFixed(2)}`,
+              stock: item.stock > 0 ? `${item.stock} in stock` : 'Out of Stock',
+              brand: item.brand,
+              category: item.category
+            }));
+            actions.push(...(p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p })));
+          } else if (functionName === "get_order_status") {
+            const contact = String(args.contact_info || '').trim().toLowerCase();
+            const { data: o, error: oErr } = await supabase
+              .from('orders')
+              .select('id, order_number, order_status, total, created_at, customer_email, customer_phone')
+              .eq('order_number', args.order_number)
+              .maybeSingle();
+
+            if (oErr) throw oErr;
+
+            if (o && (o.customer_email.toLowerCase().includes(contact) || o.customer_phone.includes(contact))) {
+              toolResult = {
+                order_number: o.order_number,
+                status: o.order_status,
+                total: `£${Number(o.total).toFixed(2)}`,
+                date: new Date(o.created_at).toLocaleDateString()
+              };
+              actions.push({ type: 'ORDER_INFO', order: o });
+            } else {
+              toolResult = { error: "Order not found or contact information does not match." };
+            }
+          } else if (functionName === "get_recipes") {
+            const { data: r, error: rErr } = await supabase.from('recipes')
+              .select('*')
+              .or(`title.ilike.%${args.query}%,description.ilike.%${args.query}%`)
+              .limit(3);
+
+            if (rErr) throw rErr;
+
+            toolResult = r || [];
+            actions.push(...(r || []).map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r })));
           }
-        } else if (functionName === "get_recipes") {
-          const { data: r } = await supabase.from('recipes')
-            .select('*')
-            .or(`title.ilike.%${args.query}%,description.ilike.%${args.query}%`)
-            .limit(3);
-          toolResult = r || [];
-          actions.push(...(r || []).map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r })));
+        } catch (toolErr: any) {
+          console.error(`Tool Execution Error (${functionName}):`, toolErr.message);
+          toolResult = { error: `Internal tool error: ${toolErr.message}` };
         }
+
         toolMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(toolResult) });
       }
 
+      console.log("Finalizing response with tool results...");
       const finalResponse = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${openAiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: toolMessages,
-          stream: false // Explicitly disable streaming for the final response
+          stream: false
         })
       });
 
       if (!finalResponse.ok) {
         const errorBody = await finalResponse.text();
-        console.error("OpenAI Final Error:", errorBody);
-        throw new Error(`OpenAI Final Error: ${finalResponse.status} ${errorBody}`);
+        console.error("OpenAI Final Response Error:", errorBody);
+        return new Response(JSON.stringify({ error: `OpenAI Final Error: ${finalResponse.status} ${errorBody}` }), { status: finalResponse.status, headers: corsHeaders });
       }
 
       const finalData = await finalResponse.json();
