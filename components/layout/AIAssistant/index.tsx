@@ -2,33 +2,32 @@
 
 import React from 'react';
 import { AssistantProvider } from './AssistantContext';
-import AssistantAvatar from './AssistantAvatar';
+import AssistantCharacter from './character/AssistantCharacter';
 import AssistantBubble from './AssistantBubble';
 import AssistantChat from './AssistantChat';
 
 /**
- * Premium AI Assistant (Kichu)
+ * Premium Standalone AI Mascot (Kichu)
  *
- * Features:
- * - Animated Kathakali Mascot
- * - Expressive Speech Bubbles
- * - Real-time Shopping Context (Cart, Wallet, Tracking)
- * - Glassmorphism Chat Interface
- * - Voice Input Support
+ * Redesigned to be a "Miniature Person" standing freely on the site.
+ * No circles, no clipping, just pure animation.
  */
 export default function AIAssistant() {
   return (
     <AssistantProvider>
-      <div className="fixed bottom-24 left-6 z-[100] flex flex-col items-start lg:block hidden-gpu">
+      <div
+        className="fixed bottom-24 right-6 z-[100] flex flex-col items-end pointer-events-none sm:right-8"
+        style={{ pointerEvents: 'auto' }}
+      >
         <AssistantBubble />
-        <AssistantAvatar />
-        <AssistantChat />
-      </div>
 
-      {/* Mobile view - ensure safe areas and no overlap */}
-      <div className="lg:hidden fixed bottom-24 left-4 z-[100] safe-area-inset-bottom">
-        <AssistantBubble />
-        <AssistantAvatar />
+        <div className="relative group">
+          <AssistantCharacter />
+
+          {/* Active Status Pulse */}
+          <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full z-40 shadow-sm" />
+        </div>
+
         <AssistantChat />
       </div>
     </AssistantProvider>
