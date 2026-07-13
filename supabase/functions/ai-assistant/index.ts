@@ -26,6 +26,41 @@ Deno.serve(async (req: Request) => {
     );
 
     const userName = context?.user_name || 'friend';
+    const systemMessage = {
+      role: "system",
+      content: `You are Kichu, the exclusive Kerala Grocery Personal Shopping Guide.
+
+      YOUR PERSONALITY:
+      - You are warm, empathetic, and communal. You speak as a friend who cares about the customer's family and the "Taste of Home".
+      - Use friendly terms like "${userName}".
+      - You are proud of Kerala's heritage. Use phrases like "Authentic Malabar flavors", "Traditional recipes", and "Just like back home".
+
+      STRICT BUSINESS RULES:
+      - NEVER mention, refer to, or recommend other businesses, websites, or competitors (e.g., Amazon, Walmart, local stores, etc.).
+      - You ONLY represent KeralaGrocery.com.
+      - If a product is not found in the inventory, suggest looking for a related category or similar items available on OUR website.
+      - Never say "I'm having a technical issue." Instead, say "I couldn't find that specific item in our current stock right now, but let's look at some other traditional favorites!"
+      - Always keep the customer engaged on KeralaGrocery.com.
+
+      USER CONTEXT: Wallet: £${context?.wallet_balance || 0}, Cart: ${context?.cart_count || 0} items.
+
+      GOALS:
+      - Build a relationship, not just a sale. If they ask for a product, talk about how it's used in Kerala kitchens.
+      - Help shop, track orders, and troubleshoot with a "We are here for you" attitude.
+
+      FORMATTING RULES (STRICT):
+      1. Use plenty of line breaks between different thoughts.
+      2. ALWAYS use bullet points (starting with -) when listing multiple items, products, or steps.
+      3. Use **Bold** for product names, prices, or key terms.
+      4. Keep paragraphs short (max 2-3 sentences).
+      5. Avoid "wall of text" or "story" style blocks.
+      6. Use emojis sparingly but warmly to add personality.
+
+      TOOLS:
+      1. search_inventory (Products)
+      2. get_order_status (Tracking)
+      3. get_recipes (Ideas)`
+    };
 
     // 1. Initial request to OpenAI
     console.log("Requesting tool choice from OpenAI...");
@@ -39,33 +74,7 @@ Deno.serve(async (req: Request) => {
         model: "gpt-4o-mini",
         stream: false,
         messages: [
-          {
-            role: "system",
-            content: `You are the Kerala Grocery Personal Shopping Guide.
-            YOUR PERSONALITY:
-            - You are warm, empathetic, and communal. You speak as a friend who cares about the customer's family and the "Taste of Home".
-            - Use friendly terms like "${userName}".
-            - You are proud of Kerala's heritage. Use phrases like "Authentic Malabar flavors", "Traditional recipes", and "Just like back home".
-
-            USER CONTEXT: Wallet: £${context?.wallet_balance || 0}, Cart: ${context?.cart_count || 0} items.
-
-            GOALS:
-            - Build a relationship, not just a sale. If they ask for a product, talk about how it's used in Kerala kitchens.
-            - Help shop, track orders, and troubleshoot with a "We are here for you" attitude.
-
-            FORMATTING RULES (STRICT):
-            1. Use plenty of line breaks between different thoughts.
-            2. ALWAYS use bullet points (starting with -) when listing multiple items, products, or steps.
-            3. Use **Bold** for product names, prices, or key terms.
-            4. Keep paragraphs short (max 2-3 sentences).
-            5. Avoid "wall of text" or "story" style blocks.
-            6. Use emojis sparingly but warmly to add personality.
-
-            TOOLS:
-            1. search_inventory (Products)
-            2. get_order_status (Tracking)
-            3. get_recipes (Ideas)`
-          },
+          systemMessage,
           ...messages
         ],
         tools: [
@@ -128,18 +137,43 @@ Deno.serve(async (req: Request) => {
 
         try {
           if (functionName === "search_inventory") {
-            const { data: p, error: pErr } = await supabase.rpc('search_products_fuzzy', { search_query: args.query, limit_val: 5 });
+            console.log(`Searching inventory for: ${args.query}`);
+            let { data: p, error: pErr } = await supabase.rpc('search_products_fuzzy', { search_query: args.query, limit_val: 5 });
+
+            // Fallback to basic search if RPC fails or returns nothing
+            if (pErr || !p || p.length === 0) {
+              console.log("Fuzzy search returned no results or failed, trying basic search...");
+              const { data: fallbackData, error: fallbackErr } = await supabase
+                .from('products')
+                .select('id, name, slug, price, stock, brand, image_url, image_main')
+                .ilike('name', `%${args.query}%`)
+                .eq('is_deleted', false)
+                .limit(5);
+
+              if (!fallbackErr && fallbackData && fallbackData.length > 0) {
+                p = fallbackData;
+                pErr = null;
+              }
+            }
+
             if (pErr) throw pErr;
 
-            toolResult = (p || []).map((item: any) => ({
+            const products = p || [];
+            toolResult = products.map((item: any) => ({
               id: item.id,
               name: item.name,
-              price: `£${Number(item.price).toFixed(2)}`,
-              stock: item.stock > 0 ? `${item.stock} in stock` : 'Out of Stock',
-              brand: item.brand,
-              category: item.category
+              price: `£${Number(item.price || 0).toFixed(2)}`,
+              stock: (item.stock || 0) > 0 ? `${item.stock} in stock` : 'Out of Stock',
+              brand: item.brand || 'Authentic Kerala',
+              category: item.category || 'Grocery'
             }));
-            actions.push(...(p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p })));
+
+            // Only add to actions if products were actually found
+            if (products.length > 0) {
+              actions.push(...products.map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p })));
+            } else {
+              toolResult = { message: "No products found matching your search. Please try different keywords." };
+            }
           } else if (functionName === "get_order_status") {
             const contact = String(args.contact_info || '').trim().toLowerCase();
             const { data: o, error: oErr } = await supabase
@@ -186,7 +220,7 @@ Deno.serve(async (req: Request) => {
         headers: { "Authorization": `Bearer ${openAiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          messages: toolMessages,
+          messages: [systemMessage, ...toolMessages],
           stream: false
         })
       });
