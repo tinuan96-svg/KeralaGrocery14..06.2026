@@ -238,3 +238,21 @@ export interface Promotion {
   created_at: string;
   updated_at: string;
 }
+
+export interface HomepageGridCard {
+  id: string;
+  title: string;
+  layout_type: 'single' | 'grid_2x2';
+  display_order: number;
+  is_active: boolean;
+  items: GridCardItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GridCardItem {
+  image_url: string;
+  label: string | null;
+  link: string;
+  badge?: string | null;
+}

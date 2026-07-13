@@ -2,6 +2,7 @@ import SEOContent from '@/components/home/SEOContent';
 import { LocalBusinessSchema, MerchantReturnPolicySchema, ShippingPolicySchema, GroceryStoreSchema, FAQSchema } from '@/components/seo/StructuredData';
 import PromoBannerCarousel from '@/components/home/PromoBannerCarousel';
 import HomepageSections from '@/components/home/HomepageSections';
+import AmazonStyleGrid from '@/components/home/AmazonStyleGrid';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import { EmailCapture } from '@/components/home/EmailCapture';
 import dynamic from 'next/dynamic';
@@ -46,6 +47,9 @@ export default function HomePage() {
 
       {/* Sentinel — StickySearchBar watches this element */}
       <div id="hero-end" />
+
+      {/* Amazon-style content grid */}
+      <AmazonStyleGrid />
 
       {/* All product sections in feed order */}
       <HomepageSections />

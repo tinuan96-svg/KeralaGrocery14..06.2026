@@ -323,6 +323,7 @@ function QuickAccess({ pendingApproval }: { pendingApproval: number }) {
     { label: 'Product Images',     sub: 'Image management',                href: '/admin/products',         icon: ImageIcon,     badge: null },
     { label: 'Sync Monitor',       sub: 'CentralHub logs',                 href: '/admin/sync-monitor',      icon: Activity,      badge: null },
     { label: 'Variant Audit',      sub: 'Size grouping',                   href: '/admin/variants',         icon: Layers,        badge: null },
+    { label: 'Homepage Grid',      sub: 'Amazon-style cards',              href: '/admin/homepage-grid',    icon: LayoutGrid,    badge: null },
   ];
 
   return (
@@ -358,6 +359,7 @@ function HomepageControl({ loading }: { loading: boolean }) {
   const [promoCount, setPromoCount] = useState<number | null>(null);
   const [featuredCount, setFeaturedCount] = useState<number | null>(null);
   const [featuredCats, setFeaturedCats] = useState<number | null>(null);
+  const [gridCardCount, setGridCardCount] = useState<number | null>(null);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -366,19 +368,21 @@ function HomepageControl({ loading }: { loading: boolean }) {
       supabase.from('promotions').select('*', { count: 'exact', head: true }).eq('status', 'active'),
       supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_featured', true).eq('is_active', true),
       supabase.from('categories').select('*', { count: 'exact', head: true }).eq('show_on_homepage', true).eq('is_active', true),
-    ]).then(([banners, promos, featured, cats]) => {
+      supabase.from('homepage_grid_cards').select('*', { count: 'exact', head: true }).eq('is_active', true),
+    ]).then(([banners, promos, featured, cats, grid]) => {
       setBannerCount(banners.count ?? 0);
       setPromoCount(promos.count ?? 0);
       setFeaturedCount(featured.count ?? 0);
       setFeaturedCats(cats.count ?? 0);
+      setGridCardCount(grid.count ?? 0);
     });
   }, []);
 
   const stats = [
-    { label: 'Carousel Banners',    value: bannerCount,    icon: ImageIcon, href: '/admin/centralhub-sync' },
-    { label: 'Active Promotions',   value: promoCount,     icon: Star,      href: '/admin/centralhub-sync' },
+    { label: 'Carousel Banners',    value: bannerCount,    icon: ImageIcon, href: '/admin/banners' },
+    { label: 'Active Promotions',   value: promoCount,     icon: Star,      href: '/admin/banners' },
     { label: 'Featured Products',   value: featuredCount,  icon: Package,   href: '/admin/product-approval' },
-    { label: 'Featured Categories', value: featuredCats,   icon: Tag,       href: '/admin/categories' },
+    { label: 'Homepage Cards',      value: gridCardCount,  icon: LayoutGrid, href: '/admin/homepage-grid' },
   ];
 
   return (
