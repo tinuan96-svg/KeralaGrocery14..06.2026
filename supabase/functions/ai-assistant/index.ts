@@ -53,10 +53,13 @@ Deno.serve(async (req: Request) => {
             - Build a relationship, not just a sale. If they ask for a product, talk about how it's used in Kerala kitchens.
             - Help shop, track orders, and troubleshoot with a "We are here for you" attitude.
 
-            FORMATTING:
-            - Concise bullet points.
-            - **Bold** for emphasis.
-            - Blank lines for air.
+            FORMATTING RULES (STRICT):
+            1. Use plenty of line breaks between different thoughts.
+            2. ALWAYS use bullet points (starting with -) when listing multiple items, products, or steps.
+            3. Use **Bold** for product names, prices, or key terms.
+            4. Keep paragraphs short (max 2-3 sentences).
+            5. Avoid "wall of text" or "story" style blocks.
+            6. Use emojis sparingly but warmly to add personality.
 
             TOOLS:
             1. search_inventory (Products)

@@ -11,20 +11,36 @@ function KichuAssistantContent() {
   const { isOpen, setIsOpen, emotion, setEmotion, bubbleText, setBubbleText } = useAssistant();
   const { cart, cartCount } = useCartData();
   const lastCartCount = useRef(cartCount);
+  const lastCartRef = useRef(cart);
 
   // 1. Smart Upselling Logic (Watch Cart)
   useEffect(() => {
     if (cartCount > lastCartCount.current) {
-      const lastAdded = cart[cart.length - 1];
-      if (lastAdded?.name.toLowerCase().includes('rice')) {
-        setBubbleText("Excellent choice! 🥥 Need some Pappadam or Coconut Oil to go with that rice?");
-        setEmotion('happy');
-      } else if (lastAdded?.name.toLowerCase().includes('tea')) {
-        setBubbleText("Tea time! ☕ How about some Banana Chips or Biscuits?");
-        setEmotion('happy');
+      // Find which item was added or quantity increased
+      const justAdded = cart.find(item => {
+        const prevItem = lastCartRef.current.find(p => p.id === item.id);
+        return !prevItem || item.quantity > prevItem.quantity;
+      });
+
+      if (justAdded) {
+        const name = justAdded.name.toLowerCase();
+        if (name.includes('rice')) {
+          setBubbleText("Excellent choice! 🥥 Need some Pappadam or Coconut Oil to go with that rice?");
+          setEmotion('happy');
+        } else if (name.includes('tea')) {
+          setBubbleText("Tea time! ☕ How about some Banana Chips or Biscuits?");
+          setEmotion('happy');
+        } else if (name.includes('masala') || name.includes('curry')) {
+          setBubbleText("Cooking something spicy? 🌶️ Need any extra coconut milk or ginger?");
+          setEmotion('excited');
+        } else if (name.includes('snack') || name.includes('chips')) {
+          setBubbleText("Crunchy! 😋 These are favorites. Want to see more snacks?");
+          setEmotion('happy');
+        }
       }
     }
     lastCartCount.current = cartCount;
+    lastCartRef.current = cart;
   }, [cart, cartCount, setBubbleText, setEmotion]);
 
   const handleAvatarClick = () => {

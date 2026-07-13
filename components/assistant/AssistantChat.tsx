@@ -34,10 +34,10 @@ export default function AssistantChat() {
   // Initial Message
   useEffect(() => {
     if (messages.length === 0) {
-      const name = profile?.name?.split(' ')[0] || 'friend';
-      const greeting = user
-        ? `Namaskaram, ${name}! 🙏 So good to see you again. Need help finding something traditional for dinner today?`
-        : `Namaskaram! 🙏 I'm Kichu, your Kerala Grocery expert. Looking for authentic Matta rice, coconut oil, or maybe a specific spice? I can find anything for you!`;
+      const name = profile?.name?.split(' ')[0];
+      const greeting = user && name
+        ? `Namaskaram, **${name}**! 🙏\n\nSo good to see you again. Need help finding something traditional for dinner today? I can check our latest arrivals for you.`
+        : `Namaskaram! 🙏\n\nI'm **Kichu**, your Kerala Grocery expert. Looking for:\n\n- Authentic Matta Rice\n- Pure Coconut Oil\n- Traditional Spices\n\nI can find anything for you! What's on your list today?`;
       setMessages([{ role: 'assistant', content: greeting }]);
     }
   }, [user, profile, messages.length]);
@@ -164,11 +164,53 @@ export default function AssistantChat() {
     recognition.lang = 'en-GB';
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+    };
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       processMessage(transcript);
     };
     recognition.start();
+  };
+
+  const renderMessageContent = (content: string) => {
+    return content.split('\n').map((line, i) => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return <div key={i} className="h-2" />;
+
+      const isBullet = trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ');
+      const lineContent = isBullet ? trimmedLine.substring(2) : trimmedLine;
+
+      // Handle Bold **text**
+      const parts = lineContent.split(/(\*\*.*?\*\*)/g);
+      const renderedParts = parts.map((part, j) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return (
+            <strong key={j} className="font-black text-[#0B5D3B]">
+              {part.slice(2, -2)}
+            </strong>
+          );
+        }
+        return part;
+      });
+
+      if (isBullet) {
+        return (
+          <div key={i} className="flex gap-2 mb-2 ml-1">
+            <span className="text-[#0B5D3B] font-bold mt-0.5">•</span>
+            <span className="flex-1 leading-relaxed text-gray-700">{renderedParts}</span>
+          </div>
+        );
+      }
+
+      return (
+        <p key={i} className="mb-3 last:mb-0 leading-relaxed text-gray-700">
+          {renderedParts}
+        </p>
+      );
+    });
   };
 
   return (
@@ -217,12 +259,12 @@ export default function AssistantChat() {
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-[85%] p-4 rounded-3xl text-sm font-medium leading-relaxed ${
+                <div className={`max-w-[85%] p-5 rounded-[2rem] text-sm font-medium shadow-sm ${
                   msg.role === 'user'
-                    ? 'bg-[#0B5D3B] text-white rounded-tr-none shadow-md'
-                    : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
+                    ? 'bg-[#0B5D3B] text-white rounded-tr-none ml-auto'
+                    : 'bg-white border border-green-50 text-gray-800 rounded-tl-none mr-auto'
                 }`}>
-                  {msg.content}
+                  {msg.role === 'user' ? msg.content : renderMessageContent(msg.content)}
                 </div>
               </motion.div>
             ))}
@@ -250,7 +292,7 @@ export default function AssistantChat() {
                     <p className="text-[10px] font-bold opacity-60 uppercase mb-1">Order Summary</p>
                     <h4 className="text-sm font-black mb-1">#{orderInfo.order_number}</h4>
                     <p className="text-xs font-bold text-emerald-400 mb-3 uppercase tracking-wider">{orderInfo.order_status}</p>
-                    <Link href={`/orders/${orderInfo.order_number}`} className="text-[10px] font-black bg-white text-emerald-900 px-3 py-1.5 rounded-xl block text-center shadow-md">TRACK NOW</Link>
+                    <Link href="/orders" className="text-[10px] font-black bg-white text-emerald-900 px-3 py-1.5 rounded-xl block text-center shadow-md">VIEW MY ORDERS</Link>
                   </div>
                 )}
                 {recommendedProducts.map((p) => (
@@ -269,6 +311,15 @@ export default function AssistantChat() {
                       </button>
                     </div>
                   </div>
+                ))}
+                {recommendedRecipes.map((r) => (
+                  <Link key={r.id} href={`/recipes/${r.slug}`} className="flex-shrink-0 w-32 bg-white rounded-2xl p-2 border border-gray-100 shadow-sm relative group">
+                    <div className="relative h-20 w-full mb-2">
+                       <Image src={r.image_url || '/placeholder.webp'} alt={r.title} fill className="object-cover rounded-xl" />
+                    </div>
+                    <p className="text-[10px] font-bold text-gray-800 truncate mb-1">{r.title}</p>
+                    <span className="text-[8px] font-black text-orange-600 uppercase">Recipe</span>
+                  </Link>
                 ))}
                 <button
                   onClick={() => { setRecommendedProducts([]); setRecommendedRecipes([]); setOrderInfo(null); }}
