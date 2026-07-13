@@ -1,8 +1,8 @@
 'use client';
 
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, useAnimation, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { useEffect, useState, useRef } from 'react';
 import { useAssistant } from '../AssistantContext';
 import { kichuVariants, shadowVariants } from '../AssistantAnimations';
 
@@ -56,10 +56,10 @@ export default function AssistantCharacter() {
 
   return (
     <div
-      className="relative group cursor-pointer perspective-1000"
+      className="relative group cursor-pointer"
       ref={characterRef}
       onClick={handleClick}
-      style={{ isolation: 'isolate' }}
+      style={{ perspective: '1000px', isolation: 'isolate' }}
     >
       {/* Floor Shadow - Dynamic Scaling */}
       <motion.div
@@ -81,9 +81,7 @@ export default function AssistantCharacter() {
         }}
         className="relative z-10 [--kichu-height:120px] sm:[--kichu-height:145px] lg:[--kichu-height:170px] aspect-[1/1.3]"
       >
-        {/* Layered Character System */}
         <div className="relative w-full h-full">
-          {/* Main Body Layer */}
           <Image
             src="/ai-character.png"
             alt="Kichu Mascot"
@@ -96,18 +94,11 @@ export default function AssistantCharacter() {
           />
 
           {/* Eye & Blink Mask (Procedural) */}
-          <AnimatePresence>
-            {isBlinking && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute top-[28%] left-[30%] w-[40%] h-[12%] bg-emerald-900/40 rounded-full blur-[2px] z-20 pointer-events-none"
-              />
-            )}
-          </AnimatePresence>
+          <div
+            className="absolute top-[28%] left-[30%] w-[40%] h-[12%] bg-emerald-900/40 rounded-full blur-[2px] z-20 pointer-events-none transition-opacity duration-100"
+            style={{ opacity: isBlinking ? 1 : 0 }}
+          />
 
-          {/* Glow Interaction (Ambient) */}
           <div className="absolute inset-0 bg-gradient-to-t from-green-400/10 to-transparent blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         </div>
       </motion.div>
