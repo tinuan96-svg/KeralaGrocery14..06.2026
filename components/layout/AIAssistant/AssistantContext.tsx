@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type AssistantEmotion = 'idle' | 'happy' | 'thinking' | 'talking' | 'celebrate' | 'confused' | 'waving';
+export type AssistantEmotion = 'idle' | 'happy' | 'thinking' | 'talking' | 'celebrate' | 'confused' | 'waving' | 'excited';
 
 interface AssistantContextType {
   isOpen: boolean;

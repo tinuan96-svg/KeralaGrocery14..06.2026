@@ -55,15 +55,20 @@ export default function AssistantCharacter() {
   };
 
   return (
-    <div className="relative group cursor-pointer" ref={characterRef} onClick={handleClick}>
-      {/* Floor Shadow */}
+    <div
+      className="relative group cursor-pointer perspective-1000"
+      ref={characterRef}
+      onClick={handleClick}
+      style={{ isolation: 'isolate' }}
+    >
+      {/* Floor Shadow - Dynamic Scaling */}
       <motion.div
         variants={shadowVariants}
         animate="idle"
-        className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-20 h-4 bg-black/20 rounded-[100%] blur-md z-0"
+        className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-24 h-6 bg-black/15 rounded-[100%] blur-lg z-0"
       />
 
-      {/* Main Character Body (Stand alone) */}
+      {/* Main Character Body - High Fidelity Rigged Style */}
       <motion.div
         variants={kichuVariants}
         animate={emotion === 'idle' ? 'idle' : emotion}
@@ -72,38 +77,51 @@ export default function AssistantCharacter() {
           y: springY,
           height: 'var(--kichu-height)',
           width: 'auto',
+          transformStyle: 'preserve-3d',
         }}
-        className="relative z-10 [--kichu-height:100px] sm:[--kichu-height:120px] lg:[--kichu-height:140px] aspect-[1/1.4]"
+        className="relative z-10 [--kichu-height:120px] sm:[--kichu-height:145px] lg:[--kichu-height:170px] aspect-[1/1.3]"
       >
-        <Image
-          src="/ai-character.png"
-          alt="Kichu Mascot"
-          fill
-          className="object-contain drop-shadow-md select-none pointer-events-none"
-          priority
-        />
+        {/* Layered Character System */}
+        <div className="relative w-full h-full">
+          {/* Main Body Layer */}
+          <Image
+            src="/ai-character.png"
+            alt="Kichu Mascot"
+            fill
+            className="object-contain select-none pointer-events-none transition-all duration-500"
+            style={{
+              filter: emotion === 'happy' ? 'brightness(1.05) contrast(1.05)' : 'none'
+            }}
+            priority
+          />
 
-        {/* Eye Interaction Mask (Procedural Blinking) */}
-        {isBlinking && (
-          <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
-            {/* Soft darken overlay on the eye region */}
-            <div className="w-1/2 h-1/2 bg-[#0B5D3B]/5 mix-blend-multiply rounded-full blur-md" />
-          </div>
-        )}
+          {/* Eye & Blink Mask (Procedural) */}
+          <AnimatePresence>
+            {isBlinking && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-[28%] left-[30%] w-[40%] h-[12%] bg-emerald-900/40 rounded-full blur-[2px] z-20 pointer-events-none"
+              />
+            )}
+          </AnimatePresence>
 
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 bg-green-400/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+          {/* Glow Interaction (Ambient) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-green-400/10 to-transparent blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+        </div>
       </motion.div>
 
-      {/* "AI" floating badge */}
+      {/* "AI" Floating Tag - Premium Styling */}
       {!isOpen && (
-        <motion.span
-          animate={{ y: [0, -4, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute -top-4 -right-2 bg-yellow-500 text-green-950 font-black text-[9px] px-2 py-0.5 rounded-full shadow-lg border border-white z-30"
+        <motion.div
+          animate={{ y: [0, -6, 0], scale: [1, 1.05, 1] }}
+          transition={{ duration: 3, repeat: Infinity }}
+          className="absolute -top-6 right-0 bg-[#0B5D3B] text-white font-black text-[10px] px-2.5 py-1 rounded-full shadow-2xl border-2 border-white z-30 flex items-center gap-1 uppercase tracking-tighter"
         >
-          AI
-        </motion.span>
+          <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+          Live
+        </motion.div>
       )}
     </div>
   );

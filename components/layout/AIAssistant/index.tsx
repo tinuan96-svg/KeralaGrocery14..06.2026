@@ -16,16 +16,13 @@ export default function AIAssistant() {
   return (
     <AssistantProvider>
       <div
-        className="fixed bottom-24 left-6 z-[100] flex flex-col items-start pointer-events-none sm:left-8"
+        className="fixed bottom-12 right-6 z-[100] flex flex-col items-end pointer-events-none sm:right-10"
         style={{ pointerEvents: 'auto' }}
       >
         <AssistantBubble />
 
         <div className="relative group">
           <AssistantCharacter />
-
-          {/* Active Status Pulse */}
-          <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full z-40 shadow-sm" />
         </div>
 
         <AssistantChat />
