@@ -20,7 +20,7 @@ interface Action {
 export default function AiAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hi there! 👋 I am your Kerala Grocery assistant. Looking for something specific from home?' }
+    { role: 'assistant', content: "Hi there! 👋 I am your Kerala Grocery assistant. I can help you find products, track your orders, or answer any questions about our delivery and policies. How can I help today?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
