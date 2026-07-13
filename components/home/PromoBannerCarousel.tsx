@@ -160,7 +160,7 @@ function BannerSlide({
             <div className="relative w-[130px] sm:w-[180px] lg:w-[240px] h-full max-h-[170px] sm:max-h-[200px]">
               <Image
                 src={banner.image_url}
-                alt={banner.title}
+                alt={banner.image_alt || banner.title}
                 fill
                 className="object-contain drop-shadow-xl"
                 sizes="(max-width: 640px) 130px, (max-width: 1024px) 180px, 240px"
@@ -207,7 +207,8 @@ export default function PromoBannerCarousel() {
 
   // Use DB banners or fallbacks
   const slides = useMemo(() => {
-    if (banners.length > 0) return banners;
+    const filtered = banners.filter(b => b.banner_type !== 'marketing_strip');
+    if (filtered.length > 0) return filtered;
     // Return fallbacks with synthetic ids
     return FALLBACK_BANNERS.map((b, i) => ({
       ...b,

@@ -5,6 +5,7 @@ export interface PromoBanner {
   title: string;
   subtitle: string | null;
   image_url: string | null;
+  image_alt: string | null;
   mobile_image_url: string | null;
   cta_text: string;
   cta_link: string;
@@ -27,7 +28,9 @@ export type BannerType =
   | 'free_delivery'
   | 'seasonal'
   | 'new_arrivals'
-  | 'brand_promotion';
+  | 'brand_promotion'
+  | 'marketing_strip'
+  | 'marketing_square';
 
 export const BANNER_TYPE_META: Record<BannerType, { label: string; color: string; bg: string }> = {
   product_promotion: { label: 'Product',    color: 'text-blue-700',   bg: 'bg-blue-100'   },
@@ -37,6 +40,7 @@ export const BANNER_TYPE_META: Record<BannerType, { label: string; color: string
   seasonal:          { label: 'Seasonal',   color: 'text-orange-700', bg: 'bg-orange-100' },
   new_arrivals:      { label: 'New',        color: 'text-teal-700',   bg: 'bg-teal-100'   },
   brand_promotion:   { label: 'Brand',      color: 'text-gray-700',   bg: 'bg-gray-100'   },
+  marketing_strip:   { label: 'Strip',      color: 'text-purple-700', bg: 'bg-purple-100' },
 };
 
 // ── Public queries ────────────────────────────────────────────────────────────

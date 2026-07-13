@@ -5,6 +5,7 @@ import { useHomepageData } from '@/hooks/useHomepageData';
 import TrendingNow from '@/components/home/TrendingNow';
 import LoyaltyBanner from '@/components/home/LoyaltyBanner';
 import KitchenEssentials from '@/components/home/KitchenEssentials';
+import MarketingBannerStrip from '@/components/home/MarketingBannerStrip';
 import { ProductGridSkeleton } from '@/components/product/ProductCardSkeleton';
 import { PersonalisedGreeting } from '@/components/layout/CartEnhancements';
 import type { Brand } from '@/lib/types/database';
@@ -122,6 +123,9 @@ export default function HomepageSections() {
       {/* 5. Trending Now */}
       {trending.length > 0 && <TrendingNow products={trending} />}
 
+      {/* Static Marketing Banners (Strip Type) */}
+      <MarketingBannerStrip />
+
       {/* 6. Top Sellers */}
       {bestsellers.length > 0 && <BestSellers products={bestsellers} />}
 
@@ -133,6 +137,9 @@ export default function HomepageSections() {
 
       {/* 9. New Arrivals */}
       {newArrivals.length > 0 && <NewArrivals products={newArrivals} />}
+
+      {/* Second set of marketing banners (if any remain) */}
+      <MarketingBannerStrip offset={1} />
 
       {/* 10. Discover More — infinite scroll feed */}
       <DiscoverMoreFeed />

@@ -14,6 +14,7 @@ import { Plus, Trash2, Eye, EyeOff, Loader as Loader2, CreditCard as Edit2, Char
 const BANNER_TYPES: BannerType[] = [
   'product_promotion','flash_deal','cashback_promotion',
   'free_delivery','seasonal','new_arrivals','brand_promotion',
+  'marketing_strip',
 ];
 
 const GRADIENT_PRESETS = [
@@ -41,6 +42,7 @@ const emptyForm = (): Partial<PromoBanner> => ({
   end_date:    null,
   is_active:   true,
   image_url:   null,
+  image_alt:   null,
   mobile_image_url: null,
 });
 
@@ -274,14 +276,25 @@ function BannerModal({
               />
             </div>
             {form.image_url && (
-              <div className="mt-2 relative w-20 h-20 border rounded-xl overflow-hidden">
-                <Image src={form.image_url} alt="preview" fill className="object-contain" unoptimized />
-                <button
-                  onClick={() => set('image_url', null)}
-                  className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/50 rounded-full flex items-center justify-center"
-                >
-                  <X className="h-3 w-3 text-white" />
-                </button>
+              <div className="mt-2 flex gap-3 items-start">
+                <div className="relative w-20 h-20 border rounded-xl overflow-hidden bg-gray-50">
+                  <Image src={form.image_url} alt="preview" fill className="object-contain" unoptimized />
+                  <button
+                    onClick={() => set('image_url', null)}
+                    className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/50 rounded-full flex items-center justify-center"
+                  >
+                    <X className="h-3 w-3 text-white" />
+                  </button>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-[10px] uppercase font-bold text-gray-400">Image SEO Alt Text</Label>
+                  <input
+                    value={form.image_alt ?? ''}
+                    onChange={e => set('image_alt', e.target.value)}
+                    placeholder="e.g. Best Kerala Banana Chips UK"
+                    className={`${INPUT_CLS} mt-1`}
+                  />
+                </div>
               </div>
             )}
           </Field>
