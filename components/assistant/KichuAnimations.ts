@@ -32,7 +32,9 @@ export const kichuVariants: Variants = {
     y: [0, -2, 0],
     transition: {
       duration: 0.4,
-      repeat: Infinity
+      repeat: Infinity,
+      type: "tween",
+      ease: "linear"
     }
   },
   happy: {
@@ -40,8 +42,17 @@ export const kichuVariants: Variants = {
     y: [0, -20, 0],
     transition: {
       duration: 0.5,
-      type: "spring",
-      stiffness: 500
+      type: "tween",
+      ease: "easeInOut"
+    }
+  },
+  celebrate: {
+    y: [0, -30, 0, -30, 0],
+    scale: [1, 1.2, 1, 1.2, 1],
+    transition: {
+      duration: 1.5,
+      type: "tween",
+      ease: "easeInOut"
     }
   },
   waving: {
