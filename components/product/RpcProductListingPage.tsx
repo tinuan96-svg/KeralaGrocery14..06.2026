@@ -323,17 +323,16 @@ export default function RpcProductListingPage() {
 
       {/* ── Result count ────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between">
-        <p className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500">
           {isLoading ? (
             <span className="inline-block w-32 h-4 bg-gray-200 animate-pulse rounded" />
           ) : (
             <>
-              {total.toLocaleString()} product{total !== 1 ? 's' : ''}
-              {search ? ` for "${search}"` : ''}
+              {search ? `Results for "${search}"` : 'All Products'}
               {totalPages > 1 && ` — page ${page} of ${totalPages}`}
             </>
           )}
-        </p>
+        </div>
       </div>
 
       {/* ── Grid ────────────────────────────────────────────── */}

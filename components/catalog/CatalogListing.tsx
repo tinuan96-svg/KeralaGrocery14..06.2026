@@ -242,17 +242,16 @@ export default function CatalogListing() {
 
       {/* ── Result count + live indicator ────────────────── */}
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-        <p className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500">
           {isLoading ? (
             <span className="inline-block h-4 w-32 bg-gray-200 animate-pulse rounded" />
           ) : (
             <>
-              {total.toLocaleString()} product{total !== 1 ? 's' : ''}
-              {search ? ` for "${search}"` : ''}
+              {search ? `Results for "${search}"` : 'Product Catalog'}
               {totalPages > 1 && ` — page ${page} of ${totalPages}`}
             </>
           )}
-        </p>
+        </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {realtimeStatus === 'live' ? (
             <>

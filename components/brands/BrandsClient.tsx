@@ -198,15 +198,13 @@ export default function BrandsClient({ brands }: { brands: BrandEntry[] }) {
             {/* ── Popular Brands ──────────────────────────────────── */}
             {popular.length > 0 && (
               <div className="pt-8 pb-4">
-                <div className="flex items-center justify-between px-4 mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100">
-                      <TrendingUp className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <div>
-                      <h2 className="text-[17px] font-black text-gray-900 leading-none tracking-tight">Popular Choices</h2>
-                      <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Most loved by community</p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100">
+                    <TrendingUp className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-[17px] font-black text-gray-900 leading-none tracking-tight">Popular Choices</h2>
+                    <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Most loved by community</p>
                   </div>
                 </div>
 
@@ -236,7 +234,7 @@ export default function BrandsClient({ brands }: { brands: BrandEntry[] }) {
                       <div className="text-center w-full px-1">
                         <p className="text-[12px] font-bold text-gray-900 line-clamp-1 group-hover:text-[#0B5D3B] transition-colors">{brand.name}</p>
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                          {brand.productCount} Items
+                          Authentic
                         </span>
                       </div>
                     </Link>
@@ -308,14 +306,14 @@ function BrandCard({ brand }: { brand: BrandEntry }) {
       className="group flex items-center gap-4 p-3 bg-white rounded-[24px] border border-gray-100 hover:border-emerald-200 hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-300"
     >
       <BrandAvatar name={brand.name} imageUrl={brand.imageUrl} size="md" />
-      <div className="flex-1 min-w-0">
-        <p className="font-bold text-[15px] text-gray-900 leading-tight truncate group-hover:text-[#0B5D3B] transition-colors">
-          {brand.name}
-        </p>
-        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-          {brand.productCount} {brand.productCount === 1 ? 'Product' : 'Products'}
-        </p>
-      </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-black text-[15px] text-gray-900 leading-tight truncate group-hover:text-[#0B5D3B] transition-colors">
+                  {brand.name}
+                </p>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                  Explore Brand
+                </p>
+              </div>
       <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
         <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-[#0B5D3B] transition-colors" />
       </div>
