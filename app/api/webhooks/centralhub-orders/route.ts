@@ -124,8 +124,8 @@ export async function POST(req: NextRequest) {
             type = 'order_delivered';
 
             // Release pending cashback instantly to available balance
-            await supabase.rpc('release_order_cashback', { p_order_id: targetId })
-              .catch(e => console.error('[Webhook] cashback release failed:', e));
+            const { error: releaseErr } = await supabase.rpc('release_order_cashback', { p_order_id: targetId });
+            if (releaseErr) console.error('[Webhook] cashback release failed:', releaseErr);
           }
 
           if (type) {

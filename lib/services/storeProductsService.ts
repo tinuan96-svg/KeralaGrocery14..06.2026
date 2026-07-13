@@ -95,6 +95,7 @@ export async function fetchStoreProducts(
   _options: FetchStoreProductsOptions = {}
 ): Promise<FetchStoreProductsResult> {
   try {
+    const supabase = getSupabase();
     let query = supabase
       .from('products')
       .select(PRODUCTS_SELECT)

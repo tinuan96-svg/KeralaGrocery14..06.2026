@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Star, Truck, Shield, RefreshCw, BadgeCheck, Clock, Leaf, ChevronRight, Zap, Sparkles, CircleAlert as AlertCircle } from 'lucide-react';
+import { Star, Truck, Shield, RefreshCw, BadgeCheck, Clock, Leaf, ChevronRight, Zap, Sparkles, CircleAlert as AlertCircle, Wallet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import ProductGallery from '@/components/product/ProductGallery';
@@ -22,6 +22,7 @@ import { getProductDetail, getProducts } from '@/lib/services/rpcApiClient';
 import { getPersonalizedRecommendations } from '@/lib/services/recommendationService';
 import { getSupabase } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useWallet } from '@/hooks/useWallet';
 import type { RpcProduct, ProductVariantOption } from '@/lib/services/rpcApiClient';
 import type { ProductWithDetails } from '@/lib/types/database';
 import { useProductSync } from '@/hooks/useProductSync';
@@ -76,6 +77,7 @@ interface Props {
 export default function KeralaProductDetailPage({ slug }: Props) {
   useProductSync();
   const { user } = useAuth();
+  const { settings, activeCycle } = useWallet();
   const actionsRef = useRef<HTMLDivElement>(null);
   const [product, setProduct] = useState<RpcProduct | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariantOption | null>(null);
@@ -190,7 +192,6 @@ export default function KeralaProductDetailPage({ slug }: Props) {
   }
 
   const productWD = toProductWithDetails(product);
-  const { settings, activeCycle } = useWallet();
 
   // Use selected variant data if available
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
