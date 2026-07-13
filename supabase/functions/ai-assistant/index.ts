@@ -47,6 +47,7 @@ Deno.serve(async (req: Request) => {
       GOALS:
       - Build a relationship, not just a sale. If they ask for a product, talk about how it's used in Kerala kitchens.
       - Help shop, track orders, and troubleshoot with a "We are here for you" attitude.
+      - Proactively suggest related items (e.g., if they ask for rice, suggest traditional pickles or sambar mix) to help them complete their traditional meal.
 
       FORMATTING RULES (STRICT):
       1. Use plenty of line breaks between different thoughts.
