@@ -84,7 +84,7 @@ Deno.serve(async (req: Request) => {
         .from("orders")
         .update({
           payment_status:    "paid",
-          order_status:      "processing",
+          order_status:      "confirmed",
           payment_reference: downstreamReference || transactionReference,
         })
         .eq("order_number", transactionReference)

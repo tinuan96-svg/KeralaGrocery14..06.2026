@@ -188,7 +188,7 @@ export async function updateOrderPaymentStatus(
     }
 
     if (paymentStatus === 'paid') {
-      updateData.order_status = 'processing';
+      updateData.order_status = 'confirmed';
     }
 
     const { error } = await supabase

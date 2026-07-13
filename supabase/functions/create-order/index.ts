@@ -148,7 +148,7 @@ Deno.serve(async (req: Request) => {
         payment_method:     orderData.payment_method,
         payment_status:     orderData.payment_status,
         payment_reference:  orderData.payment_reference || null,
-        order_status:       orderData.payment_status === "paid" ? "processing" : "pending",
+        order_status:       orderData.payment_status === "paid" ? "confirmed" : "pending",
         notes:              orderData.notes || null,
       })
       .select()

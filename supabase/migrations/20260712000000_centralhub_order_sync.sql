@@ -42,7 +42,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 -- Create the Real-time Trigger
 DROP TRIGGER IF EXISTS tr_notify_centralhub_order ON orders;
 CREATE TRIGGER tr_notify_centralhub_order
-AFTER INSERT ON orders
+AFTER INSERT OR UPDATE ON orders
 FOR EACH ROW
 EXECUTE FUNCTION notify_centralhub_order();
 
