@@ -46,6 +46,10 @@ export async function createOrder(orderData: CreateOrderData) {
     const { data: session } = await supabase.auth.getSession();
     const userId = session?.session?.user?.id || null;
 
+    // Ensure subtotal and total are calculated correctly from items
+    const subtotal = orderData.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+    const total = subtotal + orderData.delivery_fee;
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -57,9 +61,9 @@ export async function createOrder(orderData: CreateOrderData) {
         delivery_address: orderData.delivery_address,
         delivery_city: orderData.delivery_city,
         delivery_postcode: orderData.delivery_postcode,
-        subtotal: orderData.subtotal,
+        subtotal: subtotal,
         delivery_fee: orderData.delivery_fee,
-        total: orderData.total,
+        total: total,
         payment_method: orderData.payment_method,
         payment_status: 'pending',
         order_status: 'pending',

@@ -142,6 +142,7 @@ Deno.serve(async (req: Request) => {
         delivery_address:   orderData.delivery_address,
         delivery_city:      orderData.delivery_city,
         delivery_postcode:  orderData.delivery_postcode,
+        subtotal:           serverSubtotal,
         delivery_fee:       deliveryFee,
         wallet_amount:      orderData.wallet_amount || 0,
         total:              serverTotal,
