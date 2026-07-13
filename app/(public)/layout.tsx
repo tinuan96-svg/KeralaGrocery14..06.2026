@@ -7,8 +7,7 @@ import MobileNav from '@/components/layout/MobileNav';
 import FloatingCartButton from '@/components/layout/FloatingCartButton';
 import CookieBanner from '@/components/layout/CookieBanner';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
-import KGQuickMenu from '@/components/layout/KGQuickMenu';
-import AiAssistant from '@/components/layout/AiAssistant';
+import AIAssistant from '@/components/layout/AIAssistant';
 import { StickyMiniCart } from '@/components/layout/CartEnhancements';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -32,7 +31,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       </main>
       <Footer />
       <FloatingCartButton />
-      <AiAssistant />
+      <AIAssistant />
       <StickyMiniCart />
       <MobileNav />
       <CookieBanner />
