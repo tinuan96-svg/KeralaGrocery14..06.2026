@@ -302,6 +302,9 @@ export default function AiAssistant() {
                 height={80}
                 className="object-contain drop-shadow-2xl"
                 priority
+                onError={(e) => {
+                  (e.currentTarget as any).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👩‍💼%3C/text%3E%3C/svg%3E";
+                }}
               />
 
               {/* Status Indicator */}
@@ -331,7 +334,16 @@ export default function AiAssistant() {
                   transition={{ duration: 2, repeat: Infinity }}
                   className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center overflow-hidden"
                 >
-                  <Image src="/ai-character.png" alt="" width={40} height={40} className="object-contain mt-1" />
+                  <Image
+                    src="/ai-character.png"
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="object-contain mt-1"
+                    onError={(e) => {
+                      (e.currentTarget as any).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👩‍💼%3C/text%3E%3C/svg%3E";
+                    }}
+                  />
                 </motion.div>
                 <div>
                   <h3 className="font-bold text-sm">Kerala Guide</h3>
