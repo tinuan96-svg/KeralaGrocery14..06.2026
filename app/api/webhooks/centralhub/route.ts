@@ -182,11 +182,11 @@ export async function POST(req: NextRequest) {
       }
 
       // Immediate revalidation for storefront
-      if (existing?.slug) {
-        revalidatePath(`/products/${existing.slug}`);
+      if (existingProduct?.slug) {
+        revalidatePath(`/products/${existingProduct.slug}`);
       }
-      if (productData.slug) {
-        revalidatePath(`/products/${productData.slug}`);
+      if (upsertedProduct?.slug) {
+        revalidatePath(`/products/${upsertedProduct.slug}`);
       }
       revalidatePath('/products', 'layout');
       revalidatePath('/');
