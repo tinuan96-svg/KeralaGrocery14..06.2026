@@ -57,7 +57,11 @@ export function RealtimeSyncProvider({ children }: { children: React.ReactNode }
     try {
       const supabase = getSupabase();
       const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token ?? '';
+
+      // Only poll if we have a session, to avoid 401 errors for guests
+      if (!session) return;
+
+      const token = session.access_token;
       const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/centralhub-realtime`;
       await fetch(url, {
         method: 'POST',

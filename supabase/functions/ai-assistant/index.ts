@@ -36,7 +36,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        stream: true,
+        stream: false, // Explicitly disable streaming for the tool-choice phase
         messages: [
           {
             role: "system",
@@ -98,9 +98,13 @@ Deno.serve(async (req: Request) => {
       })
     });
 
-    const data = await response.json();
-    if (data.error) throw new Error(`OpenAI Error: ${data.error.message}`);
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("OpenAI Initial Error:", errorBody);
+      throw new Error(`OpenAI Error: ${response.status} ${errorBody}`);
+    }
 
+    const data = await response.json();
     const message = data.choices[0].message;
 
     // 2. Handle Tool Calls
@@ -159,8 +163,19 @@ Deno.serve(async (req: Request) => {
       const finalResponse = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { "Authorization": `Bearer ${openAiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "gpt-4o-mini", messages: toolMessages })
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: toolMessages,
+          stream: false // Explicitly disable streaming for the final response
+        })
       });
+
+      if (!finalResponse.ok) {
+        const errorBody = await finalResponse.text();
+        console.error("OpenAI Final Error:", errorBody);
+        throw new Error(`OpenAI Final Error: ${finalResponse.status} ${errorBody}`);
+      }
+
       const finalData = await finalResponse.json();
       return new Response(JSON.stringify({ message: finalData.choices[0].message, actions }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

@@ -27,13 +27,21 @@ export default function AuthCallbackPage() {
 
     // Give supabase-js up to 5 seconds to exchange the code / parse the hash.
     // onAuthStateChange will fire SIGNED_IN once the exchange is complete.
+    let isRedirecting = false;
+
+    const handleRedirect = (session: any) => {
+      if (isRedirecting) return;
+      isRedirecting = true;
+
+      const next = sessionStorage.getItem('kg_oauth_redirect') ?? '/account';
+      sessionStorage.removeItem('kg_oauth_redirect');
+      router.replace(next);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        subscription.unsubscribe();
-        // If the app set a post-login redirect, honour it; otherwise go to /account
-        const next = sessionStorage.getItem('kg_oauth_redirect') ?? '/account';
-        sessionStorage.removeItem('kg_oauth_redirect');
-        router.replace(next);
+        if (subscription) subscription.unsubscribe();
+        handleRedirect(session);
       }
     });
 
@@ -41,16 +49,14 @@ export default function AuthCallbackPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         subscription.unsubscribe();
-        const next = sessionStorage.getItem('kg_oauth_redirect') ?? '/account';
-        sessionStorage.removeItem('kg_oauth_redirect');
-        router.replace(next);
+        handleRedirect(session);
       }
     });
 
     // Hard timeout — if nothing happens in 8s, send to /account anyway
     const timeout = setTimeout(() => {
       subscription.unsubscribe();
-      router.replace('/account');
+      if (!isRedirecting) router.replace('/account');
     }, 8000);
 
     return () => {

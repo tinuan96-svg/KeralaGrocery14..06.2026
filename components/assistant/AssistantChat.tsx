@@ -89,10 +89,31 @@ export default function AssistantChat() {
       const decoder = new TextDecoder();
       let accumulatedText = "";
 
-      setMessages(prev => [...prev, { role: 'assistant', content: "" }]);
-      setEmotion('talking');
+      const contentType = response.headers.get('Content-Type');
+      const isJson = contentType?.includes('application/json');
 
-      if (reader) {
+      if (isJson) {
+        const data = await response.json();
+        const content = data.message?.content || "";
+
+        // Handle actions if present
+        if (data.actions) {
+          data.actions.forEach((action: any) => {
+            if (action.type === 'RECOMMEND_PRODUCT') {
+              setRecommendedProducts(prev => [...prev, action.product]);
+            } else if (action.type === 'ORDER_INFO') {
+              setOrderInfo(action.order);
+            } else if (action.type === 'RECOMMEND_RECIPE') {
+              setRecommendedRecipes(prev => [...prev, action.recipe]);
+            }
+          });
+        }
+
+        setMessages(prev => [...prev, { role: 'assistant', content }]);
+      } else if (reader) {
+        setMessages(prev => [...prev, { role: 'assistant', content: "" }]);
+        setEmotion('talking');
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
