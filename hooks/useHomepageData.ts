@@ -65,10 +65,9 @@ export function useHomepageData(): HomepageData {
     ]).then(([newestRes, topPriceRes, page2Res, budgetRes, cats]) => {
       if (cancelled) return;
 
-      const seen = new Set<string>();
       const dedup = (items: RpcProduct[]) =>
         items
-          .filter((p) => p.in_stock && !seen.has(p.id) && (seen.add(p.id), true))
+          .filter((p) => !seen.has(p.id) && (seen.add(p.id), true))
           .map(toProductWithDetails);
 
       setTrending(dedup(newestRes.products));

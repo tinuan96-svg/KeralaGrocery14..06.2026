@@ -28,7 +28,7 @@ export default function DiscoverMoreFeed() {
         sort: 'newest',
         status: 'active',
       });
-      const incoming = result.products.filter((p) => p.in_stock);
+      const incoming = result.products;
       setProducts((prev) => {
         const seen = new Set(prev.map((p) => p.id));
         return [...prev, ...incoming.filter((p) => !seen.has(p.id))];

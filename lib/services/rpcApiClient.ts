@@ -130,7 +130,7 @@ function mapRow(
     status:            'active',
     created_at:      (row.created_at as string | null) ?? null,
     discount_pct:    discountPct,
-    in_stock:        true,
+    in_stock:        Number(row.stock ?? row.stock_quantity ?? 0) > 0,
     display_title:   displayTitle,
   };
 }
