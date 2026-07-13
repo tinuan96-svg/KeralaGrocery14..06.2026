@@ -108,10 +108,10 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const description = `${rawDesc.substring(0, 160)}... Order today for Next Day Delivery across London and the UK.`;
   const title = `${name}${brand ? ` | ${brand}` : ''} | Kerala Groceries UK`;
   const canonicalUrl = `https://keralagrocery.com/products/${params.slug}`;
-  const effectiveImage = p.image_main ?? p.image_url;
-  const ogImage = effectiveImage
-    ? [{ url: effectiveImage, width: 800, height: 800, alt: name }]
-    : [{ url: 'https://keralagrocery.com/logo_KG_Trans.png', alt: 'Kerala Groceries UK' }];
+
+  // Use dynamic OG image for products
+  const ogImageUrl = `https://keralagrocery.com/api/og/product?slug=${params.slug}`;
+  const ogImage = [{ url: ogImageUrl, width: 1200, height: 630, alt: name }];
 
   return {
     title,

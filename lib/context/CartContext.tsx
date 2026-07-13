@@ -5,6 +5,9 @@ import React, {
   useCallback, useMemo, useRef,
 } from 'react';
 
+import { getSupabase } from '@/lib/supabase/client';
+import { useAuth } from './AuthContext';
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -101,6 +104,7 @@ const CartDataContext = createContext<CartData | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { cart: [], isHydrated: false });
+  const { user } = useAuth();
 
   // hydrate from localStorage once
   useEffect(() => {
@@ -111,6 +115,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'HYDRATE', cart: [] });
     }
   }, []);
+
+  // Sync Cart to Supabase when user is logged in
+  useEffect(() => {
+    if (!user || !state.isHydrated) return;
+
+    const syncCart = async () => {
+      const supabase = getSupabase();
+
+      // 1. Clear existing items for this user to avoid duplicates and handle deletions
+      // (This is a simple sync strategy; for production, a delta-based approach is better)
+      await supabase.from('cart_items').delete().eq('user_id', user.id);
+
+      // 2. Insert current items
+      if (state.cart.length > 0) {
+        const itemsToInsert = state.cart.map(item => ({
+          user_id: user.id,
+          product_id: item.id,
+          quantity: item.quantity,
+          updated_at: new Date().toISOString()
+        }));
+
+        await supabase.from('cart_items').insert(itemsToInsert);
+      }
+    };
+
+    const timer = setTimeout(syncCart, 2000); // Debounce sync by 2 seconds
+    return () => clearTimeout(timer);
+  }, [state.cart, state.isHydrated, user]);
 
   // persist on change
   const cartRef = useRef(state.cart);
