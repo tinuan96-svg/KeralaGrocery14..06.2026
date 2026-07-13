@@ -329,7 +329,6 @@ export default function RpcProductListingPage() {
           ) : (
             <>
               {search ? `Results for "${search}"` : 'All Products'}
-              {totalPages > 1 && ` — page ${page} of ${totalPages}`}
             </>
           )}
         </div>
@@ -374,8 +373,6 @@ export default function RpcProductListingPage() {
             ))}
           </div>
         )}
-
-        <Pagination page={page} totalPages={totalPages} onPage={goToPage} />
       </div>
     </div>
   );

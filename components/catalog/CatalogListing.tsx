@@ -11,7 +11,7 @@ import {
 import CatalogProductCard from './CatalogProductCard';
 import CatalogSkeleton from './CatalogSkeleton';
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE = 2000;
 
 function Pagination({ page, totalPages, onPage }: { page: number; totalPages: number; onPage: (p: number) => void }) {
   if (totalPages <= 1) return null;
@@ -248,7 +248,6 @@ export default function CatalogListing() {
           ) : (
             <>
               {search ? `Results for "${search}"` : 'Product Catalog'}
-              {totalPages > 1 && ` — page ${page} of ${totalPages}`}
             </>
           )}
         </div>
@@ -310,8 +309,6 @@ export default function CatalogListing() {
             ))}
           </div>
         )}
-
-        <Pagination page={page} totalPages={totalPages} onPage={setPage} />
       </div>
     </div>
   );
