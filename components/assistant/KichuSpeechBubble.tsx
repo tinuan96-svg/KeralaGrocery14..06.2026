@@ -18,9 +18,9 @@ export default function KichuSpeechBubble({ text, onClose }: Props) {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed bottom-[150px] right-6 sm:bottom-[170px] sm:right-10 z-[60] max-w-[220px] pointer-events-auto"
+          className="fixed bottom-[150px] left-6 sm:bottom-[170px] sm:left-10 z-[60] max-w-[220px] pointer-events-auto"
         >
-          <div className="relative bg-white border-2 border-[#0B5D3B] rounded-[2rem] rounded-br-none shadow-2xl p-4 pr-10">
+          <div className="relative bg-white border-2 border-[#0B5D3B] rounded-[2rem] rounded-bl-none shadow-2xl p-4 pr-10">
             <p className="text-xs sm:text-sm font-bold text-gray-800 leading-tight italic">
               {text}
             </p>
@@ -32,8 +32,8 @@ export default function KichuSpeechBubble({ text, onClose }: Props) {
               <X className="w-3 h-3" />
             </button>
 
-            {/* Tail pointing to Kichu on the right */}
-            <div className="absolute -bottom-2 right-4 w-6 h-6 bg-white border-r-2 border-b-2 border-[#0B5D3B] rotate-45" />
+            {/* Tail pointing to Kichu on the left */}
+            <div className="absolute -bottom-2 left-4 w-6 h-6 bg-white border-r-2 border-b-2 border-[#0B5D3B] rotate-45" />
           </div>
         </motion.div>
       )}

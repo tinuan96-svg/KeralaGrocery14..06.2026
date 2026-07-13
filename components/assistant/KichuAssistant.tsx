@@ -31,7 +31,7 @@ function KichuAssistantContent() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-[100] flex flex-col items-end pointer-events-none sm:right-8">
+    <div className="fixed bottom-5 left-5 z-[100] flex flex-col items-start pointer-events-none sm:left-8">
       <div className="pointer-events-auto">
         <KichuSpeechBubble text={bubbleText} onClose={() => setBubbleText(null)} />
         <KichuAvatar
