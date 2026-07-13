@@ -6,11 +6,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/lib/context/CartContext';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
+
+const SUGGESTIONS = [
+  "Where is my order?",
+  "Delivery charges?",
+  "Spices for Fish Curry?",
+  "Matta Rice in stock?",
+  "How does the Wallet work?"
+];
 
 interface Action {
   type: 'RECOMMEND_PRODUCT' | 'RECOMMEND_RECIPE';
@@ -70,6 +79,43 @@ export default function AiAssistant() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+    // Use a slight timeout to ensure state update before sending if needed,
+    // or just call a modified send function.
+    // For simplicity, let's just trigger the send logic directly.
+    const userMessage: Message = { role: 'user', content: suggestion };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ai-assistant`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ messages: [...messages, userMessage] })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.message.content }]);
+      }
+      if (data.actions) {
+        const prods = data.actions.filter((a: any) => a.type === 'RECOMMEND_PRODUCT').map((a: any) => a.product);
+        const recs = data.actions.filter((a: any) => a.type === 'RECOMMEND_RECIPE').map((a: any) => a.recipe);
+        setRecommendedProducts(prods);
+        setRecommendedRecipes(recs);
+      }
+    })
+    .catch(error => {
+      console.error('AI Error:', error);
+      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having a bit of a moment. Could you try again?" }]);
+    })
+    .finally(() => setIsLoading(false));
   };
 
   return (
@@ -200,6 +246,21 @@ export default function AiAssistant() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Suggestions */}
+            {!isLoading && messages.length < 4 && (
+              <div className="px-4 py-2 bg-gray-50 flex gap-2 overflow-x-auto scrollbar-hide border-t border-gray-100">
+                {SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => handleSuggestionClick(s)}
+                    className="flex-shrink-0 px-3 py-1.5 bg-white border border-green-100 rounded-full text-[10px] font-bold text-[#0B5D3B] hover:bg-green-50 transition-colors shadow-sm"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Input area */}
             <div className="p-4 bg-white border-t border-gray-100">
