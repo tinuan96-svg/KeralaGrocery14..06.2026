@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ShoppingCart, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/lib/context/CartContext';
+import { getSupabase } from '@/lib/supabase/client';
 import { getProducts } from '@/lib/services/rpcApiClient';
 import type { RecipeIngredient } from '@/lib/services/recipeService';
 
@@ -19,28 +20,64 @@ export default function RecipeCartActions({ ingredients }: Props) {
   const handleAddAll = async () => {
     setIsAdding(true);
     try {
-      // For each ingredient, try to find the actual product in the DB
-      // In a production app, we would link productId directly, but here we
-      // search by name for maximum compatibility with current DB state.
+      const supabase = getSupabase();
+
       const addPromises = ingredients.map(async (ing) => {
-        const { products } = await getProducts({ search: ing.name, limit: 1, status: 'active' });
-        if (products && products.length > 0) {
-          const p = products[0];
+        let product: any = null;
+
+        // 1. Try to find by specific productId if provided
+        if (ing.productId) {
+          const { data } = await supabase
+            .from('products')
+            .select('id, name, price, slug, image_url, image_main')
+            .eq('id', ing.productId)
+            .eq('approval_status', 'approved')
+            .eq('visibility_status', true)
+            .maybeSingle();
+          product = data;
+        }
+
+        // 2. Fallback: Search by name if not found or no ID
+        if (!product) {
+          const { products } = await getProducts({
+            search: ing.name,
+            limit: 1,
+            status: 'active'
+          });
+          if (products && products.length > 0) {
+            const p = products[0];
+            product = {
+              id: p.id,
+              name: p.display_title,
+              price: p.price,
+              slug: p.slug,
+              image_url: p.image_url
+            };
+          }
+        }
+
+        if (product) {
           addToCart({
-            id: p.id,
-            name: p.display_title,
-            price: p.price,
-            image_url: p.image_url ?? undefined,
-            slug: p.slug ?? p.id,
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image_url: product.image_url || product.image_main || undefined,
+            slug: product.slug || product.id,
           });
           return true;
         }
         return false;
       });
 
-      await Promise.all(addPromises);
-      setIsSuccess(true);
-      setTimeout(() => setIsSuccess(false), 3000);
+      const results = await Promise.all(addPromises);
+      const addedCount = results.filter(Boolean).length;
+
+      if (addedCount > 0) {
+        setIsSuccess(true);
+        setTimeout(() => setIsSuccess(false), 3000);
+      } else {
+        // Handle case where no products were found
+      }
     } catch (err) {
       console.error('Error adding recipe ingredients:', err);
     } finally {
