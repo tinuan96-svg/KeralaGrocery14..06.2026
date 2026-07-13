@@ -16,7 +16,7 @@ export default function AIAssistant() {
   return (
     <AssistantProvider>
       <div
-        className="fixed bottom-12 right-6 z-[100] flex flex-col items-end pointer-events-none sm:right-10"
+        className="fixed bottom-12 left-6 z-[100] flex flex-col items-start pointer-events-none sm:left-10"
         style={{ pointerEvents: 'auto' }}
       >
         <AssistantBubble />
