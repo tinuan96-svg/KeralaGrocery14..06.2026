@@ -120,7 +120,9 @@ export default function ProductEditModal({ product, onClose, onSave }: Props) {
     const s = parseFloat(sp);
     const m = parseFloat(mk);
     if (!isNaN(s) && !isNaN(m) && s > 0) {
-      return (Math.round(s * (1 + m / 100) * 100) / 100).toFixed(2);
+      const raw = s * (1 + m / 100);
+      // Round up to nearest 0.10
+      return (Math.ceil(raw * 10) / 10).toFixed(2);
     }
     return '';
   };

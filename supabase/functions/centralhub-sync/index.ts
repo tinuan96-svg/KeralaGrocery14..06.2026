@@ -81,7 +81,9 @@ const SYNC_FIELDS = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function applyMarkup(supplierPrice: number): number {
-  return Math.round(supplierPrice * 1.05 * 100) / 100;
+  const sellingPrice = supplierPrice * 1.05;
+  // Round up to nearest multiple of 0.10
+  return Math.ceil(sellingPrice * 10) / 10;
 }
 
 function slugify(text: string): string {

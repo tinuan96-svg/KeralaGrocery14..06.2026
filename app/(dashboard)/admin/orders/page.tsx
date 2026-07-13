@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, ChevronRight, Package, Clock, CircleCheck as CheckCircle, Circle as XCircle, RefreshCw } from 'lucide-react';
+import { ShoppingCart, ChevronRight, Package, Clock, CircleCheck as CheckCircle, Circle as XCircle, RefreshCw, MoreVertical, Edit2 } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase/client';
+import { updateOrderStatus } from '@/lib/actions/orders';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 2 }).format(n);
@@ -66,7 +74,25 @@ export default function AdminOrdersPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleUpdateStatus = async (orderNumber: string, status: any) => {
+    setLoading(true);
+    try {
+      const result = await updateOrderStatus(orderNumber, status);
+      if (result.success) {
+        toast.success(`Order #${orderNumber} set to ${status}`);
+        load();
+      } else {
+        toast.error(result.error || 'Update failed');
+      }
+    } catch (err) {
+      toast.error('Unexpected error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const FILTERS = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const STATUS_OPTIONS = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
   return (
     <div className="bg-gray-950 min-h-screen text-white">
@@ -134,7 +160,30 @@ export default function AdminOrdersPage() {
                       {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
-                  <p className="text-base font-black text-white tabular-nums flex-shrink-0">{fmt(order.total)}</p>
+
+                  <div className="flex items-center gap-4">
+                    <p className="text-base font-black text-white tabular-nums flex-shrink-0">{fmt(order.total)}</p>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-700 text-gray-400 transition-colors">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800 text-gray-300">
+                        <p className="text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 text-gray-500">Update Status</p>
+                        {STATUS_OPTIONS.map(s => (
+                          <DropdownMenuItem
+                            key={s}
+                            onClick={() => handleUpdateStatus(order.order_number, s)}
+                            className={`capitalize focus:bg-gray-800 focus:text-white cursor-pointer ${order.order_status === s ? 'text-emerald-500 font-bold' : ''}`}
+                          >
+                            {s}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               ))}
             </div>
