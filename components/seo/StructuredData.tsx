@@ -42,7 +42,11 @@ export function OrganizationSchema() {
       '@type': 'Country',
       name: 'United Kingdom',
     },
-    sameAs: [],
+    sameAs: [
+      'https://www.facebook.com/keralagroceryuk',
+      'https://www.instagram.com/keralagroceryuk',
+      'https://twitter.com/keralagroceryuk'
+    ],
   };
 
   return <StructuredData data={schema} />;
@@ -115,7 +119,11 @@ export function GroceryStoreSchema() {
       },
     ],
     hasMap: 'https://keralagrocery.com/contact',
-    sameAs: [],
+    sameAs: [
+      'https://www.facebook.com/keralagroceryuk',
+      'https://www.instagram.com/keralagroceryuk',
+      'https://twitter.com/keralagroceryuk'
+    ],
   };
 
   return <StructuredData data={schema} />;

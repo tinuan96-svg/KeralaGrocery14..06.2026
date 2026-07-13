@@ -5,6 +5,7 @@ import HomepageSections from '@/components/home/HomepageSections';
 import AmazonStyleGrid from '@/components/home/AmazonStyleGrid';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import { EmailCapture } from '@/components/home/EmailCapture';
+import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import dynamic from 'next/dynamic';
 
 const StickySearchBar = dynamic(
@@ -61,6 +62,7 @@ export default function HomePage() {
       </div>
 
       <SEOContent />
+      <LocalSEOFooter />
     </div>
   );
 }

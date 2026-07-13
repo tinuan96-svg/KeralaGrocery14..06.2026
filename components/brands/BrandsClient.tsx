@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, X, ChevronRight, TrendingUp, Tag } from 'lucide-react';
 
 export interface BrandEntry {
@@ -29,16 +30,17 @@ function BrandAvatar({
     .join('') || name.charAt(0).toUpperCase();
 
   return (
-    <div className={`${dim} rounded-2xl overflow-hidden border border-gray-100 bg-white flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow`}>
+    <div className={`${dim} rounded-2xl overflow-hidden border border-gray-100 bg-white flex-shrink-0 shadow-sm group-hover:shadow-md transition-shadow relative`}>
       {imageUrl ? (
-        <img
+        <Image
           src={imageUrl}
           alt={name}
-          loading="lazy"
-          className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300"
+          fill
+          className="object-contain p-2 group-hover:scale-110 transition-transform duration-300"
+          unoptimized
           onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = 'none';
-            (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+            const target = e.currentTarget as HTMLImageElement;
+            target.style.display = 'none';
           }}
         />
       ) : null}
@@ -215,13 +217,14 @@ export default function BrandsClient({ brands }: { brands: BrandEntry[] }) {
                       href={`/products?brand=${encodeURIComponent(brand.name)}`}
                       className="flex-shrink-0 snap-start group flex flex-col items-center gap-2.5 w-[100px] active:scale-95 transition-transform"
                     >
-                      <div className="w-[88px] h-[88px] rounded-[32px] overflow-hidden border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] flex items-center justify-center transition-all group-hover:shadow-xl group-hover:shadow-emerald-500/10 group-hover:-translate-y-1">
+                      <div className="w-[88px] h-[88px] rounded-[32px] overflow-hidden border border-gray-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] flex items-center justify-center transition-all group-hover:shadow-xl group-hover:shadow-emerald-500/10 group-hover:-translate-y-1 relative">
                         {brand.imageUrl ? (
-                          <img
+                          <Image
                             src={brand.imageUrl}
                             alt={brand.name}
-                            loading="lazy"
-                            className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-500"
+                            fill
+                            className="object-contain p-3 group-hover:scale-110 transition-transform duration-500"
+                            unoptimized
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#f0fdf4] to-[#dcfce7]">

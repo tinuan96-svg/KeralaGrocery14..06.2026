@@ -103,7 +103,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const rawDesc = p.short_description?.trim()
     || (p.description && p.description !== 'No description' ? stripHtml(p.description).substring(0, 200) : null)
     || fallbackDesc;
-  const description = rawDesc.substring(0, 200);
+  const description = `${rawDesc.substring(0, 160)}... Order today for Next Day Delivery across London and the UK.`;
   const title = `${name}${brand ? ` | ${brand}` : ''} | Kerala Groceries UK`;
   const canonicalUrl = `https://keralagrocery.com/products/${params.slug}`;
   const effectiveImage = p.image_main ?? p.image_url;
