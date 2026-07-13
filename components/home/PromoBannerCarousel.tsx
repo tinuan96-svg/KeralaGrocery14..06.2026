@@ -146,14 +146,14 @@ function BannerSlide({
           <Link
             href={banner.cta_link}
             onClick={onCtaClick}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold transition-all duration-200 active:scale-95 shadow-lg ${
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-md text-xs sm:text-sm font-black transition-all duration-300 active:scale-95 shadow-[0_2px_5px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_10px_rgba(0,0,0,0.2)] ${
               isDark
-                ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-black/20'
-                : 'bg-white text-gray-900 hover:bg-white/90 shadow-black/20'
+                ? 'bg-gray-900 text-white hover:bg-gray-800'
+                : 'bg-yellow-400 text-gray-900 hover:bg-yellow-500'
             }`}
           >
             {banner.cta_text}
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 

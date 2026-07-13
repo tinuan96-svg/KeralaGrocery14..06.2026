@@ -95,10 +95,10 @@ export default function AmazonStyleGrid() {
 
   return (
     <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         {cards.map((card) => (
-          <div key={card.id} className="bg-white p-4 sm:p-5 flex flex-col h-full shadow-[0_2px_12px_rgba(0,0,0,0.04)] rounded-2xl border border-gray-50">
-            <h2 className="text-[17px] sm:text-xl font-black text-gray-900 mb-4 tracking-tight leading-tight">{card.title}</h2>
+          <div key={card.id} className="bg-white p-4 sm:p-5 flex flex-col h-full shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-md border border-gray-200 hover:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23)] transition-shadow duration-300">
+            <h2 className="text-[18px] sm:text-xl font-bold text-gray-900 mb-4 tracking-tight leading-tight">{card.title}</h2>
 
             <div className="flex-1">
               {card.layout_type === 'grid_2x2' ? (

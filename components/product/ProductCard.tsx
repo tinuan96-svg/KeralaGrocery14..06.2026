@@ -155,12 +155,16 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
         </Link>
 
         {/* Price */}
-        <div className="flex items-center h-5 mb-1.5">
-          <span className="text-[13px] font-black text-[#0B5D3B] leading-none">
-            £{price.toFixed(2)}
+        <div className="flex items-baseline h-6 mb-1.5">
+          <span className="text-xs font-bold text-gray-900 mr-0.5 mt-0.5">£</span>
+          <span className="text-[17px] font-black text-gray-900 leading-none">
+            {Math.floor(price)}
+          </span>
+          <span className="text-[10px] font-black text-gray-900 leading-none align-top ml-0.5">
+            {(price % 1).toFixed(2).substring(2)}
           </span>
           {discount > 0 && (
-            <span className="text-[9px] text-gray-400 line-through leading-none ml-1">
+            <span className="text-[10px] text-gray-400 line-through leading-none ml-2">
               £{originalPrice.toFixed(2)}
             </span>
           )}

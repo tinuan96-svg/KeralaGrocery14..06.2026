@@ -44,7 +44,7 @@ const homepageFAQs = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen pb-20 md:pb-0" style={{ background: '#f4faf6' }}>
+    <div className="min-h-screen pb-20 md:pb-0 bg-[#f1f3f4]">
       <LocalBusinessSchema />
       <MerchantReturnPolicySchema />
       <ShippingPolicySchema />
@@ -62,13 +62,13 @@ export default function HomePage() {
       {/* Amazon-style content grid */}
       <AmazonStyleGrid />
 
+      <PersonalizedRecommendations />
+
       {/* Dynamic Local City Marketing Banner */}
       <LocalCityBanner />
 
       {/* All product sections in feed order */}
       <HomepageSections />
-
-      <PersonalizedRecommendations />
 
       <WhyChooseUs />
 
