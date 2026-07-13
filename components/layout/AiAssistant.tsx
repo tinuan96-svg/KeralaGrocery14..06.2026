@@ -271,36 +271,24 @@ export default function AiAssistant() {
               key="ai-character"
               initial={{ y: 20, opacity: 0 }}
               animate={{
-                y: [0, -8, 0],
+                y: [0, -4, 0],
                 opacity: 1
               }}
               transition={{
                 y: {
-                  duration: 3,
+                  duration: 2,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }
               }}
-              className="relative w-full h-full"
+              className="relative w-20 h-20 overflow-hidden rounded-full border-2 border-white shadow-2xl bg-white"
             >
-              {/* Hand Wave Animation */}
-              <motion.div
-                animate={{ rotate: [0, 15, 0, 15, 0] }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  repeatDelay: 3,
-                  ease: "easeInOut"
-                }}
-                className="absolute inset-0 z-10 origin-bottom-right pointer-events-none"
-              />
-
               <Image
                 src="/ai-character.png"
                 alt="AI Assistant"
-                width={80}
-                height={80}
-                className="object-contain drop-shadow-2xl"
+                fill
+                className="object-cover scale-[1.8]"
+                style={{ objectPosition: '20% 45%' }}
                 priority
                 onError={(e) => {
                   (e.currentTarget as any).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👩‍💼%3C/text%3E%3C/svg%3E";
@@ -308,9 +296,9 @@ export default function AiAssistant() {
               />
 
               {/* Status Indicator */}
-              <span className="absolute -top-1 -right-1 flex h-4 w-4">
+              <span className="absolute top-2 right-2 flex h-3 w-3 z-20">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-yellow-500 text-[8px] items-center justify-center font-bold text-green-950">AI</span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
               </span>
             </motion.div>
           )}
@@ -332,14 +320,15 @@ export default function AiAssistant() {
                 <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center overflow-hidden"
+                  className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white/20 shadow-inner"
                 >
                   <Image
                     src="/ai-character.png"
                     alt=""
-                    width={40}
-                    height={40}
-                    className="object-contain mt-1"
+                    width={80}
+                    height={80}
+                    className="object-cover scale-[2.2]"
+                    style={{ objectPosition: '20% 45%' }}
                     onError={(e) => {
                       (e.currentTarget as any).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👩‍💼%3C/text%3E%3C/svg%3E";
                     }}
