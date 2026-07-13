@@ -70,67 +70,80 @@ export default async function CategoriesPage() {
   const categories = data || [];
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      {/* Header */}
-      <div className="mb-10">
-        <p className="text-xs font-semibold text-green-600 uppercase tracking-widest mb-1">
-          Everything you need
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
-          Shop by Category
-        </h1>
-        <p className="text-gray-500 mt-2">
-          Explore our wide range of authentic Kerala products
-        </p>
+    <div className="min-h-screen bg-[#f8faf7] pb-20">
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-100 shadow-sm pt-10 pb-12">
+        <div className="container mx-auto px-4 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-[#0B5D3B] text-[11px] font-black uppercase tracking-widest mb-4">
+            <LayoutGrid className="w-3.5 h-3.5" />
+            Explore Our World
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black text-gray-900 leading-none tracking-tight mb-4">
+            Shop by Category
+          </h1>
+          <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base font-medium">
+            Discover thousands of authentic Kerala and Indian products carefully curated into easy-to-browse collections.
+          </p>
+        </div>
       </div>
 
-      {categories.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">No categories available at the moment.</div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {categories.map((category) => {
-            const config = CATEGORY_CONFIG[category.slug] ?? DEFAULT_CONFIG;
-            return (
-              <Link
-                key={category.id}
-                href={`/products?filter=${category.slug}`}
-                className={`
-                  group relative flex flex-col items-center text-center
-                  bg-gradient-to-br ${config.gradient}
-                  border-2 ${config.border}
-                  rounded-2xl p-4 pt-5
-                  transition-all duration-200
-                  hover:shadow-lg hover:-translate-y-0.5 hover:border-green-300
-                  cursor-pointer
-                `}
-              >
-                <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-3 text-3xl group-hover:scale-110 transition-transform duration-200">
-                  {config.emoji}
-                </div>
-                <span className={`text-sm font-bold ${config.text} leading-snug mb-1`}>
-                  {category.name}
-                </span>
-                <span className="text-[11px] text-gray-500 leading-tight mb-3">
-                  {config.description}
-                </span>
-                <span className={`text-[11px] font-semibold px-3 py-1 rounded-full ${config.badge} group-hover:bg-green-600 group-hover:text-white transition-colors duration-200`}>
-                  Shop now
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      <div className="container mx-auto px-4 -mt-6">
+        {categories.length === 0 ? (
+          <div className="text-center py-24 bg-white rounded-[32px] border border-gray-100 shadow-sm">
+             <div className="w-20 h-20 rounded-[30px] bg-gray-50 flex items-center justify-center mx-auto mb-4">
+               <Package className="h-8 w-8 text-gray-200" />
+             </div>
+             <p className="text-gray-900 font-black text-lg">No categories available</p>
+             <p className="text-gray-400 font-medium text-sm mt-1">We are updating our catalog. Please check back soon.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+            {categories.map((category) => {
+              const config = CATEGORY_CONFIG[category.slug] ?? DEFAULT_CONFIG;
+              return (
+                <Link
+                  key={category.id}
+                  href={`/products?filter=${category.slug}`}
+                  className={`
+                    group relative flex flex-col items-center text-center
+                    bg-white border border-gray-100
+                    rounded-[28px] p-5 pb-6
+                    transition-all duration-300
+                    hover:shadow-[0_20px_50px_rgba(11,93,59,0.08)] hover:-translate-y-1.5 hover:border-emerald-200
+                    cursor-pointer
+                  `}
+                >
+                  <div className={`w-16 h-16 rounded-[22px] bg-gradient-to-br ${config.gradient} shadow-sm flex items-center justify-center mb-4 text-3xl group-hover:scale-110 transition-transform duration-300 border border-white/50`}>
+                    {config.emoji}
+                  </div>
+                  <h3 className={`text-[15px] font-black ${config.text} leading-tight mb-1 group-hover:text-[#0B5D3B] transition-colors`}>
+                    {category.name}
+                  </h3>
+                  <p className="text-[11px] text-gray-400 font-bold uppercase tracking-tighter mb-4">
+                    {config.description}
+                  </p>
+                  <div className={`mt-auto inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider px-4 py-2 rounded-xl transition-all duration-300 ${config.badge} group-hover:bg-[#0B5D3B] group-hover:text-white group-hover:shadow-lg group-hover:shadow-emerald-500/20`}>
+                    Explore
+                    <ChevronRight className="w-3 h-3" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
-      <div className="mt-8 text-center">
-        <Link
-          href="/products"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-green-700 hover:text-green-800 transition-colors"
-        >
-          View all products
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        <div className="mt-16 text-center">
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm hover:bg-[#0B5D3B] hover:shadow-xl hover:shadow-emerald-500/20 transition-all active:scale-95"
+          >
+            Browse All Products
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     </div>
   );
 }
+
+import { LayoutGrid, Package, ChevronRight } from 'lucide-react';

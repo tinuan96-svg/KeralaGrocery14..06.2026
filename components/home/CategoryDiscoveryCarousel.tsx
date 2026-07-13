@@ -50,37 +50,34 @@ function CategoryChip({ item, priority }: { item: CategoryCarouselItem; priority
   return (
     <Link
       href={`/products?filter=${item.slug}`}
-      className="group flex flex-col items-center gap-1.5 flex-shrink-0"
-      style={{ width: 80 }}
+      className="group flex flex-col items-center gap-2 flex-shrink-0"
+      style={{ width: 85 }}
       draggable={false}
     >
-      <div className="relative w-[72px] h-[72px] rounded-2xl overflow-hidden ring-1 ring-black/[0.05] group-active:scale-95 transition-transform duration-150 shadow-sm">
+      <div className="relative w-[76px] h-[76px] rounded-[28px] overflow-hidden ring-1 ring-black/[0.03] group-active:scale-90 transition-all duration-300 shadow-[0_8px_20px_rgba(0,0,0,0.04)] group-hover:shadow-[0_12px_30px_rgba(11,93,59,0.12)] group-hover:-translate-y-1 bg-white">
+        <div
+          className="absolute inset-0 opacity-40 group-hover:opacity-100 transition-opacity duration-500"
+          style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}
+        />
         {item.hero_image ? (
-          <>
-            <div
-              className="absolute inset-0"
-              style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}
-            />
-            <img
-              src={item.hero_image}
-              alt={item.name}
-              loading={priority ? 'eager' : 'lazy'}
-              decoding="async"
-              draggable={false}
-              className="absolute inset-0 w-full h-full object-contain p-1.5 group-hover:scale-110 transition-transform duration-200"
-            />
-          </>
+          <img
+            src={item.hero_image}
+            alt={item.name}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
+            draggable={false}
+            className="absolute inset-0 w-full h-full object-contain p-2.5 group-hover:scale-110 transition-transform duration-500 z-10"
+          />
         ) : (
           <div
-            className="w-full h-full flex items-center justify-center text-2xl"
-            style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}
+            className="w-full h-full flex items-center justify-center text-2xl z-10 relative"
           >
             {g.emoji}
           </div>
         )}
       </div>
 
-      <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight line-clamp-2 w-full group-hover:text-[#0B5D3B] transition-colors duration-150 px-0.5">
+      <span className="text-[11px] font-black text-gray-900 text-center leading-tight line-clamp-2 w-full group-hover:text-[#0B5D3B] transition-colors duration-200 px-0.5 tracking-tight">
         {item.name}
       </span>
     </Link>
@@ -105,7 +102,7 @@ function AutoScrollRow({
   useEffect(() => {
     const track = trackRef.current;
     if (!track || items.length === 0) return;
-    const SPEED = 0.4;
+    const SPEED = 0.35;
     const tick = () => {
       if (!pausedRef.current && track) {
         if (reverse) {
@@ -131,7 +128,7 @@ function AutoScrollRow({
   return (
     <div
       ref={trackRef}
-      className="flex gap-4 overflow-x-auto scrollbar-hide pb-0.5"
+      className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 px-1"
       style={{ WebkitOverflowScrolling: 'touch' }}
     >
       {doubled.map((item, idx) => (
