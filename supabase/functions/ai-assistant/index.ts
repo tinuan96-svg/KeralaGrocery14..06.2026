@@ -115,16 +115,20 @@ Deno.serve(async (req: Request) => {
         if (functionName === "search_inventory") {
           const { data: p } = await supabase.rpc('search_products_fuzzy', { search_query: args.query, limit_val: 5 });
           toolResult = p || [];
-          actions = (p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p }));
+          actions.push(...(p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p })));
         } else if (functionName === "get_order_status") {
-          const { data: o } = await supabase.from('orders').select('*').eq('order_number', args.order_number).maybeSingle();
+          const { data: o } = await supabase.from('orders').select('id, order_number, order_status, total, created_at').eq('order_number', args.order_number).maybeSingle();
           toolResult = o || { error: "Not found" };
+          if (o) {
+            actions.push({ type: 'ORDER_INFO', order: o });
+          }
         } else if (functionName === "get_recipes") {
-          toolResult = [
-            { title: "Authentic Kerala Fish Curry", slug: "kerala-fish-curry", difficulty: "Medium", prepTime: "15 mins" },
-            { title: "Traditional Palakkadan Matta Rice", slug: "palakkadan-matta-rice-guide", difficulty: "Easy", prepTime: "5 mins" }
-          ].filter(r => r.title.toLowerCase().includes(args.query.toLowerCase()) || args.query.toLowerCase().includes('fish') || args.query.toLowerCase().includes('rice'));
-          actions = toolResult.map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r }));
+          const { data: r } = await supabase.from('recipes')
+            .select('*')
+            .or(`title.ilike.%${args.query}%,description.ilike.%${args.query}%`)
+            .limit(3);
+          toolResult = r || [];
+          actions.push(...(r || []).map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r })));
         }
         toolMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(toolResult) });
       }

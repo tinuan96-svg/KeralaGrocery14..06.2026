@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, ShoppingCart, Loader2, User, Sparkles } from 'lucide-react';
+import { Bot, X, Send, ShoppingCart, Loader2, User, Sparkles, Mic, MicOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCart, useCartData } from '@/lib/context/CartContext';
@@ -46,9 +46,36 @@ export default function AiAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [recommendedRecipes, setRecommendedRecipes] = useState<any[]>([]);
+  const [orderInfo, setOrderInfo] = useState<any | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Voice Recognition Setup
+  const startListening = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert("Voice recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new (window as any).webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-GB';
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      processMessage(transcript);
+    };
+
+    recognition.start();
+  };
 
   // Relationship-focused Greeting Logic
   useEffect(() => {
@@ -170,8 +197,11 @@ export default function AiAssistant() {
       if (data.actions) {
         const prods = data.actions.filter((a: any) => a.type === 'RECOMMEND_PRODUCT').map((a: any) => a.product);
         const recs = data.actions.filter((a: any) => a.type === 'RECOMMEND_RECIPE').map((a: any) => a.recipe);
+        const order = data.actions.find((a: any) => a.type === 'ORDER_INFO')?.order;
+
         setRecommendedProducts(prods);
         setRecommendedRecipes(recs);
+        if (order) setOrderInfo(order);
       }
     } catch (error) {
       console.error('AI Error:', error);
@@ -201,10 +231,10 @@ export default function AiAssistant() {
       <AnimatePresence>
         {nudge && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, x: 20 }}
+            initial={{ opacity: 0, scale: 0.8, x: -20 }}
             animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.8, x: 20 }}
-            className="fixed bottom-40 right-6 z-50 max-w-[200px] bg-white border border-green-100 rounded-2xl shadow-xl p-3 text-[11px] font-medium text-gray-800 leading-snug"
+            exit={{ opacity: 0, scale: 0.8, x: -20 }}
+            className="fixed bottom-40 left-6 z-50 max-w-[200px] bg-white border border-green-100 rounded-2xl shadow-xl p-3 text-[11px] font-medium text-gray-800 leading-snug"
           >
             <div className="relative">
               {nudge}
@@ -214,7 +244,7 @@ export default function AiAssistant() {
               >
                 <X className="w-3 h-3" />
               </button>
-              <div className="absolute top-full right-4 w-3 h-3 bg-white border-r border-b border-green-50 rotate-45 -mt-1.5" />
+              <div className="absolute top-full left-4 w-3 h-3 bg-white border-r border-b border-green-50 rotate-45 -mt-1.5" />
             </div>
           </motion.div>
         )}
@@ -223,7 +253,7 @@ export default function AiAssistant() {
       {/* Floating Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-24 right-6 z-50 w-14 h-14 bg-gradient-to-br from-emerald-500 to-[#0B5D3B] text-white rounded-full shadow-[0_10px_40px_rgba(11,93,59,0.3)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+        className="fixed bottom-24 left-6 z-50 w-14 h-14 bg-gradient-to-br from-emerald-500 to-[#0B5D3B] text-white rounded-full shadow-[0_10px_40px_rgba(11,93,59,0.3)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
       >
         {isOpen ? (
           <X className="w-6 h-6" />
@@ -246,7 +276,7 @@ export default function AiAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-40 right-6 z-50 w-[350px] sm:w-[400px] h-[550px] bg-white rounded-[2.5rem] shadow-2xl border border-green-100 flex flex-col overflow-hidden"
+            className="fixed bottom-40 left-6 z-50 w-[350px] sm:w-[400px] h-[550px] bg-white rounded-[2.5rem] shadow-2xl border border-green-100 flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="bg-[#0B5D3B] p-6 text-white flex items-center justify-between">
@@ -305,12 +335,27 @@ export default function AiAssistant() {
 
             {/* AI Product/Recipe Recommendations Tray */}
             <AnimatePresence>
-              {(recommendedProducts.length > 0 || recommendedRecipes.length > 0) && (
+              {(recommendedProducts.length > 0 || recommendedRecipes.length > 0 || orderInfo) && (
                 <motion.div
                   initial={{ y: 50, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   className="bg-white border-t border-green-50 p-4 flex gap-3 overflow-x-auto scrollbar-hide relative"
                 >
+                  {orderInfo && (
+                    <div className="flex-shrink-0 w-48 bg-[#0B5D3B] text-white rounded-2xl p-3 relative shadow-lg">
+                      <p className="text-[10px] font-bold opacity-80 mb-1">Order Summary</p>
+                      <h4 className="text-sm font-black mb-1">#{orderInfo.order_number}</h4>
+                      <p className="text-xs font-bold mb-2">{orderInfo.order_status.toUpperCase()}</p>
+                      <Link
+                        href={`/orders/${orderInfo.order_number}`}
+                        className="text-[10px] font-black bg-white text-[#0B5D3B] px-2 py-1 rounded-lg block text-center"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Track Detail
+                      </Link>
+                    </div>
+                  )}
+
                   {recommendedProducts.map((p) => (
                     <div key={p.id} className="flex-shrink-0 w-32 bg-gray-50 rounded-2xl p-2 border border-gray-100 relative group">
                       <div className="relative h-20 w-full mb-1">
@@ -355,7 +400,7 @@ export default function AiAssistant() {
                   ))}
 
                   <button
-                    onClick={() => { setRecommendedProducts([]); setRecommendedRecipes([]); }}
+                    onClick={() => { setRecommendedProducts([]); setRecommendedRecipes([]); setOrderInfo(null); }}
                     className="absolute top-1 right-1 bg-gray-200/50 rounded-full p-0.5 hover:bg-gray-300 transition-colors"
                   >
                     <X className="w-3 h-3 text-gray-500" />
@@ -382,18 +427,29 @@ export default function AiAssistant() {
             {/* Input area */}
             <div className="p-4 bg-white border-t border-gray-100">
               <form onSubmit={handleSend} className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={startListening}
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+                    isListening
+                      ? 'bg-red-500 text-white animate-pulse'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </button>
                 <div className="flex-1 relative">
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask for spices, rice, etc..."
+                    placeholder={isListening ? "Listening..." : "Ask for spices, rice, etc..."}
                     className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#0B5D3B] transition-all"
                   />
-                  <Sparkles className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500/50" />
+                  {!isListening && <Sparkles className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500/50" />}
                 </div>
                 <button
                   type="submit"
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim() || isLoading || isListening}
                   className="w-11 h-11 bg-[#0B5D3B] text-white rounded-2xl flex items-center justify-center disabled:opacity-50 transition-all active:scale-95"
                 >
                   <Send className="w-5 h-5" />

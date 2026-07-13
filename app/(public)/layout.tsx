@@ -32,7 +32,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
       </main>
       <Footer />
       <FloatingCartButton />
-      <KGQuickMenu />
       <AiAssistant />
       <StickyMiniCart />
       <MobileNav />
