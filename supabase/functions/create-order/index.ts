@@ -119,15 +119,18 @@ Deno.serve(async (req: Request) => {
     console.log(`[create-order] server-calculated total=£${serverTotal}`);
 
     // ── Generate order number ─────────────────────────────────────────────────
+    let orderNumber: string;
     const { data: orderNumberData, error: orderNumberError } = await supabase
-      .rpc("generate_order_number", { p_payment_status: orderData.payment_status });
+      .rpc("generate_order_number", { p_payment_status: orderData.payment_status || 'pending' });
 
     if (orderNumberError || !orderNumberData) {
-      console.error("[create-order] failed to generate order number:", orderNumberError);
-      return respond(500, { error: "Failed to generate order number" });
+      console.error("[create-order] RPC error generating order number:", orderNumberError);
+      // Fallback in edge function if RPC fails entirely to avoid blocking the insert
+      orderNumber = `KG-TMP-${Date.now()}`;
+    } else {
+      orderNumber = orderNumberData as string;
     }
 
-    const orderNumber = orderNumberData as string;
     const userId = orderData.user_id || null;
 
     // ── Insert order ──────────────────────────────────────────────────────────

@@ -2,16 +2,14 @@
 -- This migration ensures that generate_order_number exists with the correct signature and permissions.
 
 -- 1. Drop all possible existing versions to avoid conflicts
-DROP FUNCTION IF EXISTS public.generate_order_number();
-DROP FUNCTION IF EXISTS public.generate_order_number(text);
-DROP FUNCTION IF EXISTS public.generate_order_number(p_payment_status text);
+DROP FUNCTION IF EXISTS public.generate_order_number() CASCADE;
+DROP FUNCTION IF EXISTS public.generate_order_number(text) CASCADE;
 
 -- 2. Ensure all sequences exist in the public schema
-CREATE SEQUENCE IF NOT EXISTS public.order_number_seq START 5320;
-CREATE SEQUENCE IF NOT EXISTS public.order_number_seq_2026 START 1;
+CREATE SEQUENCE IF NOT EXISTS public.order_number_seq START 6000;
 CREATE SEQUENCE IF NOT EXISTS public.order_number_paid_v2_seq START 2026;
 
--- 3. Create the function with explicit schema and parameter names
+-- 3. Create the function with extremely robust error handling
 CREATE OR REPLACE FUNCTION public.generate_order_number(p_payment_status text DEFAULT 'pending')
 RETURNS text
 LANGUAGE plpgsql
@@ -22,33 +20,28 @@ DECLARE
   seq_val bigint;
 BEGIN
   IF p_payment_status = 'paid' THEN
-    -- Use the new paid sequence starting at 2026
     seq_val := nextval('public.order_number_paid_v2_seq');
     RETURN 'KG' || seq_val::text;
   ELSE
-    -- Use the existing pending sequence
     seq_val := nextval('public.order_number_seq');
     RETURN 'KG-2026-' || seq_val::text;
   END IF;
 EXCEPTION WHEN OTHERS THEN
-  -- Fallback to a timestamp-based number if sequences fail, to avoid blocking orders
-  RETURN 'KG-ERR-' || to_char(now(), 'YYYYMMDDHH24MISS');
+  -- Fallback to a random number to avoid blocking orders if sequences are locked
+  RETURN 'KG-' || (floor(random() * 900000) + 100000)::text;
 END;
 $$;
 
--- 4. Re-grant permissions explicitly
-REVOKE ALL ON FUNCTION public.generate_order_number(text) FROM PUBLIC;
+-- 4. Re-grant permissions explicitly to all roles
 GRANT EXECUTE ON FUNCTION public.generate_order_number(text) TO authenticated, anon, service_role;
-
--- 5. Sequences must be accessible to the roles if the function is called via RPC (even with security definer sometimes search_path or ownership issues arise)
 GRANT USAGE, SELECT ON SEQUENCE public.order_number_seq TO authenticated, anon, service_role;
-GRANT USAGE, SELECT ON SEQUENCE public.order_number_seq_2026 TO authenticated, anon, service_role;
 GRANT USAGE, SELECT ON SEQUENCE public.order_number_paid_v2_seq TO authenticated, anon, service_role;
 
--- 6. Also update the trigger function to be fully qualified
+-- 5. Update the trigger function to be fully qualified and robust
 CREATE OR REPLACE FUNCTION public.finalize_order_number()
 RETURNS TRIGGER AS $$
 BEGIN
+  -- If transitioning to paid and hasn't been assigned a success sequence number yet.
   IF NEW.payment_status = 'paid'
      AND (OLD.payment_status IS NULL OR OLD.payment_status != 'paid')
      AND (NEW.order_number = NEW.original_order_number OR NEW.original_order_number IS NULL) THEN
@@ -57,7 +50,13 @@ BEGIN
       NEW.original_order_number := NEW.order_number;
     END IF;
 
-    NEW.order_number := public.generate_order_number('paid');
+    -- Assign the new success sequence number (KG2026 format)
+    BEGIN
+      NEW.order_number := public.generate_order_number('paid');
+    EXCEPTION WHEN OTHERS THEN
+      -- In-trigger fallback
+      NEW.order_number := 'KG' || (floor(random() * 9000) + 2000)::text;
+    END;
   END IF;
   RETURN NEW;
 END;
