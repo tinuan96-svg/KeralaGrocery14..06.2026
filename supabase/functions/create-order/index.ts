@@ -134,12 +134,15 @@ Deno.serve(async (req: Request) => {
     const userId = orderData.user_id || null;
 
     // ── Insert order ──────────────────────────────────────────────────────────
+    // Note: 'original_order_number' is removed from the insert list to avoid
+    // PostgREST PGRST204 errors if the schema cache is stale.
+    // It is instead populated automatically by the 'trg_ensure_original_order_number'
+    // trigger in the database.
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id:            userId,
         order_number:       orderNumber,
-        original_order_number: orderNumber,
         customer_name:      orderData.customer_name,
         customer_email:     orderData.customer_email,
         customer_phone:     orderData.customer_phone,
