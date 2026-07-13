@@ -67,3 +67,15 @@ export const bubbleVariants: Variants = {
   },
   exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } }
 };
+
+export const shadowVariants: Variants = {
+  idle: {
+    scale: [1, 1.1, 1],
+    opacity: [0.2, 0.1, 0.2],
+    transition: {
+      duration: 5,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }
+  }
+};

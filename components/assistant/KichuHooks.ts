@@ -1,6 +1,6 @@
 'use client';
 
-import { useAssistant } from '../layout/AIAssistant/AssistantContext';
+import { useAssistant } from './AssistantContext';
 
 /**
  * Premium Kichu Hooks for external control

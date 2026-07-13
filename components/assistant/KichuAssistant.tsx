@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import KichuAvatar from './KichuAvatar';
 import KichuSpeechBubble from './KichuSpeechBubble';
-import AssistantChat from '../layout/AIAssistant/AssistantChat';
-import { AssistantProvider, useAssistant } from '../layout/AIAssistant/AssistantContext';
+import AssistantChat from './AssistantChat';
+import { AssistantProvider, useAssistant } from './AssistantContext';
 
 function KichuAssistantContent() {
   const { isOpen, setIsOpen, emotion, setEmotion, bubbleText, setBubbleText } = useAssistant();

@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion, useAnimation, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useAssistant } from '../AssistantContext';
-import { kichuVariants, shadowVariants } from '../AssistantAnimations';
+import { kichuVariants, shadowVariants } from '../KichuAnimations';
 
 export default function AssistantCharacter() {
   const { emotion, isOpen, setIsOpen, setEmotion, setBubbleText } = useAssistant();
