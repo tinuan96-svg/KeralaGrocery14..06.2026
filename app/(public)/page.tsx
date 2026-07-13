@@ -5,6 +5,7 @@ import HomepageSections from '@/components/home/HomepageSections';
 import AmazonStyleGrid from '@/components/home/AmazonStyleGrid';
 import LocalCityBanner from '@/components/home/LocalCityBanner';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
+import PersonalizedRecommendations from '@/components/product/PersonalizedRecommendations';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
@@ -66,6 +67,8 @@ export default function HomePage() {
 
       {/* All product sections in feed order */}
       <HomepageSections />
+
+      <PersonalizedRecommendations />
 
       <WhyChooseUs />
 
