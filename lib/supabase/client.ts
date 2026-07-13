@@ -3,19 +3,35 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 let browserClient: SupabaseClient | undefined;
 
 export function getSupabase(): SupabaseClient {
-  if (typeof window === 'undefined') {
-    throw new Error('getSupabase should only be called on the client side');
-  }
-
-  if (browserClient) {
-    return browserClient;
-  }
-
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase environment variables');
+  }
+
+  // Server-side: return a stateless client
+  if (typeof window === 'undefined') {
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'kerala-grocery-server-ssr',
+        },
+      },
+      db: {
+        schema: 'public',
+      },
+    });
+  }
+
+  // Client-side: return a cached stateful client
+  if (browserClient) {
+    return browserClient;
   }
 
   browserClient = createClient(supabaseUrl, supabaseAnonKey, {
