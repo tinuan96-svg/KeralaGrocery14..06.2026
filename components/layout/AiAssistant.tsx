@@ -45,10 +45,10 @@ export default function AiAssistant() {
     }
   }, [messages, isLoading]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const processMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: Message = { role: 'user', content: text };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -64,9 +64,15 @@ export default function AiAssistant() {
       });
 
       const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || `Error ${response.status}`);
+      }
+
       if (data.message) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.message.content }]);
       }
+
       if (data.actions) {
         const prods = data.actions.filter((a: any) => a.type === 'RECOMMEND_PRODUCT').map((a: any) => a.product);
         const recs = data.actions.filter((a: any) => a.type === 'RECOMMEND_RECIPE').map((a: any) => a.recipe);
@@ -75,48 +81,21 @@ export default function AiAssistant() {
       }
     } catch (error) {
       console.error('AI Error:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having a bit of a moment. Could you try again?" }]);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "I'm having trouble connecting to my brain right now. 🧠 Please ensure your OpenAI API Key is correctly configured in your Supabase Edge Function secrets."
+      }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setInput(suggestion);
-    // Use a slight timeout to ensure state update before sending if needed,
-    // or just call a modified send function.
-    // For simplicity, let's just trigger the send logic directly.
-    const userMessage: Message = { role: 'user', content: suggestion };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ai-assistant`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify({ messages: [...messages, userMessage] })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.message) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.message.content }]);
-      }
-      if (data.actions) {
-        const prods = data.actions.filter((a: any) => a.type === 'RECOMMEND_PRODUCT').map((a: any) => a.product);
-        const recs = data.actions.filter((a: any) => a.type === 'RECOMMEND_RECIPE').map((a: any) => a.recipe);
-        setRecommendedProducts(prods);
-        setRecommendedRecipes(recs);
-      }
-    })
-    .catch(error => {
-      console.error('AI Error:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having a bit of a moment. Could you try again?" }]);
-    })
-    .finally(() => setIsLoading(false));
+  const handleSend = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    processMessage(input);
   };
+
+  const handleSuggestionClick = (suggestion: string) => processMessage(suggestion);
 
   return (
     <>
@@ -265,7 +244,7 @@ export default function AiAssistant() {
             {/* Input area */}
             <div className="p-4 bg-white border-t border-gray-100">
               <form
-                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                onSubmit={handleSend}
                 className="flex items-center gap-2"
               >
                 <div className="flex-1 relative">

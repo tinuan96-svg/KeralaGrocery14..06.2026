@@ -111,48 +111,70 @@ Deno.serve(async (req: Request) => {
     });
 
     const data = await response.json();
-    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    if (data.error) throw new Error(`OpenAI Error: ${data.error.message || JSON.stringify(data.error)}`);
+
+    if (!data.choices?.length) {
+      throw new Error("OpenAI returned an empty response.");
+    }
 
     const message = data.choices[0].message;
 
     // 2. Handle Tool Calls if any
-    if (message.tool_calls) {
-      const toolCall = message.tool_calls[0];
-      const functionName = toolCall.function.name;
-      const args = JSON.parse(toolCall.function.arguments);
+    if (message.tool_calls && message.tool_calls.length > 0) {
+      console.log(`Processing ${message.tool_calls.length} tool calls...`);
 
-      let toolResult;
+      const toolMessages = [
+        ...messages,
+        message,
+      ];
+
       let actions: any[] = [];
 
-      if (functionName === "search_inventory") {
-        const { data: products } = await supabase.rpc('search_products_fuzzy', {
-          search_query: args.query,
-          limit_val: 5
+      for (const toolCall of message.tool_calls) {
+        const functionName = toolCall.function.name;
+        const args = JSON.parse(toolCall.function.arguments);
+        let toolResult;
+
+        if (functionName === "search_inventory") {
+          const { data: products } = await supabase.rpc('search_products_fuzzy', {
+            search_query: args.query,
+            limit_val: 5
+          });
+          toolResult = products || [];
+          const newActions = (products || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p }));
+          actions = [...actions, ...newActions];
+        } else if (functionName === "get_order_status") {
+          const { data: order } = await supabase
+            .from('orders')
+            .select('order_number, order_status, payment_status, customer_name, tracking_number, courier_name, created_at')
+            .eq('order_number', args.order_number)
+            .or(`customer_email.eq.${args.contact_info},customer_phone.eq.${args.contact_info}`)
+            .maybeSingle();
+
+          toolResult = order || { error: "Order not found or contact info doesn't match." };
+        } else if (functionName === "get_recipes") {
+          // Mock recipe results for now, matching the logic in recipeService.ts
+          toolResult = [
+            { title: "Authentic Kerala Fish Curry", slug: "kerala-fish-curry", difficulty: "Medium", prepTime: "15 mins" },
+            { title: "Traditional Palakkadan Matta Rice", slug: "palakkadan-matta-rice-guide", difficulty: "Easy", prepTime: "5 mins" }
+          ].filter(r =>
+            r.title.toLowerCase().includes(args.query.toLowerCase()) ||
+            args.query.toLowerCase().includes('fish') ||
+            args.query.toLowerCase().includes('rice')
+          );
+
+          const newActions = toolResult.map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r }));
+          actions = [...actions, ...newActions];
+        }
+
+        toolMessages.push({
+          role: "tool",
+          tool_call_id: toolCall.id,
+          content: JSON.stringify(toolResult)
         });
-        toolResult = products || [];
-        actions = (products || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p }));
-      } else if (functionName === "get_order_status") {
-        // Search order by number and verify contact info
-        const { data: order } = await supabase
-          .from('orders')
-          .select('order_number, order_status, payment_status, customer_name, tracking_number, courier_name, created_at')
-          .eq('order_number', args.order_number)
-          .or(`customer_email.eq.${args.contact_info},customer_phone.eq.${args.contact_info}`)
-          .maybeSingle();
-
-        toolResult = order || { error: "Order not found or contact info doesn't match." };
-      } else if (functionName === "get_recipes") {
-        // Find recipes from our service logic
-        // For now using the static mock data from our logic
-        toolResult = [
-          { title: "Authentic Kerala Fish Curry", slug: "kerala-fish-curry", difficulty: "Medium", prepTime: "15 mins" },
-          { title: "Traditional Palakkadan Matta Rice", slug: "palakkadan-matta-rice-guide", difficulty: "Easy", prepTime: "5 mins" }
-        ].filter(r => r.title.toLowerCase().includes(args.query.toLowerCase()) || args.query.toLowerCase().includes('fish') || args.query.toLowerCase().includes('rice'));
-
-        actions = toolResult.map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r }));
       }
 
-      // Second call to OpenAI with tool results
+      // Second call to OpenAI with all tool results
       const finalResponse = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -161,19 +183,16 @@ Deno.serve(async (req: Request) => {
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          messages: [
-            ...messages,
-            message,
-            {
-              role: "tool",
-              tool_call_id: toolCall.id,
-              content: JSON.stringify(toolResult)
-            }
-          ]
+          messages: toolMessages
         })
       });
 
       const finalData = await finalResponse.json();
+      if (finalData.error) throw new Error(`OpenAI Final Error: ${finalData.error.message}`);
+
+      if (!finalData.choices?.length) {
+        throw new Error("OpenAI returned an empty response after tool call.");
+      }
 
       return new Response(JSON.stringify({
         message: finalData.choices[0].message,
