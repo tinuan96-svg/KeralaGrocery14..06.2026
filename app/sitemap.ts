@@ -92,7 +92,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       supabase
         .from('products')
         .select('slug, created_at')
+        .eq('approval_status', 'approved')
         .eq('is_active', true)
+        .neq('is_deleted', true)
+        .neq('visibility_status', false)
+        .not('centralhub_product_id', 'is', null)
         .order('created_at', { ascending: false }),
       supabase
         .from('categories')

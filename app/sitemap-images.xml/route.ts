@@ -17,17 +17,22 @@ export async function GET() {
         auth: { persistSession: false, autoRefreshToken: false },
       });
       const { data } = await supabase
-        .from('v_storefront_products')
-        .select('product_slug, image_main, image_url, product_display_name, product_title')
-        .not('product_slug', 'is', null)
+        .from('products')
+        .select('slug, image_main, image_url, name')
+        .eq('approval_status', 'approved')
+        .eq('is_active', true)
+        .neq('is_deleted', true)
+        .neq('visibility_status', false)
+        .not('centralhub_product_id', 'is', null)
+        .not('slug', 'is', null)
         .limit(5000);
 
-      rows = (data ?? []).map((r: Record<string, unknown>) => ({
-        slug: r.product_slug as string,
+      rows = (data ?? []).map((r: any) => ({
+        slug: r.slug as string,
         image_main: r.image_main as string | null,
         image_url: r.image_url as string | null,
-        product_display_name: r.product_display_name as string | null,
-        product_title: r.product_title as string | null,
+        product_display_name: r.name as string | null,
+        product_title: r.name as string | null,
       }));
     } catch {
       // fall through to empty sitemap

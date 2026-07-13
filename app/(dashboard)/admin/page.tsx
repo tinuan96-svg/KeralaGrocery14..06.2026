@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { RefreshCw, TriangleAlert as AlertTriangle, ChevronRight, TrendingUp, ShoppingCart, Users, Package, Activity, CircleCheck as CheckCircle, ArrowUpRight, Bell, Zap, DollarSign, ChartBar as BarChart3, ClipboardCheck, Tag, Image as ImageIcon, Layers, Globe, Clock, ShieldCheck, Wifi, WifiOff, Star, Truck, LayoutGrid } from 'lucide-react';
+import { RefreshCw, TriangleAlert as AlertTriangle, ChevronRight, TrendingUp, ShoppingCart, Users, Package, Activity, CircleCheck as CheckCircle, ArrowUpRight, Bell, Zap, DollarSign, ChartBar as BarChart3, ClipboardCheck, Tag, Image as ImageIcon, Layers, Globe, Clock, ShieldCheck, Wifi, WifiOff, Star, Truck, LayoutGrid, ExternalLink } from 'lucide-react';
 import {
   fetchProfitSummary, fetchReserveData, fetchOrderKpis, fetchCentralhubStatus,
   type DateRange, type ProfitSummary, type ReserveData, type OrderKpis,
@@ -404,13 +404,21 @@ function HomepageControl({ loading }: { loading: boolean }) {
           </Link>
         ))}
       </div>
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-4 space-y-2">
         <Link
           href="/admin/centralhub-sync"
           className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-gray-700 text-xs font-bold text-gray-300 hover:text-white hover:border-gray-500 transition-colors"
         >
           Quick Edit Homepage <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
+        <a
+          href="/google-merchant-feed.xml"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 hover:text-white hover:border-gray-600 transition-colors"
+        >
+          Google Merchant Feed <ExternalLink className="w-3.5 h-3.5" />
+        </a>
       </div>
     </Card>
   );

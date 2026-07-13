@@ -9,6 +9,7 @@ import { RealtimeSyncProvider } from '@/lib/context/RealtimeSyncContext';
 import PerformanceHead from '@/components/layout/PerformanceHead';
 import { OrganizationSchema, WebSiteSchema } from '@/components/seo/StructuredData';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
+import { GoogleAdsRemarketing } from '@/components/analytics/GoogleAdsRemarketing';
 import ServiceWorkerRegistration from '@/components/layout/ServiceWorkerRegistration';
 import { CapacitorProvider } from '@/components/native/CapacitorProvider';
 import { AppUpdateGuard } from '@/components/native/AppUpdateGuard';
@@ -201,6 +202,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ServiceWorkerRegistration />
         <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_ID} />
+        <GoogleAdsRemarketing tagId={process.env.NEXT_PUBLIC_GOOGLE_ADS_ID} />
         <OfflineBanner />
         <ErrorBoundary>
           <AuthProvider>

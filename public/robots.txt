@@ -33,3 +33,4 @@ Disallow: /*?search=
 # Sitemaps
 Sitemap: https://keralagrocery.com/sitemap.xml
 Sitemap: https://keralagrocery.com/sitemap-images.xml
+Sitemap: https://keralagrocery.com/google-merchant-feed.xml
