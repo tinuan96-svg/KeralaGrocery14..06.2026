@@ -12,7 +12,6 @@ const FEATURED_BRANDS = [
   { name: 'Double Horse', color: 'from-red-500 to-red-700',    initials: 'DH' },
   { name: 'Eastern',      color: 'from-orange-500 to-amber-600', initials: 'EA' },
   { name: 'Ajmi',         color: 'from-green-600 to-emerald-700', initials: 'AJ' },
-  { name: 'Brahmins',     color: 'from-amber-600 to-yellow-700', initials: 'BR' },
   { name: 'Nirapara',     color: 'from-blue-600 to-cyan-700',   initials: 'NP' },
   { name: 'Tasty Nibbles',color: 'from-pink-500 to-rose-600',   initials: 'TN' },
 ];

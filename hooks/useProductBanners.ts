@@ -147,7 +147,6 @@ function toProduct(row: ProductRow, catMap: Record<string, LookupRow>, brdMap: R
 
 const BASE_FILTER = {
   approval_status: 'approved',
-  visibility_status: true,
   is_active: true,
 } as const;
 
@@ -194,7 +193,10 @@ export function useProductBanners(): ProductBannersData {
           .from('products')
           .select(SELECT)
           .match(BASE_FILTER)
-          .or('is_deleted.is.null,is_deleted.eq.false')
+          .neq('visibility_status', false)
+          .neq('is_deleted', true)
+          .not('centralhub_product_id', 'is', null)
+          .not('brand', 'ilike', 'Brahmins')
           .eq('is_bestseller', true)
           .order('sold_count', { ascending: false })
           .limit(BANNER_LIMIT),
@@ -202,7 +204,10 @@ export function useProductBanners(): ProductBannersData {
           .from('products')
           .select(SELECT)
           .match(BASE_FILTER)
-          .or('is_deleted.is.null,is_deleted.eq.false')
+          .neq('visibility_status', false)
+          .neq('is_deleted', true)
+          .not('centralhub_product_id', 'is', null)
+          .not('brand', 'ilike', 'Brahmins')
           .eq('is_new_arrival', true)
           .order('created_at', { ascending: false })
           .limit(BANNER_LIMIT),
@@ -210,7 +215,10 @@ export function useProductBanners(): ProductBannersData {
           .from('products')
           .select(SELECT)
           .match(BASE_FILTER)
-          .or('is_deleted.is.null,is_deleted.eq.false')
+          .neq('visibility_status', false)
+          .neq('is_deleted', true)
+          .not('centralhub_product_id', 'is', null)
+          .not('brand', 'ilike', 'Brahmins')
           .eq('is_featured', true)
           .limit(BANNER_LIMIT),
         readyToEatCat
@@ -218,7 +226,10 @@ export function useProductBanners(): ProductBannersData {
               .from('products')
               .select(SELECT)
               .match(BASE_FILTER)
-              .or('is_deleted.is.null,is_deleted.eq.false')
+              .neq('visibility_status', false)
+              .neq('is_deleted', true)
+              .not('centralhub_product_id', 'is', null)
+              .not('brand', 'ilike', 'Brahmins')
               .eq('category_id', readyToEatCat.id)
               .limit(BANNER_LIMIT)
           : Promise.resolve({ data: [] }),
@@ -226,7 +237,10 @@ export function useProductBanners(): ProductBannersData {
           .from('products')
           .select(SELECT)
           .match(BASE_FILTER)
-          .or('is_deleted.is.null,is_deleted.eq.false')
+          .neq('visibility_status', false)
+          .neq('is_deleted', true)
+          .not('centralhub_product_id', 'is', null)
+          .not('brand', 'ilike', 'Brahmins')
           .order('created_at', { ascending: false })
           .limit(BANNER_LIMIT * 2),
       ]);
