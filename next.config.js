@@ -7,7 +7,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  output: 'export',
   images: {
     loader: 'custom',
     loaderFile: './lib/utils/supabaseImageLoader.ts',
