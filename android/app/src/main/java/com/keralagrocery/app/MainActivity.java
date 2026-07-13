@@ -17,9 +17,12 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
-        getWindow().setStatusBarColor(Color.WHITE);
+        
+        // Match status bar to brand color (#0B5D3B) instead of WHITE
+        getWindow().setStatusBarColor(Color.parseColor("#0B5D3B"));
         View decorView = getWindow().getDecorView();
-        WindowCompat.getInsetsController(getWindow(), decorView).setAppearanceLightStatusBars(true);
+        // Use light status bar icons for the dark background
+        WindowCompat.getInsetsController(getWindow(), decorView).setAppearanceLightStatusBars(false);
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -54,8 +57,11 @@ public class MainActivity extends BridgeActivity {
         final WebView webView = getBridge().getWebView();
         if (webView == null) return;
 
-        // Reset User Agent to include our app identifier
-        webView.getSettings().setUserAgentString("Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36 KeralaGroceryApp/1.0.0");
+        // Append our app identifier to the default User Agent instead of hardcoding a fixed string
+        String defaultUA = webView.getSettings().getUserAgentString();
+        if (!defaultUA.contains("KeralaGroceryApp")) {
+            webView.getSettings().setUserAgentString(defaultUA + " KeralaGroceryApp/1.0.0");
+        }
 
         // Force Bottom Bar Visibility and 5-column layout exactly like the reference image
         final String js = "(function() {" +

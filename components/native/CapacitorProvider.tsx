@@ -46,9 +46,9 @@ export function CapacitorProvider({ children }: { children: ReactNode }) {
           document.documentElement.classList.add('is-native', `is-${plat}`);
 
           try {
-            // Set status bar style first (doesn't need page to load)
+            // Set status bar style to Dark (Light text) for the dark green background
             const { StatusBar, Style } = await import('@capacitor/status-bar');
-            await StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+            await StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
             if (plat === 'android') {
               await StatusBar.setBackgroundColor({ color: '#0B5D3B' }).catch(() => {});
             }
