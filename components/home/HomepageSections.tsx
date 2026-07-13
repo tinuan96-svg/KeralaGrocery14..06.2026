@@ -6,6 +6,8 @@ import TrendingNow from '@/components/home/TrendingNow';
 import LoyaltyBanner from '@/components/home/LoyaltyBanner';
 import KitchenEssentials from '@/components/home/KitchenEssentials';
 import MarketingBannerStrip from '@/components/home/MarketingBannerStrip';
+import QuickNavigation from '@/components/home/QuickNavigation';
+import TrustStrip from '@/components/home/TrustStrip';
 import { ProductGridSkeleton } from '@/components/product/ProductCardSkeleton';
 import { PersonalisedGreeting } from '@/components/layout/CartEnhancements';
 import type { Brand } from '@/lib/types/database';
@@ -107,6 +109,12 @@ export default function HomepageSections() {
     <>
       {/* Personalised greeting for logged-in users */}
       <PersonalisedGreeting />
+
+      {/* Quick Navigation for Mobile — instant access to top paths */}
+      <QuickNavigation />
+
+      {/* Trust signals & benefits */}
+      <TrustStrip />
 
       {/* 1. Flash Deals — highest urgency, first thing after hero */}
       {deals.length > 0 && <DealsSection products={deals} />}

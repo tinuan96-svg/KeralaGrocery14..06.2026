@@ -1,28 +1,25 @@
-import { Star, Truck, Gift, ShieldCheck } from 'lucide-react';
+'use client';
 
-const TRUST = [
-  { icon: Star,        label: '4.9 Rating',       sub: 'Verified reviews',  iconColor: '#b45309', bg: '#fffbeb' },
-  { icon: Truck,       label: 'Next Day Delivery', sub: 'Order by midnight', iconColor: '#0B5D3B', bg: '#f4faf6' },
-  { icon: Gift,        label: 'Cashback Rewards',  sub: 'Up to 15% back',    iconColor: '#0d9488', bg: '#f0fdfa' },
-  { icon: ShieldCheck, label: 'Secure Checkout',   sub: 'SSL encrypted',     iconColor: '#4f46e5', bg: '#eef2ff' },
+import { Truck, ShieldCheck, Award } from 'lucide-react';
+
+const BENEFITS = [
+  { icon: Truck, text: 'Next Day Delivery', sub: 'Across UK', color: 'text-blue-600' },
+  { icon: Award, text: '100% Authentic', sub: 'Kerala Sourced', color: 'text-[#0B5D3B]' },
+  { icon: ShieldCheck, text: 'Secure Payments', sub: 'SSL Encrypted', color: 'text-amber-600' },
 ];
 
 export default function TrustStrip() {
   return (
-    <section className="bg-white border-b border-[#d1ead9]">
-      {/* Desktop */}
-      <div className="hidden md:flex max-w-7xl mx-auto px-4 divide-x divide-[#d1ead9]">
-        {TRUST.map(({ icon: Icon, label, sub, iconColor, bg }) => (
-          <div key={label} className="flex items-center gap-3 px-5 py-3 flex-1">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: bg }}
-            >
-              <Icon style={{ color: iconColor, width: 16, height: 16 }} />
+    <section className="bg-white py-3 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+      <div className="flex items-center justify-between min-w-max md:min-w-0 md:justify-center md:gap-12 px-4">
+        {BENEFITS.map((b, i) => (
+          <div key={i} className="flex items-center gap-2.5 pr-6 last:pr-0 md:pr-0">
+            <div className={`w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center`}>
+              <b.icon className={`w-4 h-4 ${b.color}`} />
             </div>
             <div>
-              <p className="text-[12px] font-bold text-gray-900 leading-none">{label}</p>
-              <p className="text-[10px] text-gray-500 mt-0.5">{sub}</p>
+              <p className="text-[11px] font-black text-gray-900 leading-tight uppercase tracking-tight">{b.text}</p>
+              <p className="text-[9px] font-bold text-gray-400 leading-tight uppercase tracking-widest mt-0.5">{b.sub}</p>
             </div>
           </div>
         ))}
