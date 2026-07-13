@@ -1,0 +1,211 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { Bot, X, Send, ShoppingCart, Loader2, User, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { useCart } from '@/lib/context/CartContext';
+import Image from 'next/image';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface Action {
+  type: 'RECOMMEND_PRODUCT';
+  product: any;
+}
+
+export default function AiAssistant() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: 'Hi there! 👋 I am your Kerala Grocery assistant. Looking for something specific from home?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: Message = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ai-assistant`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({ messages: [...messages, userMessage] })
+      });
+
+      const data = await response.json();
+      if (data.message) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.message.content }]);
+      }
+      if (data.actions) {
+        const prods = data.actions.filter((a: any) => a.type === 'RECOMMEND_PRODUCT').map((a: any) => a.product);
+        setRecommendedProducts(prods);
+      }
+    } catch (error) {
+      console.error('AI Error:', error);
+      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having a bit of a moment. Could you try again?" }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Floating Toggle Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-24 right-6 z-50 w-14 h-14 bg-[#0B5D3B] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+      >
+        {isOpen ? <X className="w-6 h-6" /> : <Bot className="w-7 h-7" />}
+        <span className="absolute -top-1 -right-1 flex h-4 w-4">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-4 w-4 bg-yellow-500 text-[10px] items-center justify-center font-bold">AI</span>
+        </span>
+      </button>
+
+      {/* Chat Window */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-40 right-6 z-50 w-[350px] sm:w-[400px] h-[550px] bg-white rounded-[2.5rem] shadow-2xl border border-green-100 flex flex-col overflow-hidden"
+          >
+            {/* Header */}
+            <div className="bg-[#0B5D3B] p-6 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+                  <Bot className="w-6 h-6 text-yellow-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">Shopping Assistant</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                    <span className="text-[10px] text-green-100 font-medium">Powered by GPT-4</span>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-2 rounded-xl transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50">
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] p-3.5 rounded-2xl text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-[#0B5D3B] text-white rounded-tr-none'
+                      : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
+                  }`}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none shadow-sm flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-600 rounded-full animate-bounce" />
+                    <span className="w-1.5 h-1.5 bg-green-600 rounded-full animate-bounce [animation-delay:0.2s]" />
+                    <span className="w-1.5 h-1.5 bg-green-600 rounded-full animate-bounce [animation-delay:0.4s]" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* AI Product Recommendations Tray */}
+            <AnimatePresence>
+              {recommendedProducts.length > 0 && (
+                <motion.div
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="bg-white border-t border-green-50 p-4 flex gap-3 overflow-x-auto scrollbar-hide"
+                >
+                  {recommendedProducts.map((p) => (
+                    <div key={p.id} className="flex-shrink-0 w-32 bg-gray-50 rounded-2xl p-2 border border-gray-100 relative group">
+                      <div className="relative h-20 w-full mb-1">
+                        <Image
+                          src={p.image_main || p.image_url || '/placeholder.webp'}
+                          alt={p.name} fill
+                          className="object-contain"
+                        />
+                      </div>
+                      <p className="text-[10px] font-bold text-gray-800 truncate mb-1">{p.name}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-[#0B5D3B]">£{Number(p.price).toFixed(2)}</span>
+                        <button
+                          onClick={() => addToCart({
+                            id: p.id,
+                            name: p.name,
+                            price: p.price,
+                            slug: p.slug,
+                            image_url: p.image_main || p.image_url
+                          })}
+                          className="w-6 h-6 bg-[#0B5D3B] text-white rounded-lg flex items-center justify-center active:scale-90 transition-all"
+                        >
+                          <ShoppingCart className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setRecommendedProducts([])}
+                    className="absolute top-1 right-1 bg-gray-200 rounded-full p-0.5"
+                  >
+                    <X className="w-3 h-3 text-gray-500" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Input area */}
+            <div className="p-4 bg-white border-t border-gray-100">
+              <form
+                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                className="flex items-center gap-2"
+              >
+                <div className="flex-1 relative">
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask for spices, rice, etc..."
+                    className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#0B5D3B] transition-all"
+                  />
+                  <Sparkles className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500/50" />
+                </div>
+                <button
+                  type="submit"
+                  disabled={!input.trim() || isLoading}
+                  className="w-11 h-11 bg-[#0B5D3B] text-white rounded-2xl flex items-center justify-center disabled:opacity-50 transition-all active:scale-95"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
