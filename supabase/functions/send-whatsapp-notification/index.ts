@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const TRACKING_URL = "https://keralagrocery.co.uk/orders";
+const TRACKING_URL = "https://keralagrocery.com/orders";
 
 interface OrderItem {
   name: string;
