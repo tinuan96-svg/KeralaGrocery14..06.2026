@@ -3,13 +3,20 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Clock, ChefHat, Users, ChevronLeft, Utensils, ListChecks } from 'lucide-react';
-import { getRecipeBySlug } from '@/lib/services/recipeService';
+import { getRecipeBySlug, getRecipes } from '@/lib/services/recipeService';
 import RecipeCartActions from '@/components/recipes/RecipeCartActions';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 interface Props {
   params: { slug: string };
+}
+
+export async function generateStaticParams() {
+  const recipes = await getRecipes();
+  return recipes.map((recipe) => ({
+    slug: recipe.slug,
+  }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
