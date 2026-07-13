@@ -58,13 +58,13 @@ BEGIN
   payload := jsonb_build_object(
     'table', 'orders',
     'type', 'INSERT', -- Use INSERT type so CentralHub treats it as a fresh record update
-    'store_slug', 'malluspices',
+    'store_slug', 'keralagrocery',
     'record', to_jsonb(NEW) || jsonb_build_object(
       'items', items,
       'status', CASE WHEN NEW.order_status IN ('confirmed', 'processing') THEN 'confirmed' ELSE NEW.order_status END,
       'fulfillment_status', CASE WHEN NEW.order_status IN ('confirmed', 'processing') THEN 'confirmed' ELSE NEW.order_status END,
       'packing_status', CASE WHEN NEW.order_status IN ('confirmed', 'processing') THEN 'confirmed' ELSE 'pending' END,
-      'sync_store', 'malluspices',
+      'sync_store', 'keralagrocery',
       'sync_origin', 'local'
     )
   );

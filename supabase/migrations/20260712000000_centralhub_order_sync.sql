@@ -24,7 +24,7 @@ BEGIN
   payload := jsonb_build_object(
     'table', 'orders',
     'type', TG_OP,
-    'store_slug', 'keralagroceries',
+    'store_slug', 'keralagrocery',
     'record', to_jsonb(NEW) || jsonb_build_object('items', items)
   );
 
@@ -58,7 +58,7 @@ BEGIN
       body := jsonb_build_object(
         'table', 'orders',
         'type', 'INSERT',
-        'store_slug', 'keralagroceries',
+        'store_slug', 'keralagrocery',
         'record', to_jsonb(r) || jsonb_build_object('items', (
           SELECT jsonb_agg(jsonb_build_object(
             'product_id', product_id,
