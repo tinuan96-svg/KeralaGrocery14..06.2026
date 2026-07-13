@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import KichuAvatar from './KichuAvatar';
 import KichuSpeechBubble from './KichuSpeechBubble';
 import AssistantChat from './AssistantChat';
 import { AssistantProvider, useAssistant } from './AssistantContext';
+import { useCartData } from '@/lib/context/CartContext';
 
 function KichuAssistantContent() {
   const { isOpen, setIsOpen, emotion, setEmotion, bubbleText, setBubbleText } = useAssistant();
