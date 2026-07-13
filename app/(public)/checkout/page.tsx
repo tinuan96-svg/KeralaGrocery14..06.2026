@@ -212,20 +212,20 @@ export default function CheckoutPage() {
       if (error) throw error;
 
       const issues: string[] = [];
-      const updatedCart = [...cart];
       let cartChanged = false;
 
       products?.forEach(p => {
-        const cartItem = updatedCart.find(i => i.id === p.id);
+        const cartItem = cart.find(i => i.id === p.id);
         const available = p.stock_quantity ?? p.stock ?? 0;
 
         if (cartItem && cartItem.quantity > available) {
           cartChanged = true;
           if (available <= 0) {
             issues.push(`${p.name} is now out of stock and has been removed.`);
-            // Note: actual removal from state happens via clearCart/update in the next step
+            removeFromCart(p.id);
           } else {
             issues.push(`Only ${available} units of ${p.name} are available. We've updated your cart.`);
+            updateQuantity(p.id, available);
           }
         }
       });
@@ -233,7 +233,7 @@ export default function CheckoutPage() {
       if (cartChanged) {
         setStockError(issues.join(' '));
         toast({
-          title: 'Stock Update',
+          title: 'Cart Updated',
           description: issues.join(' '),
           variant: 'destructive',
           duration: 6000,
@@ -245,7 +245,7 @@ export default function CheckoutPage() {
       return true;
     } catch (err) {
       console.error('Stock validation error:', err);
-      return true; // Proceed on error to avoid blocking sales if Supabase is twitchy
+      return true;
     }
   };
 
