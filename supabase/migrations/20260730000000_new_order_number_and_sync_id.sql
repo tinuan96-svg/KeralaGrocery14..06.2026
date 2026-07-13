@@ -2,8 +2,12 @@
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS original_order_number text;
 
 -- 2. Update Order Number Generation
--- Paid: KG-2026-0001
--- Others: KG-5320
+-- Drop old versions to prevent signature mismatch/overloading errors
+DROP FUNCTION IF EXISTS generate_order_number();
+DROP FUNCTION IF EXISTS generate_order_number(text);
+
+-- Ensure sequences exist
+CREATE SEQUENCE IF NOT EXISTS order_number_seq START 5320;
 CREATE SEQUENCE IF NOT EXISTS order_number_seq_2026 START 1;
 
 CREATE OR REPLACE FUNCTION generate_order_number(p_payment_status text DEFAULT 'pending')
@@ -13,10 +17,15 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 BEGIN
+  -- ALL orders from now on should start with KG-2026
   IF p_payment_status = 'paid' THEN
+    -- Paid sequence: KG-2026-0001, KG-2026-0002...
     RETURN 'KG-2026-' || LPAD(nextval('order_number_seq_2026')::text, 4, '0');
   ELSE
-    RETURN 'KG-' || nextval('order_number_seq')::text;
+    -- Pending/Other sequence: KG-2026-5320, KG-2026-5321...
+    -- This keeps the "current numbering format" (the large number sequence)
+    -- but satisfies the requirement of starting with KG-2026.
+    RETURN 'KG-2026-' || nextval('order_number_seq')::text;
   END IF;
 END;
 $$;
@@ -25,13 +34,19 @@ $$;
 CREATE OR REPLACE FUNCTION finalize_order_number()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- If transitioning to paid and doesn't have the success format yet
-  IF NEW.payment_status = 'paid' AND (OLD.payment_status IS NULL OR OLD.payment_status != 'paid')
-     AND NEW.order_number NOT LIKE 'KG-2026-%' THEN
+  -- If transitioning to paid and hasn't been assigned a success sequence number yet.
+  -- We distinguish success numbers by their length/format (KG-2026-XXXX where XXXX is 4 digits)
+  -- or simply by checking if we have already updated the order_number from the original.
+  IF NEW.payment_status = 'paid'
+     AND (OLD.payment_status IS NULL OR OLD.payment_status != 'paid')
+     AND (NEW.order_number = NEW.original_order_number OR NEW.original_order_number IS NULL) THEN
 
-    -- Store the old number as the original reference
-    NEW.original_order_number := NEW.order_number;
-    -- Assign the new sequence number
+    -- If original_order_number was never set, set it now
+    IF NEW.original_order_number IS NULL THEN
+      NEW.original_order_number := NEW.order_number;
+    END IF;
+
+    -- Assign the new success sequence number (KG-2026-0001 format)
     NEW.order_number := generate_order_number('paid');
 
   END IF;
