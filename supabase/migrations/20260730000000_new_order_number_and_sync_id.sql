@@ -1,4 +1,7 @@
--- 1. Update Order Number Generation to KG-2026- format
+-- 1. Update Order Number Generation to KG-2026- format using a sequence
+-- Create a new sequence for the year 2026 if it doesn't exist
+CREATE SEQUENCE IF NOT EXISTS order_number_seq_2026 START 1;
+
 CREATE OR REPLACE FUNCTION generate_order_number()
 RETURNS text
 LANGUAGE plpgsql
@@ -7,17 +10,15 @@ SET search_path = public, pg_temp
 AS $$
 DECLARE
   date_part text;
-  sequence_num integer;
+  seq_val bigint;
 BEGIN
   -- We now use KG-YYYY- format as requested
-  date_part := '2026'; -- Hardcoded 2026 as per request, or we could use to_char(CURRENT_DATE, 'YYYY')
+  date_part := '2026'; -- Hardcoded 2026 as per request
 
-  -- Count orders starting with the new prefix to determine sequence
-  SELECT COUNT(*) + 1 INTO sequence_num
-  FROM orders
-  WHERE order_number LIKE 'KG-' || date_part || '-%';
+  -- Get next value from sequence (thread-safe)
+  seq_val := nextval('order_number_seq_2026');
 
-  RETURN 'KG-' || date_part || '-' || LPAD(sequence_num::text, 4, '0');
+  RETURN 'KG-' || date_part || '-' || LPAD(seq_val::text, 4, '0');
 END;
 $$;
 
