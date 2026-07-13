@@ -68,7 +68,16 @@ export async function GET() {
     const availability = (p.stock > 0 || p.stock_quantity > 0) ? 'in_stock' : 'out_of_stock';
     const condition = 'new';
     const brand = p.brand || 'Kerala Grocery';
-    const googleProductCategory = 'Food, Beverages & Tobacco > Food Items';
+
+    // Improved Google Product Categories for UK grocery
+    let googleProductCategory = 'Food, Beverages & Tobacco > Food Items';
+    if (p.category_name?.toLowerCase().includes('spice')) {
+      googleProductCategory = 'Food, Beverages & Tobacco > Food Items > Seasonings & Spices';
+    } else if (p.category_name?.toLowerCase().includes('rice')) {
+      googleProductCategory = 'Food, Beverages & Tobacco > Food Items > Grains, Rice & Cereal';
+    } else if (p.category_name?.toLowerCase().includes('snack')) {
+      googleProductCategory = 'Food, Beverages & Tobacco > Food Items > Snack Foods';
+    }
 
     return `    <item>
       <g:id>${p.id}</g:id>
@@ -82,6 +91,7 @@ export async function GET() {
       <g:brand>${escapeXml(brand)}</g:brand>
       <g:google_product_category>${escapeXml(googleProductCategory)}</g:google_product_category>
       <g:product_type>${escapeXml(p.category_name)}</g:product_type>
+      <g:identifier_exists>no</g:identifier_exists>
     </item>`;
   }).join('\n');
 

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useRpcProducts } from '@/hooks/useRpcProducts';
 import RpcProductCard from '@/components/product/RpcProductCard';
+import CategorySEOContent from '@/components/product/CategorySEOContent';
 import type { RpcSortOption } from '@/lib/services/rpcApiClient';
 import { useProductSync } from '@/hooks/useProductSync';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -373,6 +374,15 @@ export default function RpcProductListingPage() {
             ))}
           </div>
         )}
+
+        {/* SEO Category Content */}
+        {category && <CategorySEOContent category={category} />}
+
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPage={goToPage}
+        />
       </div>
     </div>
   );
