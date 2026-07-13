@@ -82,31 +82,26 @@ export const metadata: Metadata = {
   referrer: 'origin-when-cross-origin',
 
   title: {
-    default: 'Kerala Groceries UK | Buy Authentic Kerala & Indian Groceries Online',
-    template: '%s | Kerala Groceries UK',
+    default: 'Kerala Grocery UK | Buy Authentic Kerala Groceries Online',
+    template: '%s | Kerala Grocery UK',
   },
 
   description:
-    'Buy authentic Kerala groceries online in the UK. Fresh spices, rice, snacks, pickles, and traditional South Indian essentials. Fast Next Day UK delivery from Tasty Kerala Ltd.',
+    'The best Kerala Grocery online store in the UK. Shop authentic Kerala groceries: fresh spices, Matta rice, snacks, and pickles. Fast Next Day UK delivery.',
 
   keywords: [
-    'Kerala groceries UK',
+    'Kerala grocery',
     'Kerala grocery UK',
-    'buy Kerala groceries online',
-    'Indian groceries UK delivery',
+    'Kerala groceries UK',
+    'buy Kerala grocery online',
+    'Indian grocery delivery UK',
     'authentic Kerala food UK',
     'Kerala spices online UK',
-    'South Indian groceries UK',
-    'Indian grocery delivery UK',
-    'buy Indian groceries online UK',
+    'South Indian grocery UK',
     'Kerala snacks UK',
     'Kerala rice UK',
     'Kerala masala UK',
-    'Indian food delivery UK',
-    'online Indian grocery store UK',
-    'Kerala groceries London',
-    'Kerala groceries Manchester',
-    'Kerala groceries Birmingham',
+    'Kerala store UK',
   ],
 
   authors:   [{ name: 'Tasty Kerala Ltd', url: 'https://keralagrocery.com' }],

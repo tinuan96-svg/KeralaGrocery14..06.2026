@@ -17,9 +17,9 @@ export function OrganizationSchema() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     '@id': 'https://keralagrocery.com/#organization',
-    name: 'Kerala Groceries UK',
+    name: 'Kerala Grocery UK',
     legalName: 'Tasty Kerala Ltd',
-    alternateName: ['KG', 'Kerala Grocery UK'],
+    alternateName: ['KG', 'Kerala Grocery UK', 'Kerala Groceries UK'],
     url: 'https://keralagrocery.com',
     logo: {
       '@type': 'ImageObject',
@@ -70,9 +70,9 @@ export function WebSiteSchema() {
     '@type': 'WebSite',
     '@id': 'https://keralagrocery.com/#website',
     url: 'https://keralagrocery.com',
-    name: 'Kerala Groceries UK',
+    name: 'Kerala Grocery UK',
     description:
-      'Buy authentic Kerala and Indian groceries online for fast UK delivery. Spices, rice, snacks, pickles, and more.',
+      'The UK\'s #1 Kerala Grocery online store. Buy authentic Kerala groceries for fast UK delivery.',
     publisher: {
       '@id': 'https://keralagrocery.com/#organization',
     },

@@ -12,11 +12,11 @@ export default function LocalSEOFooter() {
     <section className="bg-white border-t border-gray-100 py-10 px-4">
       <div className="max-w-7xl mx-auto">
         <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">
-          Authentic Kerala Grocery Delivery Across the UK
+          Your Local Kerala Grocery Delivery Across the UK
         </h3>
         <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-          Kerala Grocery UK provides premium, authentic South Indian products to Malayali families and food lovers nationwide.
-          We offer fast, reliable delivery to all major cities including:
+          Kerala Grocery UK is your trusted partner for premium, authentic South Indian products.
+          We provide the fastest <strong>Kerala grocery</strong> delivery service to all major UK cities including:
         </p>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {CITIES.map(city => (

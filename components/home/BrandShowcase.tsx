@@ -42,7 +42,7 @@ export default function BrandShowcase({ brands }: BrandShowcaseProps) {
             </div>
             <div>
               <h2 className="text-[17px] font-black text-gray-900 leading-none tracking-tight">Trusted Brands</h2>
-              <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Our authentic partners</p>
+              <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Kerala Grocery partners</p>
             </div>
           </div>
           <Link

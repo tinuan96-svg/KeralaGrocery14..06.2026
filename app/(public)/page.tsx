@@ -15,20 +15,20 @@ const StickySearchBar = dynamic(
 
 const homepageFAQs = [
   {
-    question: "Where do you deliver Kerala groceries in the UK?",
-    answer: "We deliver authentic Kerala groceries across the entire United Kingdom, including England, Scotland, Wales, and Northern Ireland. Next-day delivery is available for most postcodes."
+    question: "Where do you deliver Kerala grocery in the UK?",
+    answer: "We deliver authentic Kerala grocery products across the entire United Kingdom, including England, Scotland, Wales, and Northern Ireland. Next-day delivery is available for most postcodes."
   },
   {
-    question: "Do you offer free delivery on Kerala groceries?",
-    answer: "Yes, we offer free standard delivery on all orders over £45. For orders below this amount, a small delivery fee applies which is calculated at checkout."
+    question: "Do you offer free delivery on Kerala grocery orders?",
+    answer: "Yes, we offer free standard delivery on all Kerala grocery orders over £45. For orders below this amount, a small delivery fee applies which is calculated at checkout."
   },
   {
-    question: "Are your products authentically sourced from Kerala?",
-    answer: "Absolutely. We work directly with trusted suppliers in Kerala and across India to ensure our spices, rice, snacks, and oils are 100% authentic and of the highest quality."
+    question: "Is your Kerala grocery store authentically sourced?",
+    answer: "Absolutely. We work directly with trusted suppliers in Kerala to ensure our Kerala grocery store stocks only 100% authentic spices, rice, snacks, and oils."
   },
   {
-    question: "Can I buy Matta rice and Kerala snacks online in the UK?",
-    answer: "Yes, we stock a wide range of Matta rice (Palakkadan), Banana chips, Jackfruit chips, and traditional Kerala sweets like Halwa and Achappam for online purchase with fast UK delivery."
+    question: "Can I buy Matta rice from your Kerala grocery online?",
+    answer: "Yes, our Kerala grocery online store stocks a wide range of Matta rice (Palakkadan), Banana chips, and traditional Kerala sweets for fast UK delivery."
   }
 ];
 

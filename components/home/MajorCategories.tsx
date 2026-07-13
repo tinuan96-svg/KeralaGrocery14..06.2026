@@ -45,7 +45,7 @@ export default function MajorCategories({ categories }: MajorCategoriesProps) {
             </div>
             <div>
               <h2 className="text-[17px] font-black text-gray-900 leading-none tracking-tight">Major Categories</h2>
-              <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Shop by department</p>
+              <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Shop Kerala Grocery by department</p>
             </div>
           </div>
           <Link
