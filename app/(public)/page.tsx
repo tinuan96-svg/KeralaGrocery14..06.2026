@@ -3,6 +3,7 @@ import { LocalBusinessSchema, MerchantReturnPolicySchema, ShippingPolicySchema, 
 import PromoBannerCarousel from '@/components/home/PromoBannerCarousel';
 import HomepageSections from '@/components/home/HomepageSections';
 import AmazonStyleGrid from '@/components/home/AmazonStyleGrid';
+import LocalCityBanner from '@/components/home/LocalCityBanner';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import dynamic from 'next/dynamic';
@@ -59,6 +60,9 @@ export default function HomePage() {
 
       {/* Amazon-style content grid */}
       <AmazonStyleGrid />
+
+      {/* Dynamic Local City Marketing Banner */}
+      <LocalCityBanner />
 
       {/* All product sections in feed order */}
       <HomepageSections />
