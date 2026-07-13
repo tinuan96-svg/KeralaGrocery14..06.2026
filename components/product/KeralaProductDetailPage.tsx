@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Star, Truck, Shield, RefreshCw, BadgeCheck, Clock, Leaf, ChevronRight, Zap, CircleAlert as AlertCircle } from 'lucide-react';
+import { Star, Truck, Shield, RefreshCw, BadgeCheck, Clock, Leaf, ChevronRight, Zap, Sparkles, CircleAlert as AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import ProductGallery from '@/components/product/ProductGallery';
@@ -14,7 +14,9 @@ import KeralaProductCard from '@/components/product/KeralaProductCard';
 import RecentlyViewedTracker from '@/components/product/RecentlyViewedTracker';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
 import { getProductDetail, getProducts } from '@/lib/services/rpcApiClient';
+import { getPersonalizedRecommendations } from '@/lib/services/recommendationService';
 import { getSupabase } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/context/AuthContext';
 import type { RpcProduct, ProductVariantOption } from '@/lib/services/rpcApiClient';
 import type { ProductWithDetails } from '@/lib/types/database';
 import { useProductSync } from '@/hooks/useProductSync';
@@ -68,6 +70,7 @@ interface Props {
 
 export default function KeralaProductDetailPage({ slug }: Props) {
   useProductSync();
+  const { user } = useAuth();
   const actionsRef = useRef<HTMLDivElement>(null);
   const [product, setProduct] = useState<RpcProduct | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariantOption | null>(null);
@@ -139,20 +142,18 @@ export default function KeralaProductDetailPage({ slug }: Props) {
     });
 
     async function fetchRelated(p: RpcProduct, isCancelled: boolean) {
-      if (!p.category) return;
-      const { products: rel } = await getProducts({
-        category: p.category,
-        limit: 12,
-        sort: 'newest',
-        status: 'active',
-      });
+      const rel = await getPersonalizedRecommendations(
+        user?.id ?? null,
+        p.category,
+        12
+      );
       if (!isCancelled) {
         setRelated(rel.filter((r) => r.id !== p.id).slice(0, 6));
       }
     }
 
     return () => { cancelled = true; };
-  }, [slug]);
+  }, [slug, user?.id]);
 
   if (isLoading) {
     return (
@@ -403,7 +404,14 @@ export default function KeralaProductDetailPage({ slug }: Props) {
         {/* Related products */}
         {related.length > 0 && (
           <div className="mt-12 pt-10 border-t border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900 mb-5">You May Also Like</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+              {user ? (
+                <>
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  Recommended For You
+                </>
+              ) : 'You May Also Like'}
+            </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
               {related.map((r) => (
                 <KeralaProductCard key={r.id} product={r} />
