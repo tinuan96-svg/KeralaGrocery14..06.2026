@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,31 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Phone number is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── Rate Limiting ────────────────────────────────────────────────────────
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+
+    // Limit: 3 requests per 5 minutes (300 seconds) per IP
+    const { data: allowed, error: limitError } = await supabase.rpc('check_rate_limit', {
+      p_identifier: clientIp,
+      p_action: 'send-otp',
+      p_max_requests: 3,
+      p_window_seconds: 300
+    });
+
+    if (limitError) {
+      console.error('[send-otp] Rate limit error:', limitError);
+    } else if (!allowed) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again in a few minutes." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
