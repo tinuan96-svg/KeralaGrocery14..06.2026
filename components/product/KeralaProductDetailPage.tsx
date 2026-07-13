@@ -17,6 +17,7 @@ import RecentlyViewed from '@/components/product/RecentlyViewed';
 import DeliveryUrgencyTimer from '@/components/product/DeliveryUrgencyTimer';
 import FrequentlyBoughtTogether from '@/components/product/FrequentlyBoughtTogether';
 import ReviewSection from '@/components/product/ReviewSection';
+import RecipeMentions from '@/components/product/RecipeMentions';
 import { getProductDetail, getProducts } from '@/lib/services/rpcApiClient';
 import { getPersonalizedRecommendations } from '@/lib/services/recommendationService';
 import { getSupabase } from '@/lib/supabase/client';
@@ -401,6 +402,9 @@ export default function KeralaProductDetailPage({ slug }: Props) {
 
         {/* Frequently Bought Together */}
         <FrequentlyBoughtTogether mainProduct={product} />
+
+        {/* Recipe Pairing */}
+        <RecipeMentions productName={product.display_title} />
 
         {/* Accordions */}
         <div className="mt-10">

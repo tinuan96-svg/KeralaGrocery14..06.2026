@@ -77,3 +77,17 @@ export async function getRecipes(): Promise<Recipe[]> {
 export async function getRecipeBySlug(slug: string): Promise<Recipe | null> {
   return RECIPES.find(r => r.slug === slug) || null;
 }
+
+/**
+ * AI-Driven Pairing: Finds recipes that feature a specific product
+ * based on name or tag matches.
+ */
+export async function getRecipesForProduct(productName: string): Promise<Recipe[]> {
+  const name = productName.toLowerCase();
+  return RECIPES.filter(recipe =>
+    recipe.ingredients.some(ing =>
+      name.includes(ing.name.toLowerCase()) ||
+      ing.name.toLowerCase().includes(name)
+    )
+  );
+}
