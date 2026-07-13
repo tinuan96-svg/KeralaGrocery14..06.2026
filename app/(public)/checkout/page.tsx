@@ -28,7 +28,7 @@ type PaymentMethod = 'worldpay';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, cartTotal, clearCart, removeFromCart, updateQuantity } = useCart();
   const { user, profile, loading: authLoading } = useAuth();
   const { wallet, settings: walletSettings } = useWallet();
   const { toast } = useToast();
