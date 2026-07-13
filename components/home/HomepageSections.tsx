@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useHomepageData } from '@/hooks/useHomepageData';
 import TrendingNow from '@/components/home/TrendingNow';
+import MajorCategories from '@/components/home/MajorCategories';
 import LoyaltyBanner from '@/components/home/LoyaltyBanner';
 import KitchenEssentials from '@/components/home/KitchenEssentials';
 import MarketingBannerStrip from '@/components/home/MarketingBannerStrip';
@@ -80,7 +81,7 @@ function SkeletonSection() {
 }
 
 export default function HomepageSections() {
-  const { trending, deals, bestsellers, newArrivals, allProducts, isLoading } =
+  const { trending, deals, bestsellers, newArrivals, allProducts, categories, isLoading } =
     useHomepageData();
 
   const brands: Brand[] = isLoading
@@ -116,13 +117,16 @@ export default function HomepageSections() {
       {/* Trust signals & benefits */}
       <TrustStrip />
 
-      {/* 1. Flash Deals — highest urgency, first thing after hero */}
+      {/* 1. Major Categories — easy navigation as like brands */}
+      <MajorCategories categories={categories} />
+
+      {/* 2. Flash Deals — highest urgency, first thing after categories */}
       {deals.length > 0 && <DealsSection products={deals} />}
 
-      {/* 2. Categories — shop by category before brand browsing */}
+      {/* 3. Discover Carousel — sliding category chips */}
       <CategoryDiscoveryCarousel />
 
-      {/* 3. Popular Brands */}
+      {/* 4. Popular Brands */}
       <BrandShowcase brands={brands} />
 
       {/* 4. Kitchen Essentials — High visibility dense grid */}
