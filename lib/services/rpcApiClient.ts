@@ -247,30 +247,18 @@ export async function getProducts(
       default:           query = query.order('created_at', { ascending: false });
     }
 
-    // Count first to avoid "Requested range not satisfiable" on empty result sets
-    const countRes = await supabase
-      .from('products')
-      .select('id', { count: 'exact', head: true })
-      .eq('approval_status', 'approved')
-      .neq('is_deleted', true)
-      .neq('visibility_status', false)
-      .not('centralhub_product_id', 'is', null);
-
-    const total = countRes.count ?? 0;
-    const totalPages = Math.ceil(total / limit);
-
-    if (total === 0 || offset >= total) {
-      return { products: [], total, page, totalPages, error: null };
-    }
-
+    // Apply pagination range
     query = query.range(offset, offset + limit - 1);
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
 
     if (error) {
       console.error('[rpcApiClient] getProducts error:', error);
       return { products: [], total: 0, page, totalPages: 0, error: error.message };
     }
+
+    const total = count ?? 0;
+    const totalPages = Math.ceil(total / limit);
 
     const rows = (data ?? []) as Record<string, unknown>[];
     const products = rows.map((r) => mapRow(r, categoryMap));

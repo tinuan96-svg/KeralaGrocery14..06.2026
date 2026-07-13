@@ -127,8 +127,13 @@ export default function RpcProductListingPage() {
     goToPage, resetFilters, retry,
   } = useRpcProducts(20, authKey);
 
-  const [searchInput, setSearchInput] = useState('');
+  const [searchInput, setSearchInput] = useState(search);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Sync searchInput with URL search state
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   // Scroll to top on page change
   const topRef = useRef<HTMLDivElement>(null);
@@ -136,11 +141,12 @@ export default function RpcProductListingPage() {
     topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [page]);
 
-  // Debounce search
+  // Debounce search - only trigger if value actually changed and differs from URL state
   useEffect(() => {
+    if (searchInput === search) return;
     const t = setTimeout(() => setSearch(searchInput), 350);
     return () => clearTimeout(t);
-  }, [searchInput, setSearch]);
+  }, [searchInput, search, setSearch]);
 
   const activeFilterCount = [category ? 1 : 0, brand ? 1 : 0].reduce((a, b) => a + b, 0);
 
