@@ -40,10 +40,13 @@ function buildUploadPath(filename: string): string {
 
 async function triggerProcessing(filePath: string, fileUrl: string): Promise<void> {
   try {
+    const supabase = getSupabase();
+    const { data: { session } } = await supabase.auth.getSession();
+
     await fetch(`${SUPABASE_URL}/functions/v1/auto-process-image`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ path: filePath, url: fileUrl }),
@@ -76,12 +79,44 @@ async function listFolder(supabase: ReturnType<typeof getSupabase>, prefix: stri
 
 async function listAllFiles(): Promise<BucketFile[]> {
   const supabase = getSupabase();
-  const [root, uploads, products] = await Promise.all([
-    listFolder(supabase, ''),
-    listFolder(supabase, 'uploads'),
-    listFolder(supabase, 'products'),
-  ]);
-  return [...root, ...uploads, ...products];
+
+  try {
+    // 1. Get root items to find folders
+    const { data: rootItems } = await supabase.storage.from('product-images').list('', { limit: 100 });
+    const topFolders = (rootItems ?? [])
+      .filter(item => item.metadata === null && item.name !== '.emptyFolderPlaceholder')
+      .map(item => item.name);
+
+    // 2. Discover common subfolders dynamically
+    let subFolders: string[] = [];
+    if (topFolders.includes('products')) {
+      const { data: pItems } = await supabase.storage.from('product-images').list('products', { limit: 100 });
+      const pSubs = (pItems ?? [])
+        .filter(item => item.metadata === null && item.name !== '.emptyFolderPlaceholder')
+        .map(item => `products/${item.name}`);
+      subFolders = [...subFolders, ...pSubs];
+    }
+
+    // Always ensure we check uncategorised even if not found in first page of list
+    if (!subFolders.includes('products/uncategorised')) {
+      subFolders.push('products/uncategorised');
+    }
+
+    const foldersToScan = ['', ...topFolders, ...subFolders];
+    const results = await Promise.all(
+      foldersToScan.map(folder => listFolder(supabase, folder))
+    );
+
+    const all = results.flat();
+    const unique = new Map<string, BucketFile>();
+    // Store in map to deduplicate and prefer deeper paths if names collide
+    all.forEach(f => unique.set(f.name, f));
+
+    return Array.from(unique.values()).sort((a, b) => b.name.localeCompare(a.name));
+  } catch (err) {
+    console.error('Error listing all files:', err);
+    return [];
+  }
 }
 
 export default function AdminImagesPage() {
@@ -167,7 +202,7 @@ export default function AdminImagesPage() {
       const { error } = await supabase.storage
         .from('product-images')
         .upload(filePath, uploadQueue[i].file, {
-          upsert: false,
+          upsert: true,
           cacheControl: '3600',
           contentType: uploadQueue[i].file.type || 'image/jpeg',
         });
