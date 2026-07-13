@@ -57,6 +57,13 @@ const STATIC_ENTRIES: MetadataRoute.Sitemap = [
   entry('/blog/where-to-buy-curry-leaves-uk', 'monthly', 0.70, D.blog),
   entry('/blog/best-indian-grocery-delivery-london', 'monthly', 0.70, D.blog),
 
+  // Tier 6.5 – Hyper-Local Delivery Pages
+  entry('/delivery/london', 'weekly', 0.85, D.today),
+  entry('/delivery/birmingham', 'weekly', 0.85, D.today),
+  entry('/delivery/manchester', 'weekly', 0.85, D.today),
+  entry('/delivery/leicester', 'weekly', 0.85, D.today),
+  entry('/delivery/croydon', 'weekly', 0.85, D.today),
+
   // Tier 7 – Trust / identity
   entry('/about-us', 'monthly', 0.60, D.legal),
   entry('/contact', 'monthly', 0.60, D.legal),

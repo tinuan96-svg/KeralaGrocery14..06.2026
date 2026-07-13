@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { memo } from 'react';
-import { Heart, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Heart, Plus, Minus, ShoppingCart, Wallet } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
+import { useWallet } from '@/hooks/useWallet';
 import type { RpcProduct } from '@/lib/services/rpcApiClient';
 
 interface KeralaProductCardProps {
@@ -16,9 +17,16 @@ interface KeralaProductCardProps {
 function KeralaProductCardComponent({ product, priority = false }: KeralaProductCardProps) {
   const { addToCart, getQuantity, removeFromCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { settings, activeCycle } = useWallet();
 
   const slug = product.slug ?? product.product_code ?? product.id;
   const price = product.price;
+
+  // Calculate potential cashback
+  const rate = activeCycle
+    ? (activeCycle.tier === 'gold' ? settings?.gold_rate : activeCycle.tier === 'silver' ? settings?.silver_rate : settings?.bronze_rate)
+    : (settings?.bronze_rate ?? 0.01);
+  const potentialCashback = (price * (rate || 0.01)).toFixed(2);
   const original = product.original_price ?? price;
   const stock = product.stock;
   const discount = product.discount_pct;
@@ -124,15 +132,22 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
         </Link>
 
         {/* Price */}
-        <div className="flex items-center h-6 mb-1.5">
-          <span className="text-[13px] font-extrabold text-[#0B5D3B] leading-none">
-            £{price.toFixed(2)}
-          </span>
-          {discount > 0 && (
-            <span className="text-[10px] text-gray-400 line-through leading-none ml-1">
-              £{original.toFixed(2)}
+        <div className="flex items-center justify-between h-6 mb-1.5">
+          <div className="flex items-center">
+            <span className="text-[13px] font-extrabold text-[#0B5D3B] leading-none">
+              £{price.toFixed(2)}
             </span>
-          )}
+            {discount > 0 && (
+              <span className="text-[10px] text-gray-400 line-through leading-none ml-1">
+                £{original.toFixed(2)}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-lg border border-emerald-100">
+            <Wallet className="w-2 h-2 fill-emerald-600" />
+            +£{potentialCashback}
+          </div>
         </div>
 
         {/* Cart */}
