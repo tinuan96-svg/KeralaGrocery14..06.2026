@@ -66,6 +66,15 @@ export async function POST(req: NextRequest) {
       const costPrice = Number(productData.price || productData.cost_price || 0);
       const sellingPrice = applyMarkup(costPrice);
 
+      // Check if product already exists to determine if we should protect fields
+      const { data: existingProduct } = await supabase
+        .from('products')
+        .select('id, slug, approval_status, visibility_status, image_url, image_main, description, price')
+        .eq('centralhub_product_id', productData.id)
+        .maybeSingle();
+
+      const isUpdate = !!existingProduct;
+
       // Construct update payload according to CentralHub Master Registry requirements
       const productUpsert: any = {
         centralhub_product_id: productData.id,
@@ -88,47 +97,32 @@ export async function POST(req: NextRequest) {
         warehouse_location: productData.warehouse_location || null,
 
         // CentralHub price is treated as the COST price.
-        // We apply a fixed 5% markup for the storefront.
-        price: sellingPrice,
-        selling_price: sellingPrice,
-        cost_price: costPrice,
         supplier_price: costPrice,
-        markup_percentage: 5,
-
-        // Handle optional price fields
-        sale_price: productData.sale_price ? applyMarkup(Number(productData.sale_price)) : null,
-        compare_price: productData.compare_at_price ? applyMarkup(Number(productData.compare_at_price)) : null,
-
-        stock: productData.stock || 0,
-        in_stock: productData.in_stock ?? true,
-        unit: productData.unit || null,
-        weight: productData.weight || null,
-        custom_attributes: productData.custom_attributes || {},
+        cost_price: costPrice,
+        supplier_price_raw: costPrice,
         last_sync_at: new Date().toISOString(),
         updated_at: productData.updated_at || new Date().toISOString(),
         is_deleted: false,
         is_active: true,
-
-        // ALWAYS ensure product is approved and visible when updated from CentralHub
-        approval_status: 'approved',
-        visibility_status: true,
       };
 
       if (productData.slug) {
         productUpsert.slug = productData.slug;
       }
 
-      // Get existing product for revalidation before upsert
-      const { data: existing } = await supabase
-        .from('products')
-        .select('slug')
-        .eq('sku', productData.sku)
-        .maybeSingle();
+      if (!isUpdate) {
+        // NEW products default to draft and auto-calculated price
+        productUpsert.approval_status = 'draft';
+        productUpsert.visibility_status = false;
+        productUpsert.price = sellingPrice;
+        productUpsert.selling_price = sellingPrice;
+        productUpsert.markup_percentage = 5;
+      }
 
-      // Perform Upsert targeting the 'sku' column as per requirements
+      // Perform Upsert targeting the 'centralhub_product_id' column as the primary sync key
       const { data: upsertedProduct, error: pError } = await supabase
         .from('products')
-        .upsert(productUpsert, { onConflict: 'sku' })
+        .upsert(productUpsert, { onConflict: 'centralhub_product_id' })
         .select('id, slug, price, cost_price')
         .single();
 
