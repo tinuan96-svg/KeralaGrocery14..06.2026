@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     'Browse and shop authentic Kerala and Indian groceries in the UK. Spices, rice, snacks, pickles, ready meals, oils and more. Fast delivery across the UK.',
   alternates: {
-    canonical: 'https://keralagrocery.com/shop',
+    canonical: 'https://keralagrocery.com/products',
   },
   openGraph: {
     title: 'Shop Kerala & Indian Groceries Online UK',

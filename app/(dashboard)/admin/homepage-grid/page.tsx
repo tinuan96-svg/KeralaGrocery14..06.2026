@@ -143,11 +143,13 @@ export default function HomepageGridAdmin() {
                 {card.items.slice(0, card.layout_type === 'grid_2x2' ? 4 : 1).map((it, j) => (
                   <div key={j} className={`relative bg-white rounded-lg overflow-hidden border ${card.layout_type === 'single' ? 'col-span-2 row-span-2' : ''}`}>
                     {it.image_url ? (
-                      <img src={it.image_url} alt="" className="w-full h-full object-cover" />
+                      <div className="relative w-full h-full">
+                        <Image src={it.image_url} alt="" fill className="object-cover" unoptimized />
+                      </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-200"><ImageIcon className="w-6 h-6" /></div>
                     )}
-                    {it.badge && <span className="absolute top-1 left-1 bg-red-600 text-white text-[8px] font-bold px-1 rounded">{it.badge}</span>}
+                    {it.badge && <span className="absolute top-1 left-1 bg-red-600 text-white text-[8px] font-bold px-1 rounded z-10">{it.badge}</span>}
                   </div>
                 ))}
               </div>
