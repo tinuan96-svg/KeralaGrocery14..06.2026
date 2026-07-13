@@ -36,6 +36,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
+        stream: true,
         messages: [
           {
             role: "system",
@@ -114,13 +115,35 @@ Deno.serve(async (req: Request) => {
 
         if (functionName === "search_inventory") {
           const { data: p } = await supabase.rpc('search_products_fuzzy', { search_query: args.query, limit_val: 5 });
-          toolResult = p || [];
+          // Map to a cleaner format for the LLM
+          toolResult = (p || []).map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            price: `£${Number(item.price).toFixed(2)}`,
+            stock: item.stock > 0 ? `${item.stock} in stock` : 'Out of Stock',
+            brand: item.brand,
+            category: item.category
+          }));
           actions.push(...(p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p })));
         } else if (functionName === "get_order_status") {
-          const { data: o } = await supabase.from('orders').select('id, order_number, order_status, total, created_at').eq('order_number', args.order_number).maybeSingle();
-          toolResult = o || { error: "Not found" };
-          if (o) {
+          // Security: Check both order number AND contact info
+          const contact = String(args.contact_info || '').trim().toLowerCase();
+          const { data: o } = await supabase
+            .from('orders')
+            .select('id, order_number, order_status, total, created_at, customer_email, customer_phone')
+            .eq('order_number', args.order_number)
+            .maybeSingle();
+
+          if (o && (o.customer_email.toLowerCase().includes(contact) || o.customer_phone.includes(contact))) {
+            toolResult = {
+              order_number: o.order_number,
+              status: o.order_status,
+              total: `£${Number(o.total).toFixed(2)}`,
+              date: new Date(o.created_at).toLocaleDateString()
+            };
             actions.push({ type: 'ORDER_INFO', order: o });
+          } else {
+            toolResult = { error: "Order not found or contact information does not match. Please provide the email or phone number used for the order." };
           }
         } else if (functionName === "get_recipes") {
           const { data: r } = await supabase.from('recipes')

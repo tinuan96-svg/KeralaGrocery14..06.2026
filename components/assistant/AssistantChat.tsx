@@ -58,6 +58,11 @@ export default function AssistantChat() {
     setIsThinking(true);
     setEmotion('thinking');
 
+    // Clear previous recommendations on new request
+    setRecommendedProducts([]);
+    setRecommendedRecipes([]);
+    setOrderInfo(null);
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ai-assistant`, {
         method: 'POST',
@@ -75,22 +80,53 @@ export default function AssistantChat() {
         })
       });
 
-      const data = await response.json();
-
-      if (data.message) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.message.content }]);
-        setEmotion('talking');
-        setTimeout(() => setEmotion('idle'), 2000);
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}`);
       }
 
-      if (data.actions) {
-        const prods = data.actions.filter((a: any) => a.type === 'RECOMMEND_PRODUCT').map((a: any) => a.product);
-        const recs = data.actions.filter((a: any) => a.type === 'RECOMMEND_RECIPE').map((a: any) => a.recipe);
-        const order = data.actions.find((a: any) => a.type === 'ORDER_INFO')?.order;
-        setRecommendedProducts(prods);
-        setRecommendedRecipes(recs);
-        if (order) setOrderInfo(order);
+      // Handle Streaming
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = "";
+
+      setMessages(prev => [...prev, { role: 'assistant', content: "" }]);
+      setEmotion('talking');
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const dataStr = line.slice(6);
+              if (dataStr === '[DONE]') continue;
+
+              try {
+                const json = JSON.parse(dataStr);
+                const content = json.choices[0]?.delta?.content || "";
+                if (content) {
+                  accumulatedText += content;
+                  setMessages(prev => {
+                    const last = prev[prev.length - 1];
+                    if (last.role === 'assistant') {
+                      return [...prev.slice(0, -1), { ...last, content: accumulatedText }];
+                    }
+                    return prev;
+                  });
+                }
+              } catch (e) {
+                // Ignore parse errors for incomplete chunks
+              }
+            }
+          }
+        }
       }
+
+      setEmotion('idle');
     } catch (error) {
       console.error('AI Assistant Error:', error);
       setMessages(prev => [...prev, { role: 'assistant', content: "I'm having a small problem connecting to home. 🥥 Please try asking again in a second!" }]);
@@ -120,7 +156,7 @@ export default function AssistantChat() {
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
-          className="fixed bottom-[calc(var(--nav-height,60px)+20px)] left-4 sm:left-10 z-[100] w-[calc(100%-2rem)] sm:w-[420px] h-[580px] max-h-[70vh] bg-white/90 backdrop-blur-xl rounded-[3rem] border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
+          className="fixed bottom-[calc(var(--nav-height,60px)+20px)] left-4 sm:left-10 z-[100] w-[calc(100%-2rem)] sm:w-[420px] h-[580px] max-h-[70vh] bg-white/90 backdrop-blur-xl rounded-[3rem] border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden pointer-events-auto"
         >
           {/* Header - Kerala Green Gradient */}
           <div className="bg-gradient-to-br from-[#0B5D3B] to-[#064e3b] p-6 text-white flex items-center justify-between shadow-lg">
@@ -136,9 +172,18 @@ export default function AssistantChat() {
                 </div>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="bg-black/10 hover:bg-black/20 p-2.5 rounded-2xl transition-all">
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setMessages([])}
+                title="Clear conversation"
+                className="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border border-white/20"
+              >
+                Clear
+              </button>
+              <button onClick={() => setIsOpen(false)} className="bg-black/10 hover:bg-black/20 p-2.5 rounded-2xl transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Chat Body */}
