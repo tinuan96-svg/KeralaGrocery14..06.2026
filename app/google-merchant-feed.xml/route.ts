@@ -28,14 +28,13 @@ export async function GET() {
           short_description,
           image_url,
           image_main,
+          image_alt,
           price,
           selling_price,
-          original_price,
           brand,
           category_id,
           stock,
-          stock_quantity,
-          created_at
+          stock_quantity
         `)
         .eq('approval_status', 'approved')
         .eq('is_active', true)
