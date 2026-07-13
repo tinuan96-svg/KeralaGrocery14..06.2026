@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 /**
  * Returns true when the code is running inside a Capacitor native shell
@@ -157,6 +158,7 @@ export function useNetworkStatus() {
 export function usePushNotifications() {
   const [token, setToken] = useState<string | null>(null);
   const [permissionState, setPermissionState] = useState<'prompt' | 'granted' | 'denied'>('prompt');
+  const router = useRouter();
 
   useEffect(() => {
     async function init() {
@@ -172,7 +174,6 @@ export function usePushNotifications() {
 
         const regListener = await PushNotifications.addListener('registration', (t) => {
           setToken(t.value);
-          // TODO: store token in Supabase user_profiles for targeted sends
           console.log('[Push] Device token:', t.value);
         });
 
@@ -180,9 +181,22 @@ export function usePushNotifications() {
           console.error('[Push] Registration error:', e);
         });
 
+        const actionListener = await PushNotifications.addListener(
+          'pushNotificationActionPerformed',
+          (action) => {
+            const data = action.notification.data;
+            const url = data?.url || data?.link || data?.path;
+            if (url) {
+              console.log('[Push] Deep linking to:', url);
+              router.push(url);
+            }
+          }
+        );
+
         return () => {
           regListener.remove();
           errListener.remove();
+          actionListener.remove();
         };
       } catch {
         // web — push not available
@@ -190,7 +204,7 @@ export function usePushNotifications() {
     }
 
     init();
-  }, []);
+  }, [router]);
 
   const requestPermission = useCallback(async () => {
     try {

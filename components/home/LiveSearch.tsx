@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Loader2, ChevronRight, CornerDownRight } from 'lucide-react';
+import { Search, Loader2, ChevronRight, CornerDownRight, History, X } from 'lucide-react';
 import { getProducts, type RpcProduct } from '@/lib/services/rpcApiClient';
 import { useClickAway } from '@/hooks/useClickAway';
 import { useRouter } from 'next/navigation';
+import { haptics } from '@/lib/utils/haptics';
+import { ImpactStyle } from '@capacitor/haptics';
 
 interface Props {
   placeholder?: string;
@@ -56,6 +58,9 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
           status: 'active'
         });
         setResults(products);
+        if (products.length > 0) {
+          haptics.impact(ImpactStyle.Light); // Success feedback when results found
+        }
       } catch (err) {
         console.error('Search error:', err);
       } finally {
@@ -70,10 +75,16 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
     e.preventDefault();
     if (query.trim()) {
       addToHistory(query.trim());
+      haptics.impact(ImpactStyle.Medium);
       router.push(`/products?search=${encodeURIComponent(query.trim())}`);
       setIsOpen(false);
       onSearch?.(query);
     }
+  };
+
+  const clearQuery = () => {
+    setQuery('');
+    setResults([]);
   };
 
   return (
@@ -86,13 +97,22 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          className={`w-full pl-10 pr-4 py-2.5 rounded-2xl border-2 border-[#d1ead9] focus:border-[#0B5D3B] focus:ring-0 text-sm bg-[#f4faf6] focus:bg-white transition-all duration-200 outline-none placeholder:text-gray-400 text-gray-800 ${inputClassName}`}
+          className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border-2 border-[#d1ead9] focus:border-[#0B5D3B] focus:ring-0 text-sm bg-[#f4faf6] focus:bg-white transition-all duration-200 outline-none placeholder:text-gray-400 text-gray-800 ${inputClassName}`}
         />
-        {loading && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {query && (
+            <button
+              type="button"
+              onClick={clearQuery}
+              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+            </button>
+          )}
+          {loading && (
             <Loader2 className="h-4 w-4 text-green-600 animate-spin" />
-          </div>
-        )}
+          )}
+        </div>
       </form>
 
       {isOpen && (
@@ -100,9 +120,11 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
           {query.length < 2 && history.length > 0 && (
             <div className="py-2">
               <div className="px-4 py-1.5 bg-gray-50 border-y border-gray-100 flex items-center justify-between">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Recent Searches</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <History className="w-3 h-3" /> Recent Searches
+                </span>
                 <button
-                  onClick={() => { setHistory([]); localStorage.removeItem('kg-search-history'); }}
+                  onClick={() => { setHistory([]); localStorage.removeItem('kg-search-history'); haptics.impact(ImpactStyle.Light); }}
                   className="text-[10px] font-bold text-red-500 hover:underline"
                 >
                   Clear All
@@ -111,7 +133,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
               {history.map((term, i) => (
                 <button
                   key={i}
-                  onClick={() => { setQuery(term); addToHistory(term); }}
+                  onClick={() => { setQuery(term); addToHistory(term); haptics.impact(ImpactStyle.Light); }}
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left text-sm text-gray-600 transition-colors"
                 >
                   <Search className="w-3.5 h-3.5 text-gray-300" />
@@ -128,7 +150,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
                 <Link
                   href={`/products?search=${encodeURIComponent(query)}`}
                   className="text-[10px] font-bold text-green-700 hover:underline"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => { setIsOpen(false); haptics.impact(ImpactStyle.Light); }}
                 >
                   View All Results
                 </Link>
@@ -140,6 +162,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
                     href={`/products/${product.slug || product.id}`}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors group"
                     onClick={() => {
+                      haptics.impact(ImpactStyle.Medium);
                       setIsOpen(false);
                       setQuery('');
                     }}
@@ -149,6 +172,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
                         src={product.image_url || '/placeholder.webp'}
                         alt={product.display_title}
                         fill
+                        sizes="48px"
                         className="object-contain p-1"
                       />
                     </div>
@@ -179,7 +203,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
                 <ChevronRight className="w-3 h-3" />
               </button>
             </div>
-          ) : !loading ? (
+          ) : query.length >= 2 && !loading ? (
             <div className="p-8 text-center">
               <Search className="h-10 w-10 text-gray-200 mx-auto mb-3" />
               <p className="text-sm text-gray-500 font-medium">No matches found for &quot;{query}&quot;</p>

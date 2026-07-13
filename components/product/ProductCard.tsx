@@ -1,12 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Heart, Plus, Minus, ShoppingCart } from 'lucide-react';
 import type { ProductWithDetails } from '@/lib/types/database';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { memo } from 'react';
-import { getProductSrcSet } from '@/lib/utils/image';
+import { getProductImageSrc } from '@/lib/utils/image';
+import { useProductPrice } from '@/hooks/useProductPrice';
+import { haptics } from '@/lib/utils/haptics';
+import { ImpactStyle } from '@capacitor/haptics';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -18,12 +22,12 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
   const { addToCart, getQuantity, removeFromCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
-  const stock = Number(product.stock || 0);
-  const price = Number(product.price || 0);
+  // Real-time price and stock with SWR (Suggestion 1)
+  const { price, stock } = useProductPrice(product.id, Number(product.price || 0), Number(product.stock || 0));
+
   const discount = product.discount_percentage || 0;
   const originalPrice = product.original_price || price;
-  const { webp: webpSrc, jpeg: jpegSrc } = getProductSrcSet(product);
-  const displayImage = webpSrc ?? jpegSrc ?? '/placeholder.webp';
+  const displayImage = getProductImageSrc(product);
 
   const brandName = product.brand?.name ?? '';
   const displayName =
@@ -46,23 +50,27 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
     e?.preventDefault();
     e?.stopPropagation();
     if (stock === 0) return;
+    haptics.impact(ImpactStyle.Medium); // (Suggestion 2)
     addToCart(cartItem);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (stock === 0) return;
+    haptics.impact(ImpactStyle.Light); // (Suggestion 2)
     addToCart(cartItem);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    haptics.impact(ImpactStyle.Light); // (Suggestion 2)
     if (qty === 1) removeFromCart(product.id);
     else if (qty > 1) addToCart(cartItem, -1);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    haptics.impact(ImpactStyle.Medium); // (Suggestion 2)
     toggleWishlist(cartItem);
   };
 
@@ -75,19 +83,17 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
           {/* Subtle radial highlight */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] pointer-events-none" />
 
-          <picture className="absolute inset-0 flex items-center justify-center z-10">
-            {webpSrc && <source srcSet={webpSrc} type="image/webp" />}
-            {jpegSrc && <source srcSet={jpegSrc} type="image/jpeg" />}
-            <img
+          <div className="absolute inset-0 flex items-center justify-center z-10 p-2">
+            <Image
               src={displayImage}
               alt={`${displayName} - Kerala Grocery`}
-              loading={priority ? 'eager' : 'lazy'}
-              decoding="async"
-              fetchPriority={priority ? 'high' : 'auto'}
-              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.webp'; }}
-              className="w-full h-full object-contain transition-transform duration-500 scale-[1.18] group-hover:scale-[1.28]"
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+              priority={priority}
+              className="object-contain transition-transform duration-500 scale-[0.85] group-hover:scale-[0.95]"
+              loading={priority ? undefined : 'lazy'}
             />
-          </picture>
+          </div>
 
           {/* Discount badge */}
           {discount > 0 && (
