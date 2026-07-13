@@ -66,7 +66,8 @@ const PROTECTED_FIELDS = new Set([
   "category_id", "image_url", "image_main", "image_medium", "image_thumbnail",
   "image_large", "image_path", "enhanced_image_url", "description",
   "short_description", "seo_title", "seo_description", "seo_keywords",
-  "price", "compare_price", "original_price", "approval_status", "visibility_status",
+  "price", "selling_price", "compare_price", "original_price", "markup_percentage",
+  "approval_status", "visibility_status",
   "is_featured", "is_deal", "is_new_arrival", "is_bestseller",
 ]);
 
