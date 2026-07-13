@@ -851,11 +851,28 @@ Deno.serve(async (req: Request) => {
               }
 
               // Execute Upsert targeting SKU
-              const { error: upsertErr } = await supabase
+              const { data: upserted, error: upsertErr } = await supabase
                 .from("products")
-                .upsert(upsertPayload, { onConflict: 'sku' });
+                .upsert(upsertPayload, { onConflict: 'sku' })
+                .select("id, short_description")
+                .single();
 
               if (upsertErr) throw upsertErr;
+
+              // AI Enrichment Trigger:
+              // If it's a new product or force resync, and short_description is missing,
+              // fire the AI description generator in the background.
+              if (upserted && !upserted.short_description) {
+                const fnUrl = `${supabaseUrl}/functions/v1/generate-descriptions`;
+                fetch(fnUrl, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${serviceKey}`,
+                  },
+                  body: JSON.stringify({ productId: upserted.id, mode: "both" }),
+                }).catch(err => console.error(`[sync-ai] Trigger failed for ${upserted.id}:`, err));
+              }
 
             } catch (e) {
               failed++;

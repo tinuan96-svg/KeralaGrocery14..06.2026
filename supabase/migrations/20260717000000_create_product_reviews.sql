@@ -30,6 +30,31 @@ CREATE POLICY "Allow authenticated users to insert reviews"
 CREATE INDEX IF NOT EXISTS idx_product_reviews_product_id ON product_reviews(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_reviews_status ON product_reviews(status);
 
+-- Function to handle review moderation logic
+CREATE OR REPLACE FUNCTION moderate_product_review()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Logic: Auto-approve reviews if:
+  -- 1. Rating is 4 or 5 stars
+  -- 2. It's a verified purchase
+  -- 3. The comment is not empty (contains content)
+  IF (NEW.rating >= 4 AND NEW.is_verified_purchase = true AND length(trim(NEW.comment)) > 5) THEN
+    NEW.status := 'approved';
+  ELSE
+    -- Otherwise leave as 'pending' for manual review
+    NEW.status := 'pending';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to moderate reviews BEFORE insert
+CREATE TRIGGER trigger_moderate_product_review
+BEFORE INSERT ON product_reviews
+FOR EACH ROW
+EXECUTE FUNCTION moderate_product_review();
+
 -- Function to update aggregate ratings on product
 CREATE OR REPLACE FUNCTION update_product_rating()
 RETURNS TRIGGER AS $$
