@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { getRecipes } from '@/lib/services/recipeService';
 
 // Revalidate every hour so new products/categories appear quickly
 export const revalidate = 3600;
@@ -44,6 +45,7 @@ const STATIC_ENTRIES: MetadataRoute.Sitemap = [
   entry('/products', 'daily', 0.90, D.today),
   entry('/best-sellers', 'daily', 0.90, D.today),
   entry('/offers', 'daily', 0.88, D.today),
+  entry('/recipes', 'weekly', 0.85, D.today),
 
   // Tier 3 – Category index
   entry('/categories', 'daily', 0.85, D.today),
@@ -135,9 +137,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
   );
 
+  // ── Recipe pages (/recipes/[slug]) ──────────────────────────────────────
+  const recipes = await getRecipes();
+  const recipeEntries: MetadataRoute.Sitemap = recipes.map((r) =>
+    entry(`/recipes/${r.slug}`, 'monthly', 0.80, D.today)
+  );
+
   return [
     ...STATIC_ENTRIES,
     ...categoryEntries,
     ...productEntries,
+    ...recipeEntries,
   ];
 }

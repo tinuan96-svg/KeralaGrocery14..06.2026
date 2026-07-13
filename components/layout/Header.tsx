@@ -24,6 +24,7 @@ const NAV_LINKS = [
   { label: 'Products', href: '/products' },
   { label: 'Categories', href: '/categories' },
   { label: 'Brands', href: '/brands' },
+  { label: 'Recipes', href: '/recipes' },
   { label: 'Deals', href: '/products?filter=deals' },
 ];
 
