@@ -64,11 +64,7 @@ export default function DiscoverMoreFeed() {
   }, [loadMore]);
 
   if (products.length === 0 && !loading) {
-    return (
-      <section className="py-4 px-4 max-w-7xl mx-auto text-center">
-        <p className="text-sm text-gray-400 py-6">No products available.</p>
-      </section>
-    );
+    return null;
   }
 
   return (

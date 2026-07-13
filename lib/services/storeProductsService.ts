@@ -93,9 +93,9 @@ export async function fetchStoreProducts(
     const { data, error } = await supabase
       .from('products')
       .select(PRODUCTS_SELECT)
-      .eq('is_deleted', false)
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true)
+      .neq('is_deleted', true)
+      .neq('visibility_status', false)
       .order('created_at', { ascending: false });
 
     if (error) {

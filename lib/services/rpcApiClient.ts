@@ -183,8 +183,8 @@ export async function getProducts(
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true)
-      .or('is_deleted.is.null,is_deleted.eq.false');
+      .neq('is_deleted', true)
+      .neq('visibility_status', false);
 
     if (search) {
       query = query.ilike('name', `%${search}%`);
@@ -212,8 +212,8 @@ export async function getProducts(
       .from('products')
       .select('id', { count: 'exact', head: true })
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true)
-      .or('is_deleted.is.null,is_deleted.eq.false');
+      .neq('is_deleted', true)
+      .neq('visibility_status', false);
 
     const total = countRes.count ?? 0;
     const totalPages = Math.ceil(total / limit);
@@ -285,7 +285,8 @@ export async function getProductDetail(
       .from('products')
       .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_quantity')
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true);
+      .neq('is_deleted', true)
+      .neq('visibility_status', false);
 
     if (isUuid) {
       query = query.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
@@ -355,23 +356,24 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .from('products')
         .select('category_id')
         .eq('approval_status', 'approved')
-        .eq('visibility_status', true)
-        .or('is_deleted.is.null,is_deleted.eq.false')
+        .neq('is_deleted', true)
+        .neq('visibility_status', false)
         .not('category_id', 'is', null),
       // Use brand column (populated from CentralHub verbatim during sync)
       supabase
         .from('products')
         .select('brand')
         .eq('approval_status', 'approved')
-        .eq('visibility_status', true)
-        .or('is_deleted.is.null,is_deleted.eq.false')
+        .neq('is_deleted', true)
+        .neq('visibility_status', false)
         .not('brand', 'is', null)
         .neq('brand', ''),
       supabase
         .from('products')
         .select('price')
         .eq('approval_status', 'approved')
-        .eq('visibility_status', true),
+        .neq('is_deleted', true)
+        .neq('visibility_status', false),
       supabase
         .from('categories')
         .select('id, name, is_active')
