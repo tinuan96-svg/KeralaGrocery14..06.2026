@@ -34,7 +34,7 @@ export async function createOrder(orderData: CreateOrderData) {
     const supabase = createServerSupabaseClient();
 
     const { data: orderNumberData, error: orderNumberError } = await supabase
-      .rpc('generate_order_number');
+      .rpc('generate_order_number', { p_payment_status: 'pending' });
 
     if (orderNumberError) {
       console.error('Error generating order number:', orderNumberError);
@@ -55,6 +55,7 @@ export async function createOrder(orderData: CreateOrderData) {
       .insert({
         user_id: userId,
         order_number: orderNumber,
+        original_order_number: orderNumber,
         customer_name: orderData.customer_name,
         customer_email: orderData.customer_email,
         customer_phone: orderData.customer_phone,
@@ -144,7 +145,7 @@ export async function getOrderByNumber(orderNumber: string) {
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
-      .eq('order_number', orderNumber)
+      .or(`order_number.eq.${orderNumber},original_order_number.eq.${orderNumber}`)
       .eq('user_id', session.user.id)
       .maybeSingle();
 
@@ -198,7 +199,7 @@ export async function updateOrderPaymentStatus(
     const { error } = await supabase
       .from('orders')
       .update(updateData)
-      .eq('order_number', orderNumber);
+      .or(`order_number.eq.${orderNumber},original_order_number.eq.${orderNumber}`);
 
     if (error) {
       console.error('Error updating payment status:', error);
@@ -222,7 +223,7 @@ export async function updateOrderStatus(
     const { data: order, error: fetchError } = await supabase
       .from('orders')
       .select('customer_phone')
-      .eq('order_number', orderNumber)
+      .or(`order_number.eq.${orderNumber},original_order_number.eq.${orderNumber}`)
       .maybeSingle();
 
     if (fetchError) {
@@ -236,7 +237,7 @@ export async function updateOrderStatus(
         order_status: orderStatus,
         updated_at: new Date().toISOString(),
       })
-      .eq('order_number', orderNumber);
+      .or(`order_number.eq.${orderNumber},original_order_number.eq.${orderNumber}`);
 
     if (error) {
       console.error('Error updating order status:', error);

@@ -1,26 +1,55 @@
--- 1. Update Order Number Generation to KG-2026- format using a sequence
--- Create a new sequence for the year 2026 if it doesn't exist
+-- 1. Ensure original_order_number exists for stable references
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS original_order_number text;
+
+-- 2. Update Order Number Generation
+-- Paid: KG-2026-0001
+-- Others: KG-5320
 CREATE SEQUENCE IF NOT EXISTS order_number_seq_2026 START 1;
 
-CREATE OR REPLACE FUNCTION generate_order_number()
+CREATE OR REPLACE FUNCTION generate_order_number(p_payment_status text DEFAULT 'pending')
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
-DECLARE
-  date_part text;
-  seq_val bigint;
 BEGIN
-  -- We now use KG-YYYY- format as requested
-  date_part := '2026'; -- Hardcoded 2026 as per request
-
-  -- Get next value from sequence (thread-safe)
-  seq_val := nextval('order_number_seq_2026');
-
-  RETURN 'KG-' || date_part || '-' || LPAD(seq_val::text, 4, '0');
+  IF p_payment_status = 'paid' THEN
+    RETURN 'KG-2026-' || LPAD(nextval('order_number_seq_2026')::text, 4, '0');
+  ELSE
+    RETURN 'KG-' || nextval('order_number_seq')::text;
+  END IF;
 END;
 $$;
+
+-- 3. Trigger to assign success number upon payment
+CREATE OR REPLACE FUNCTION finalize_order_number()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- If transitioning to paid and doesn't have the success format yet
+  IF NEW.payment_status = 'paid' AND (OLD.payment_status IS NULL OR OLD.payment_status != 'paid')
+     AND NEW.order_number NOT LIKE 'KG-2026-%' THEN
+
+    -- Store the old number as the original reference
+    NEW.original_order_number := NEW.order_number;
+    -- Assign the new sequence number
+    NEW.order_number := generate_order_number('paid');
+
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_finalize_order_number ON orders;
+CREATE TRIGGER trg_finalize_order_number
+BEFORE UPDATE ON orders
+FOR EACH ROW EXECUTE FUNCTION finalize_order_number();
+
+-- 4. Update CentralHub Notification Trigger to use the FINAL order number
+-- (The existing trigger in this file already constructed the payload from NEW,
+-- so it will pick up the changed order_number automatically since it's an AFTER trigger
+-- OR we can make it an AFTER trigger if it wasn't).
+-- Note: finalize_order_number is BEFORE update, so NEW.order_number is already updated when
+-- subsequent triggers (like centralhub sync) run.
 
 -- 2. Update CentralHub Notification Trigger with keralagrocery identifier
 CREATE OR REPLACE FUNCTION notify_centralhub_order()

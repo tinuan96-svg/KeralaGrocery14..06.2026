@@ -87,7 +87,7 @@ Deno.serve(async (req: Request) => {
           order_status:      "confirmed",
           payment_reference: downstreamReference || transactionReference,
         })
-        .eq("order_number", transactionReference)
+        .or(`order_number.eq.${transactionReference},original_order_number.eq.${transactionReference}`)
         .select("id, customer_name, customer_phone, total, order_number, user_id, wallet_amount")
         .maybeSingle();
 
@@ -195,7 +195,7 @@ Deno.serve(async (req: Request) => {
       await supabase
         .from("orders")
         .update({ payment_status: "failed" })
-        .eq("order_number", transactionReference);
+        .or(`order_number.eq.${transactionReference},original_order_number.eq.${transactionReference}`);
 
       await supabase
         .from("payment_sessions")
@@ -217,7 +217,7 @@ Deno.serve(async (req: Request) => {
       await supabase
         .from("orders")
         .update({ payment_status: "refunded", order_status: "cancelled" })
-        .eq("order_number", transactionReference);
+        .or(`order_number.eq.${transactionReference},original_order_number.eq.${transactionReference}`);
 
       await supabase.from("payment_errors").insert({
         order_number:  transactionReference,
@@ -232,7 +232,7 @@ Deno.serve(async (req: Request) => {
       await supabase
         .from("orders")
         .update({ payment_status: "failed", order_status: "cancelled" })
-        .eq("order_number", transactionReference);
+        .or(`order_number.eq.${transactionReference},original_order_number.eq.${transactionReference}`);
 
       await updateWebhookLog(supabase, logId, "expired", "Authorization expired");
 

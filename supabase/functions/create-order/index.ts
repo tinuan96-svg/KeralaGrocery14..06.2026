@@ -120,7 +120,7 @@ Deno.serve(async (req: Request) => {
 
     // ── Generate order number ─────────────────────────────────────────────────
     const { data: orderNumberData, error: orderNumberError } = await supabase
-      .rpc("generate_order_number");
+      .rpc("generate_order_number", { p_payment_status: orderData.payment_status });
 
     if (orderNumberError || !orderNumberData) {
       console.error("[create-order] failed to generate order number:", orderNumberError);
@@ -136,6 +136,7 @@ Deno.serve(async (req: Request) => {
       .insert({
         user_id:            userId,
         order_number:       orderNumber,
+        original_order_number: orderNumber,
         customer_name:      orderData.customer_name,
         customer_email:     orderData.customer_email,
         customer_phone:     orderData.customer_phone,
