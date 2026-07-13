@@ -5,6 +5,7 @@ import { Bot, X, Send, ShoppingCart, Loader2, User, Sparkles } from 'lucide-reac
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/lib/context/CartContext';
+import { useAuth } from '@/lib/context/AuthContext';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -38,6 +39,8 @@ export default function AiAssistant() {
   const [recommendedRecipes, setRecommendedRecipes] = useState<any[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const isAdmin = !!(user?.app_metadata?.is_admin);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -83,7 +86,9 @@ export default function AiAssistant() {
       console.error('AI Error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "I'm having trouble connecting to my brain right now. 🧠 Please ensure your OpenAI API Key is correctly configured in your Supabase Edge Function secrets."
+        content: isAdmin
+          ? "I'm having trouble connecting to my brain right now. 🧠 Please ensure your OpenAI API Key is correctly configured in your Supabase Edge Function secrets."
+          : "I'm having a little trouble thinking right now. 🛍️ Please try again in a moment or browse our products using the menu!"
       }]);
     } finally {
       setIsLoading(false);
