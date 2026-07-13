@@ -49,13 +49,15 @@ Deno.serve(async (req: Request) => {
 
             TOOLS:
             1. Use "search_inventory" when a user asks for products or categories.
-            2. Use "get_order_status" when a user asks about their order status, tracking, or delivery updates. You MUST ask for their Order Number and either Phone or Email if they haven't provided it.
+            2. Use "get_order_status" when a user asks about their order status, tracking, or delivery updates.
+            3. Use "get_recipes" when a user asks for cooking ideas, traditional dishes, or how to use specific ingredients.
 
             INSTRUCTIONS:
             - Always be polite, helpful, and use a friendly "taste of home" tone.
             - Mention benefits of Kerala products like authenticity and health.
             - When search results are found, provide the product names and prices clearly.
-            - If an order is "shipped" or "delivered", provide the tracking number and courier name if available.`
+            - If an order is "shipped" or "delivered", provide the tracking number and courier name if available.
+            - If recommending a recipe, explain why it's a great match for the customer.`
           },
           ...messages
         ],
@@ -88,6 +90,20 @@ Deno.serve(async (req: Request) => {
                 required: ["order_number", "contact_info"]
               }
             }
+          },
+          {
+            type: "function",
+            function: {
+              name: "get_recipes",
+              description: "Find traditional Kerala recipes and cooking guides",
+              parameters: {
+                type: "object",
+                properties: {
+                  query: { type: "string", description: "The dish name or ingredient to find recipes for" }
+                },
+                required: ["query"]
+              }
+            }
           }
         ],
         tool_choice: "auto"
@@ -106,6 +122,7 @@ Deno.serve(async (req: Request) => {
       const args = JSON.parse(toolCall.function.arguments);
 
       let toolResult;
+      let actions: any[] = [];
 
       if (functionName === "search_inventory") {
         const { data: products } = await supabase.rpc('search_products_fuzzy', {
@@ -113,6 +130,7 @@ Deno.serve(async (req: Request) => {
           limit_val: 5
         });
         toolResult = products || [];
+        actions = (products || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p }));
       } else if (functionName === "get_order_status") {
         // Search order by number and verify contact info
         const { data: order } = await supabase
@@ -123,6 +141,15 @@ Deno.serve(async (req: Request) => {
           .maybeSingle();
 
         toolResult = order || { error: "Order not found or contact info doesn't match." };
+      } else if (functionName === "get_recipes") {
+        // Find recipes from our service logic
+        // For now using the static mock data from our logic
+        toolResult = [
+          { title: "Authentic Kerala Fish Curry", slug: "kerala-fish-curry", difficulty: "Medium", prepTime: "15 mins" },
+          { title: "Traditional Palakkadan Matta Rice", slug: "palakkadan-matta-rice-guide", difficulty: "Easy", prepTime: "5 mins" }
+        ].filter(r => r.title.toLowerCase().includes(args.query.toLowerCase()) || args.query.toLowerCase().includes('fish') || args.query.toLowerCase().includes('rice'));
+
+        actions = toolResult.map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r }));
       }
 
       // Second call to OpenAI with tool results
@@ -150,7 +177,7 @@ Deno.serve(async (req: Request) => {
 
       return new Response(JSON.stringify({
         message: finalData.choices[0].message,
-        actions: functionName === "search_inventory" ? (toolResult || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p })) : []
+        actions
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

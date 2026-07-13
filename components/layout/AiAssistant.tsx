@@ -13,18 +13,20 @@ interface Message {
 }
 
 interface Action {
-  type: 'RECOMMEND_PRODUCT';
-  product: any;
+  type: 'RECOMMEND_PRODUCT' | 'RECOMMEND_RECIPE';
+  product?: any;
+  recipe?: any;
 }
 
 export default function AiAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hi there! 👋 I am your Kerala Grocery assistant. I can help you find products, track your orders, or answer any questions about our delivery and policies. How can I help today?" }
+    { role: 'assistant', content: "Hi there! 👋 I am your Kerala Grocery assistant. I can help you find products, track your orders, or share traditional recipes. How can I help today?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+  const [recommendedRecipes, setRecommendedRecipes] = useState<any[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
 
@@ -58,7 +60,9 @@ export default function AiAssistant() {
       }
       if (data.actions) {
         const prods = data.actions.filter((a: any) => a.type === 'RECOMMEND_PRODUCT').map((a: any) => a.product);
+        const recs = data.actions.filter((a: any) => a.type === 'RECOMMEND_RECIPE').map((a: any) => a.recipe);
         setRecommendedProducts(prods);
+        setRecommendedRecipes(recs);
       }
     } catch (error) {
       console.error('AI Error:', error);
@@ -134,14 +138,15 @@ export default function AiAssistant() {
               )}
             </div>
 
-            {/* AI Product Recommendations Tray */}
+            {/* AI Product/Recipe Recommendations Tray */}
             <AnimatePresence>
-              {recommendedProducts.length > 0 && (
+              {(recommendedProducts.length > 0 || recommendedRecipes.length > 0) && (
                 <motion.div
                   initial={{ y: 50, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="bg-white border-t border-green-50 p-4 flex gap-3 overflow-x-auto scrollbar-hide"
+                  className="bg-white border-t border-green-50 p-4 flex gap-3 overflow-x-auto scrollbar-hide relative"
                 >
+                  {/* Products */}
                   {recommendedProducts.map((p) => (
                     <div key={p.id} className="flex-shrink-0 w-32 bg-gray-50 rounded-2xl p-2 border border-gray-100 relative group">
                       <div className="relative h-20 w-full mb-1">
@@ -169,9 +174,26 @@ export default function AiAssistant() {
                       </div>
                     </div>
                   ))}
+
+                  {/* Recipes */}
+                  {recommendedRecipes.map((r) => (
+                    <Link
+                      key={r.slug}
+                      href={`/recipes/${r.slug}`}
+                      className="flex-shrink-0 w-32 bg-[#f4faf6] rounded-2xl p-2 border border-green-100 relative group"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center mb-1 shadow-sm">
+                        <Sparkles className="w-4 h-4 text-green-600" />
+                      </div>
+                      <p className="text-[10px] font-bold text-green-900 line-clamp-2 mb-1">{r.title}</p>
+                      <span className="text-[8px] font-bold text-green-600 uppercase">{r.difficulty}</span>
+                    </Link>
+                  ))}
+
                   <button
-                    onClick={() => setRecommendedProducts([])}
-                    className="absolute top-1 right-1 bg-gray-200 rounded-full p-0.5"
+                    onClick={() => { setRecommendedProducts([]); setRecommendedRecipes([]); }}
+                    className="absolute top-1 right-1 bg-gray-200/50 rounded-full p-0.5 hover:bg-gray-300 transition-colors"
                   >
                     <X className="w-3 h-3 text-gray-500" />
                   </button>
