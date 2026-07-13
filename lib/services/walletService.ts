@@ -117,8 +117,13 @@ export function daysRemaining(cycleEnd: string): number {
 }
 
 export function maxWalletUsable(subtotal: number, walletBalance: number, settings: WalletSettings): number {
-  const maxFromSubtotal = parseFloat((subtotal * settings.max_wallet_usage_percent).toFixed(2));
-  return Math.min(walletBalance, maxFromSubtotal);
+  // Cap usage at the configured percentage of order subtotal (usually 50%)
+  const maxFromSubtotal = parseFloat((subtotal * (settings.max_wallet_usage_percent || 0.5)).toFixed(2));
+
+  // ALSO cap at 50% of current wallet balance as requested to encourage repeat purchases
+  const maxFromBalance = parseFloat((walletBalance * 0.5).toFixed(2));
+
+  return Math.min(walletBalance, maxFromSubtotal, maxFromBalance);
 }
 
 // ── Supabase queries ──────────────────────────────────────────────────────────

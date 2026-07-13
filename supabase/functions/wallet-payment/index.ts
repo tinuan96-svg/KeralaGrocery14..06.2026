@@ -115,6 +115,18 @@ Deno.serve(async (req: Request) => {
     if (walletErr) return respond(500, { error: "Failed to fetch wallet" });
     const currentBalance = parseFloat(wallet?.balance ?? 0);
 
+    // Rule: Cannot use more than 50% of CURRENT wallet balance
+    const maxFromBalance = parseFloat((currentBalance * 0.5).toFixed(2));
+
+    if (walletAmt > maxFromBalance && walletAmt > 0) {
+       // We allow the full balance only if it's less than some tiny threshold or if it's the very first purchase?
+       // No, user said "only 50% of their wallet amount each time".
+       return respond(400, {
+         error: `Wallet usage exceeds 50% of your current balance. Max usable: £${maxFromBalance.toFixed(2)}`,
+         max_from_balance: maxFromBalance
+       });
+    }
+
     if (currentBalance < walletAmt) {
       return respond(400, {
         error: "Insufficient wallet balance",

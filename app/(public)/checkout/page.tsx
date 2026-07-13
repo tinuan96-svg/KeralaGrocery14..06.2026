@@ -19,7 +19,7 @@ import { blurDataURL } from '@/lib/utils/image';
 import AddressAutocomplete, { type SelectedAddress } from '@/components/ui/AddressAutocomplete';
 import AddressSelector from '@/components/account/AddressSelector';
 import { fetchDeliverySettings, calcDelivery } from '@/lib/services/deliveryService';
-import { maxWalletUsable } from '@/lib/services/walletService';
+import { maxWalletUsable, getEstimatedCashback } from '@/lib/services/walletService';
 import { useAddresses } from '@/hooks/useAddresses';
 import type { CustomerAddress } from '@/lib/services/addressService';
 
@@ -689,6 +689,21 @@ export default function CheckoutPage() {
                       <Wallet className="w-3.5 h-3.5" /> KG Wallet
                     </span>
                     <span className="text-green-700">−£{walletAmount.toFixed(2)}</span>
+                  </div>
+                )}
+
+                {/* Cashback estimate for this order */}
+                {walletSettings && (
+                  <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 flex items-center justify-between gap-2 mt-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <Wallet className="w-3 h-3 text-emerald-700" />
+                      </div>
+                      <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Earn Credit</span>
+                    </div>
+                    <span className="text-xs font-black text-emerald-700">
+                      +£{getEstimatedCashback(Math.max(0, cartTotal - walletAmount), walletSettings).toFixed(2)}
+                    </span>
                   </div>
                 )}
               </div>
