@@ -122,6 +122,10 @@ export async function POST(req: NextRequest) {
           } else if (orderData.order_status === 'delivered') {
             message = `Good news! Your order #${orderNumber} has been delivered. Enjoy your groceries!`;
             type = 'order_delivered';
+
+            // Release pending cashback instantly to available balance
+            await supabase.rpc('release_order_cashback', { p_order_id: targetId })
+              .catch(e => console.error('[Webhook] cashback release failed:', e));
           }
 
           if (type) {
