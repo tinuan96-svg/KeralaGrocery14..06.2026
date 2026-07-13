@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useCart, useCartData } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useWallet } from '@/hooks/useWallet';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -44,6 +45,8 @@ export default function AiAssistant() {
   const { cartCount, cartTotal } = useCartData();
   const { user, profile } = useAuth();
   const { wallet } = useWallet();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isAdmin = !!(user?.app_metadata?.is_admin);
 
   // Interaction Monitor Logic
@@ -55,11 +58,53 @@ export default function AiAssistant() {
 
     const timers: ReturnType<typeof setTimeout>[] = [];
 
+    // --- Path Based Nudges (Errors & Gratitude) ---
+
+    // 1. Order Success / Gratitude
+    if (pathname.includes('order-success') || pathname.includes('payment-success')) {
+      const orderNum = searchParams.get('order');
+      setNudge(`Thank you for your order${orderNum ? ' #' + orderNum : ''}! ❤️ I'm so happy to help you get a taste of home.`);
+      return;
+    }
+
+    // 2. Payment/Order Failures
+    if (pathname.includes('failed') || pathname.includes('error')) {
+      setNudge("I noticed a payment issue. 🛠️ Don't worry, I can help you retry or check your wallet balance!");
+      return;
+    }
+
+    // 3. Login/Auth Issues (usually detected by search params on redirect)
+    if (searchParams.get('error') === 'auth_failed') {
+      setNudge("Trouble logging in? 🔑 I can help you reset your password or try a different method.");
+      return;
+    }
+
+    // --- Proactive Order Updates ---
+    if (user && pathname === '/') {
+       const fetchLastOrder = async () => {
+         const supabase = getSupabase();
+         const { data } = await supabase
+           .from('orders')
+           .select('order_number, order_status')
+           .eq('user_id', user.id)
+           .neq('order_status', 'delivered')
+           .neq('order_status', 'cancelled')
+           .order('created_at', { ascending: false })
+           .limit(1)
+           .maybeSingle();
+
+         if (data) {
+           setNudge(`Update: Your order #${data.order_number} is currently ${data.order_status.toUpperCase()}. 🚚`);
+         }
+       };
+       fetchLastOrder();
+    }
+
     // Nudge 1: Cart is empty but user has been on site for a while
-    if (cartCount === 0) {
+    if (cartCount === 0 && pathname === '/') {
       const t = setTimeout(() => {
         setNudge("Looking for something special? I can find authentic Kerala brands for you! 🥥");
-      }, 15000); // 15 seconds
+      }, 20000);
       timers.push(t);
     }
 
