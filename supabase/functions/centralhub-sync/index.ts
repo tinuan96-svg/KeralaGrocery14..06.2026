@@ -1075,11 +1075,14 @@ Deno.serve(async (req: Request) => {
             body: JSON.stringify({
               table: "orders",
               type: "INSERT",
-              store_slug: "keralagroceries",
+              store_slug: "malluspices",
               record: {
                 ...order,
-                status: order.order_status,
-                fulfillment_status: order.order_status,
+                status: (order.order_status === 'confirmed' || order.order_status === 'processing') ? 'confirmed' : order.order_status,
+                fulfillment_status: (order.order_status === 'confirmed' || order.order_status === 'processing') ? 'confirmed' : order.order_status,
+                packing_status: (order.order_status === 'confirmed' || order.order_status === 'processing') ? 'confirmed' : 'pending',
+                sync_store: "malluspices",
+                sync_origin: "local",
                 items: order.order_items,
               },
             }),
