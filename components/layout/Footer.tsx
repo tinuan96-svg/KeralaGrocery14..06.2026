@@ -103,8 +103,8 @@ export default function Footer() {
             </div>
             <div className="flex gap-2">
               {[
-                { href: 'https://www.facebook.com/keralagroceryk', Icon: Facebook, label: 'Facebook' },
-                { href: 'https://www.instagram.com/keralagroceryk', Icon: Instagram, label: 'Instagram' },
+                { href: 'https://www.facebook.com/keralagroceryuk', Icon: Facebook, label: 'Facebook' },
+                { href: 'https://www.instagram.com/keralagroceryuk', Icon: Instagram, label: 'Instagram' },
                 { href: 'https://twitter.com/keralagroceryuk', Icon: Twitter, label: 'Twitter' },
               ].map(({ href, Icon, label }) => (
                 <a
