@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, ShoppingCart, Loader2, User, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/lib/context/CartContext';
+import { useCart, useCartData } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useWallet } from '@/hooks/useWallet';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -39,7 +40,9 @@ export default function AiAssistant() {
   const [recommendedRecipes, setRecommendedRecipes] = useState<any[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
-  const { user } = useAuth();
+  const { cartCount } = useCartData();
+  const { user, profile } = useAuth();
+  const { wallet } = useWallet();
   const isAdmin = !!(user?.app_metadata?.is_admin);
 
   useEffect(() => {
@@ -63,7 +66,15 @@ export default function AiAssistant() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
         },
-        body: JSON.stringify({ messages: [...messages, userMessage] })
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          context: {
+            user_role: isAdmin ? 'admin' : 'customer',
+            user_name: profile?.name || user?.email?.split('@')[0],
+            wallet_balance: wallet?.balance || 0,
+            cart_count: cartCount || 0
+          }
+        })
       });
 
       const data = await response.json();

@@ -13,7 +13,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, context } = await req.json();
     const openAiKey = Deno.env.get("OPENAI_API_KEY");
 
     if (!openAiKey) {
@@ -24,6 +24,9 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    const isAdmin = context?.user_role === 'admin';
+    const userName = context?.user_name || 'Customer';
 
     // 1. Initial request to OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -37,34 +40,31 @@ Deno.serve(async (req: Request) => {
         messages: [
           {
             role: "system",
-            content: `You are the Kerala Grocery AI Shopping Assistant.
-            Your goal is to help users find authentic Kerala products, check their order status, and answer general enquiries.
+            content: `You are the Kerala Grocery AI Assistant.
+            CURRENT USER: ${userName} (Role: ${context?.user_role || 'guest'})
+            USER CONTEXT: Wallet Balance: £${context?.wallet_balance || 0}, Cart Items: ${context?.cart_count || 0}.
+
+            GOALS:
+            - Customers: Help them shop, check order status, explain wallet benefits, and share recipes.
+            - Admins: Act as a Business Analyst. Provide sales summaries and inventory alerts.
 
             FORMATTING RULES:
             - NEVER use long, blocky paragraphs.
-            - Use **bold** for product names, prices, or key terms.
             - Use bullet points (•) for lists.
+            - Use **bold** for product names, prices, or key numbers.
             - Add a blank line between sections.
-            - Keep replies concise and visually structured.
 
             KNOWLEDGE BASE:
-            - Delivery: Next-day delivery for orders before 6 PM. Free delivery on orders over £45.
-            - Delivery Areas: All across the UK (England, Scotland, Wales, Northern Ireland).
-            - Support: Email admin@keralagrocery.com or call 07769867549.
-            - Returns: 30-day guarantee on authentic products.
-            - Company: Tasty Kerala Ltd.
+            - Delivery: Next-day for orders before 6 PM. Free over £45.
+            - Loyalty: Earn cashback on every card payment. Spend up to 50% of balance per order.
 
-            TOOLS:
-            1. Use "search_inventory" when a user asks for products or categories.
-            2. Use "get_order_status" when a user asks about their order status, tracking, or delivery updates.
-            3. Use "get_recipes" when a user asks for cooking ideas, traditional dishes, or how to use specific ingredients.
+            ADMIN ONLY TOOLS:
+            - Use "get_business_stats" when the admin asks for sales, totals, or order summaries.
 
-            INSTRUCTIONS:
-            - Always be polite, helpful, and use a friendly "taste of home" tone.
-            - Mention benefits of Kerala products like authenticity and health.
-            - When search results are found, provide the product names and prices clearly.
-            - If an order is "shipped" or "delivered", provide the tracking number and courier name if available.
-            - If recommending a recipe, explain why it's a great match for the customer.`
+            CUSTOMER TOOLS:
+            - Use "search_inventory" for products.
+            - Use "get_order_status" for tracking (ask for Order #).
+            - Use "get_recipes" for cooking ideas.`
           },
           ...messages
         ],
@@ -73,27 +73,18 @@ Deno.serve(async (req: Request) => {
             type: "function",
             function: {
               name: "search_inventory",
-              description: "Search for Kerala grocery products in the store inventory",
-              parameters: {
-                type: "object",
-                properties: {
-                  query: { type: "string", description: "The product name or category to search for" }
-                },
-                required: ["query"]
-              }
+              description: "Search for Kerala grocery products",
+              parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
             }
           },
           {
             type: "function",
             function: {
               name: "get_order_status",
-              description: "Check the status and tracking info of a specific order",
+              description: "Check order status",
               parameters: {
                 type: "object",
-                properties: {
-                  order_number: { type: "string", description: "The order number (e.g. KG-12345)" },
-                  contact_info: { type: "string", description: "The customer email or phone number used for the order" }
-                },
+                properties: { order_number: { type: "string" }, contact_info: { type: "string" } },
                 required: ["order_number", "contact_info"]
               }
             }
@@ -101,15 +92,9 @@ Deno.serve(async (req: Request) => {
           {
             type: "function",
             function: {
-              name: "get_recipes",
-              description: "Find traditional Kerala recipes and cooking guides",
-              parameters: {
-                type: "object",
-                properties: {
-                  query: { type: "string", description: "The dish name or ingredient to find recipes for" }
-                },
-                required: ["query"]
-              }
+              name: "get_business_stats",
+              description: "ADMIN ONLY: Get summary of sales and orders for today",
+              parameters: { type: "object", properties: { timeframe: { type: "string", enum: ["today", "yesterday", "week"] } } }
             }
           }
         ],
@@ -118,23 +103,13 @@ Deno.serve(async (req: Request) => {
     });
 
     const data = await response.json();
-    if (data.error) throw new Error(`OpenAI Error: ${data.error.message || JSON.stringify(data.error)}`);
-
-    if (!data.choices?.length) {
-      throw new Error("OpenAI returned an empty response.");
-    }
+    if (data.error) throw new Error(`OpenAI Error: ${data.error.message}`);
 
     const message = data.choices[0].message;
 
-    // 2. Handle Tool Calls if any
-    if (message.tool_calls && message.tool_calls.length > 0) {
-      console.log(`Processing ${message.tool_calls.length} tool calls...`);
-
-      const toolMessages = [
-        ...messages,
-        message,
-      ];
-
+    // 2. Handle Tool Calls
+    if (message.tool_calls) {
+      const toolMessages = [...messages, message];
       let actions: any[] = [];
 
       for (const toolCall of message.tool_calls) {
@@ -143,73 +118,36 @@ Deno.serve(async (req: Request) => {
         let toolResult;
 
         if (functionName === "search_inventory") {
-          const { data: products } = await supabase.rpc('search_products_fuzzy', {
-            search_query: args.query,
-            limit_val: 5
-          });
-          toolResult = products || [];
-          const newActions = (products || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p }));
-          actions = [...actions, ...newActions];
+          const { data: p } = await supabase.rpc('search_products_fuzzy', { search_query: args.query, limit_val: 5 });
+          toolResult = p || [];
+          actions = (p || []).map((p: any) => ({ type: 'RECOMMEND_PRODUCT', product: p }));
         } else if (functionName === "get_order_status") {
-          const { data: order } = await supabase
-            .from('orders')
-            .select('order_number, order_status, payment_status, customer_name, tracking_number, courier_name, created_at')
-            .eq('order_number', args.order_number)
-            .or(`customer_email.eq.${args.contact_info},customer_phone.eq.${args.contact_info}`)
-            .maybeSingle();
+          const { data: o } = await supabase.from('orders').select('*').eq('order_number', args.order_number).maybeSingle();
+          toolResult = o || { error: "Not found" };
+        } else if (functionName === "get_business_stats" && isAdmin) {
+          const { data: stats } = await supabase.from('orders')
+            .select('total')
+            .eq('payment_status', 'paid')
+            .gte('created_at', new Date().toISOString().split('T')[0]);
 
-          toolResult = order || { error: "Order not found or contact info doesn't match." };
-        } else if (functionName === "get_recipes") {
-          // Mock recipe results for now, matching the logic in recipeService.ts
-          toolResult = [
-            { title: "Authentic Kerala Fish Curry", slug: "kerala-fish-curry", difficulty: "Medium", prepTime: "15 mins" },
-            { title: "Traditional Palakkadan Matta Rice", slug: "palakkadan-matta-rice-guide", difficulty: "Easy", prepTime: "5 mins" }
-          ].filter(r =>
-            r.title.toLowerCase().includes(args.query.toLowerCase()) ||
-            args.query.toLowerCase().includes('fish') ||
-            args.query.toLowerCase().includes('rice')
-          );
-
-          const newActions = toolResult.map(r => ({ type: 'RECOMMEND_RECIPE', recipe: r }));
-          actions = [...actions, ...newActions];
+          const totalRevenue = stats?.reduce((s, x) => s + Number(x.total), 0) || 0;
+          toolResult = { order_count: stats?.length || 0, revenue: totalRevenue };
         }
 
-        toolMessages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: JSON.stringify(toolResult)
-        });
+        toolMessages.push({ role: "tool", tool_call_id: toolCall.id, content: JSON.stringify(toolResult) });
       }
 
-      // Second call to OpenAI with all tool results
       const finalResponse = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${openAiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: toolMessages
-        })
+        headers: { "Authorization": `Bearer ${openAiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "gpt-4o-mini", messages: toolMessages })
       });
 
       const finalData = await finalResponse.json();
-      if (finalData.error) throw new Error(`OpenAI Final Error: ${finalData.error.message}`);
-
-      if (!finalData.choices?.length) {
-        throw new Error("OpenAI returned an empty response after tool call.");
-      }
-
-      return new Response(JSON.stringify({
-        message: finalData.choices[0].message,
-        actions
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ message: finalData.choices[0].message, actions }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    return new Response(JSON.stringify({ message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ message }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
