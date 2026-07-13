@@ -16,6 +16,7 @@ import RecentlyViewedTracker from '@/components/product/RecentlyViewedTracker';
 import RecentlyViewed from '@/components/product/RecentlyViewed';
 import DeliveryUrgencyTimer from '@/components/product/DeliveryUrgencyTimer';
 import FrequentlyBoughtTogether from '@/components/product/FrequentlyBoughtTogether';
+import ReviewSection from '@/components/product/ReviewSection';
 import { getProductDetail, getProducts } from '@/lib/services/rpcApiClient';
 import { getPersonalizedRecommendations } from '@/lib/services/recommendationService';
 import { getSupabase } from '@/lib/supabase/client';
@@ -411,6 +412,9 @@ export default function KeralaProductDetailPage({ slug }: Props) {
 
         {/* High-margin profit generative spotlight */}
         <ProfitGenerativeBanner />
+
+        {/* Customer Reviews */}
+        <ReviewSection productId={product.id} productName={product.display_title} />
 
         {/* Related products */}
         {related.length > 0 && (

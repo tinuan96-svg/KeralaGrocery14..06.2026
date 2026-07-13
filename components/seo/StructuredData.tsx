@@ -213,6 +213,8 @@ export function ProductSchema({
   brand = 'Kerala Groceries UK',
   sku,
   url,
+  ratingValue,
+  reviewCount,
 }: {
   name: string;
   description: string;
@@ -223,6 +225,8 @@ export function ProductSchema({
   brand?: string;
   sku?: string;
   url?: string;
+  ratingValue?: number;
+  reviewCount?: number;
 }) {
   const priceValidUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     .toISOString()
@@ -260,6 +264,16 @@ export function ProductSchema({
   };
 
   if (sku) schema.sku = sku;
+
+  if (ratingValue && reviewCount && reviewCount > 0) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: ratingValue.toString(),
+      reviewCount: reviewCount.toString(),
+      bestRating: '5',
+      worstRating: '1',
+    };
+  }
 
   return <StructuredData data={schema} />;
 }
