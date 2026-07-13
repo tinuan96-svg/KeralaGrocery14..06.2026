@@ -31,6 +31,7 @@ interface Action {
 
 export default function AiAssistant() {
   const [isOpen, setIsOpen] = useState(false);
+  const [nudge, setNudge] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: "Hi there! 👋 I am your Kerala Grocery assistant. I can help you find products, track your orders, or share traditional recipes. How can I help today?" }
   ]);
@@ -40,10 +41,44 @@ export default function AiAssistant() {
   const [recommendedRecipes, setRecommendedRecipes] = useState<any[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { addToCart } = useCart();
-  const { cartCount } = useCartData();
+  const { cartCount, cartTotal } = useCartData();
   const { user, profile } = useAuth();
   const { wallet } = useWallet();
   const isAdmin = !!(user?.app_metadata?.is_admin);
+
+  // Interaction Monitor Logic
+  useEffect(() => {
+    if (isAdmin || isOpen) {
+      setNudge(null);
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    // Nudge 1: Cart is empty but user has been on site for a while
+    if (cartCount === 0) {
+      const t = setTimeout(() => {
+        setNudge("Looking for something special? I can find authentic Kerala brands for you! 🥥");
+      }, 15000); // 15 seconds
+      timers.push(t);
+    }
+
+    // Nudge 2: Almost reached free delivery threshold
+    if (cartCount > 0 && cartTotal > 30 && cartTotal < 45) {
+      setNudge(`You're only £${(45 - cartTotal).toFixed(2)} away from FREE delivery! Want a snack suggestion? 🍿`);
+    }
+
+    return () => timers.forEach(clearTimeout);
+  }, [cartCount, cartTotal, isAdmin, isOpen]);
+
+  // Interaction Monitor: Watch for errors or struggle
+  useEffect(() => {
+    const handleGlobalError = () => {
+      setNudge("Oops, something went wrong! I can help you finish your order if you're stuck. 🛠️");
+    };
+    window.addEventListener('error', handleGlobalError);
+    return () => window.removeEventListener('error', handleGlobalError);
+  }, []);
 
   // Deep Audit Fix: Completely hide the assistant for Admins as requested
   if (isAdmin) return null;
@@ -118,6 +153,30 @@ export default function AiAssistant() {
 
   return (
     <>
+      {/* Interaction Nudge */}
+      <AnimatePresence>
+        {nudge && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, x: 20 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            exit={{ opacity: 0, scale: 0.8, x: 20 }}
+            className="fixed bottom-40 right-6 z-50 max-w-[200px] bg-white border border-green-100 rounded-2xl shadow-xl p-3 text-[11px] font-medium text-gray-800 leading-snug"
+          >
+            <div className="relative">
+              {nudge}
+              <button
+                onClick={() => setNudge(null)}
+                className="absolute -top-4 -right-4 w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+              {/* Pointer triangle */}
+              <div className="absolute top-full right-4 w-3 h-3 bg-white border-r border-b border-green-50 rotate-45 -mt-1.5" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Floating Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
