@@ -1,15 +1,20 @@
 -- Final fix for order number generation
 -- This migration ensures that generate_order_number exists with the correct signature and permissions.
+-- We also bump the sequence significantly to avoid any collisions with existing data.
 
 -- 1. Drop all possible existing versions to avoid conflicts
 DROP FUNCTION IF EXISTS public.generate_order_number() CASCADE;
 DROP FUNCTION IF EXISTS public.generate_order_number(text) CASCADE;
 
--- 2. Ensure all sequences exist in the public schema
-CREATE SEQUENCE IF NOT EXISTS public.order_number_seq START 6000;
-CREATE SEQUENCE IF NOT EXISTS public.order_number_paid_v2_seq START 2026;
+-- 2. Ensure all sequences exist and start high enough to avoid collisions
+-- Starting at 10000 ensures we are past most early test orders.
+CREATE SEQUENCE IF NOT EXISTS public.order_number_seq START 10000;
+SELECT setval('public.order_number_seq', GREATEST(10000, nextval('public.order_number_seq')));
 
--- 3. Create the function with extremely robust error handling
+CREATE SEQUENCE IF NOT EXISTS public.order_number_paid_v2_seq START 2026;
+SELECT setval('public.order_number_paid_v2_seq', GREATEST(2026, nextval('public.order_number_paid_v2_seq')));
+
+-- 3. Create the function with extremely robust error handling and uniqueness
 CREATE OR REPLACE FUNCTION public.generate_order_number(p_payment_status text DEFAULT 'pending')
 RETURNS text
 LANGUAGE plpgsql
@@ -18,17 +23,26 @@ SET search_path = public, pg_temp
 AS $$
 DECLARE
   seq_val bigint;
+  final_num text;
 BEGIN
   IF p_payment_status = 'paid' THEN
     seq_val := nextval('public.order_number_paid_v2_seq');
-    RETURN 'KG' || seq_val::text;
+    final_num := 'KG' || seq_val::text;
   ELSE
     seq_val := nextval('public.order_number_seq');
-    RETURN 'KG-2026-' || seq_val::text;
+    final_num := 'KG-2026-' || seq_val::text;
   END IF;
+
+  -- Double check for existence and append a small random string if collision found
+  -- (rare but protects against manual entries)
+  IF EXISTS (SELECT 1 FROM orders WHERE order_number = final_num) THEN
+    final_num := final_num || '-' || (floor(random() * 900) + 100)::text;
+  END IF;
+
+  RETURN final_num;
 EXCEPTION WHEN OTHERS THEN
-  -- Fallback to a random number to avoid blocking orders if sequences are locked
-  RETURN 'KG-' || (floor(random() * 900000) + 100000)::text;
+  -- Fallback to a fully random number to avoid blocking orders
+  RETURN 'KG-' || (floor(random() * 9000000) + 1000000)::text;
 END;
 $$;
 

@@ -161,7 +161,11 @@ Deno.serve(async (req: Request) => {
 
     if (orderError) {
       console.error("[create-order] insert order failed:", orderError);
-      return respond(500, { error: "Failed to create order" });
+      return respond(500, {
+        error: "Failed to create order",
+        detail: orderError.message,
+        code: orderError.code
+      });
     }
 
     // ── Calculate and Record Pending Cashback ────────────────────────────────

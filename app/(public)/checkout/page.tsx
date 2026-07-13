@@ -302,7 +302,10 @@ export default function CheckoutPage() {
     });
 
     const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error || 'Order creation failed');
+    if (!res.ok || data.error) {
+      const errorDetail = data.detail ? ` (${data.detail})` : '';
+      throw new Error(data.error ? `${data.error}${errorDetail}` : 'Order creation failed');
+    }
     return data;
   };
 
