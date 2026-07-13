@@ -5,6 +5,15 @@ export function formatPrice(value: number | string | null | undefined): string {
   return `£${n.toFixed(2)}`;
 }
 
+/**
+ * Rounds a price up to the nearest multiple of 0.10
+ * Example: 1.73 -> 1.80, 1.70 -> 1.70, 1.71 -> 1.80
+ */
+export function roundUpToNearestTen(price: number): number {
+  if (!price || price <= 0) return 0;
+  return Math.ceil(price * 10) / 10;
+}
+
 // Stock
 
 export function formatStock(stock: number, unit?: string | null): string {

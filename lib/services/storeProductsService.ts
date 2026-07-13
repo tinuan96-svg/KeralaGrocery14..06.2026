@@ -1,6 +1,7 @@
 import { getSupabase } from '@/lib/supabase/client';
 import type { ProductWithDetails, Category } from '@/lib/types/database';
 import { resolveProductImage } from '@/lib/utils/image';
+import { roundUpToNearestTen } from '@/lib/utils/formatters';
 
 // Force Refresh: 2026-07-06 07:45
 const PRODUCTS_SELECT = `
@@ -47,8 +48,8 @@ function mapProduct(p: any): ProductWithDetails {
     name: p.name ?? '',
     slug: p.slug ?? '',
     description: p.description ?? null,
-    price: p.price ?? 0,
-    original_price: p.original_price ?? null,
+    price: roundUpToNearestTen(p.price ?? 0),
+    original_price: p.original_price ? roundUpToNearestTen(p.original_price) : null,
     image_main: imageUrl,
     image_url: imageUrl,
     image_path: p.image_path ?? null,

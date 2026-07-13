@@ -6,6 +6,7 @@
 
 import { getSupabase } from '@/lib/supabase/client';
 import { resolveProductImage } from '@/lib/utils/image';
+import { roundUpToNearestTen } from '@/lib/utils/formatters';
 
 export type RpcSortBy = 'created_at' | 'price' | 'name';
 export type RpcSortOrder = 'asc' | 'desc';
@@ -84,8 +85,9 @@ function mapRow(
   row: Record<string, unknown>,
   categoryMap: Record<string, string>,
 ): RpcProduct {
-  const price = Number(row.selling_price ?? row.price ?? 0);
-  const originalPrice = row.original_price ? Number(row.original_price) : null;
+  const rawPrice = Number(row.selling_price ?? row.price ?? 0);
+  const price = roundUpToNearestTen(rawPrice);
+  const originalPrice = row.original_price ? roundUpToNearestTen(Number(row.original_price)) : null;
   const discountPct = originalPrice && originalPrice > price
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
     : Number(row.discount_percentage ?? 0);

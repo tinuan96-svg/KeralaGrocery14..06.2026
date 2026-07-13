@@ -13,11 +13,13 @@ export async function OPTIONS() {
 }
 
 /**
- * Applies a fixed 5% markup to the cost price.
+ * Applies a fixed 5% markup to the cost price and rounds up to nearest 0.10.
  */
 function applyMarkup(price: number): number {
   if (!price || price <= 0) return 0;
-  return Math.round(price * 1.05 * 100) / 100;
+  const sellingPrice = price * 1.05;
+  // Round up to nearest multiple of 0.10
+  return Math.ceil(sellingPrice * 10) / 10;
 }
 
 export async function POST(req: NextRequest) {

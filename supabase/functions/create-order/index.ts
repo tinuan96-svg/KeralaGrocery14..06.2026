@@ -86,10 +86,12 @@ Deno.serve(async (req: Request) => {
 
     const priceMap = new Map<string, number>();
     for (const p of products ?? []) {
-      // Prefer selling_price; fall back to price
-      const price = typeof p.selling_price === "number" && p.selling_price > 0
+      // Prefer selling_price; fall back to price.
+      // ALWAYS round up to nearest 0.10 for consistency.
+      const rawPrice = typeof p.selling_price === "number" && p.selling_price > 0
         ? p.selling_price
         : (p.price ?? 0);
+      const price = Math.ceil(rawPrice * 10) / 10;
       priceMap.set(p.id, price);
     }
 
