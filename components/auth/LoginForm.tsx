@@ -130,7 +130,10 @@ export default function LoginForm() {
 
     setIsSubmitting(true);
     try {
-      const { data, error: signUpErr } = await signUp(email, password);
+      const { data, error: signUpErr } = await signUp(email, password, {
+        full_name: name.trim(),
+        display_name: name.trim(),
+      });
       if (signUpErr) {
         toast({ title: 'Signup failed', description: signUpErr.message, variant: 'destructive' });
         return;

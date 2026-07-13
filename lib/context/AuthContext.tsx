@@ -36,7 +36,7 @@ interface AuthContextType {
   loading: boolean;
   /** True only when profile has settled and phone is confirmed unverified */
   needsPhoneVerification: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: any; data: any }>;
+  signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ error: any; data: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any; data: any }>;
   signInWithGoogle: () => Promise<{ error: any; data: any }>;
   signInWithApple: () => Promise<{ error: any; data: any }>;
@@ -222,9 +222,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // ── Auth methods ───────────────────────────────────────────────────────────
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
     const supabase = getSupabase();
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata,
+      },
+    });
     if (!error && data.session) await applySession(data.session);
     return { data, error };
   };

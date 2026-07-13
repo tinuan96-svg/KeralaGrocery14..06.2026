@@ -80,8 +80,8 @@ export default function CheckoutPage() {
     try {
       const supabase = getSupabase();
       const { data, error } = await supabase
-        .from('user_profiles')   // 'users' table was dropped — use user_profiles
-        .select('name,email,phone,address,city,postcode')
+        .from('user_profiles')
+        .select('name,display_name,email,phone,address,city,postcode')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -91,7 +91,7 @@ export default function CheckoutPage() {
         e && !e.includes('@keralagrocery.phone') ? e : '';
 
       setFormData({
-        name:     data?.name     || '',
+        name:     data?.name || data?.display_name || '',
         email:    realEmail(data?.email) || realEmail(user.email) || '',
         phone:    data?.phone    || user.phone || '',
         address:  data?.address  || '',
