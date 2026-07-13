@@ -87,10 +87,11 @@ export const metadata: Metadata = {
   },
 
   description:
-    'Buy authentic Kerala groceries online in the UK. Fresh spices, rice, snacks, pickles, and traditional South Indian essentials. Fast UK delivery from Tasty Kerala Ltd.',
+    'Buy authentic Kerala groceries online in the UK. Fresh spices, rice, snacks, pickles, and traditional South Indian essentials. Fast Next Day UK delivery from Tasty Kerala Ltd.',
 
   keywords: [
     'Kerala groceries UK',
+    'Kerala grocery UK',
     'buy Kerala groceries online',
     'Indian groceries UK delivery',
     'authentic Kerala food UK',
@@ -103,8 +104,9 @@ export const metadata: Metadata = {
     'Kerala masala UK',
     'Indian food delivery UK',
     'online Indian grocery store UK',
-    'Kerala pickles UK',
-    'Kerala tea UK',
+    'Kerala groceries London',
+    'Kerala groceries Manchester',
+    'Kerala groceries Birmingham',
   ],
 
   authors:   [{ name: 'Tasty Kerala Ltd', url: 'https://keralagrocery.com' }],

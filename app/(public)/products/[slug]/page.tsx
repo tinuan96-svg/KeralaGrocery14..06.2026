@@ -134,9 +134,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       ...(p.price > 0 ? {
         'product:price:amount': p.price.toFixed(2),
         'product:price:currency': 'GBP',
-        'product:availability': 'in stock',
-        'product:brand': brand ?? '',
-        'product:category': category ?? '',
+        'product:availability': 'instock',
+        'product:brand': brand ?? 'Kerala Groceries UK',
+        'product:category': category ?? 'Grocery',
+        'product:condition': 'new',
+        'product:retailer_item_id': p.id,
       } : {}),
     },
   };

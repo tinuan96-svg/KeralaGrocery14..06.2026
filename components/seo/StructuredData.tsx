@@ -38,10 +38,21 @@ export function OrganizationSchema() {
       postalCode: 'CM16 6AX',
       addressCountry: 'GB',
     },
-    areaServed: {
-      '@type': 'Country',
-      name: 'United Kingdom',
-    },
+    areaServed: [
+      { '@type': 'City', name: 'London' },
+      { '@type': 'City', name: 'Birmingham' },
+      { '@type': 'City', name: 'Manchester' },
+      { '@type': 'City', name: 'Glasgow' },
+      { '@type': 'City', name: 'Leeds' },
+      { '@type': 'City', name: 'Liverpool' },
+      { '@type': 'City', name: 'Newcastle' },
+      { '@type': 'City', name: 'Sheffield' },
+      { '@type': 'City', name: 'Bristol' },
+      { '@type': 'City', name: 'Leicester' },
+      { '@type': 'City', name: 'Edinburgh' },
+      { '@type': 'City', name: 'Cardiff' },
+      { '@type': 'City', name: 'Belfast' }
+    ],
     sameAs: [
       'https://www.facebook.com/keralagroceryuk',
       'https://www.instagram.com/keralagroceryuk',
@@ -103,10 +114,21 @@ export function GroceryStoreSchema() {
       postalCode: 'CM16 6AX',
       addressCountry: 'GB',
     },
-    areaServed: {
-      '@type': 'Country',
-      name: 'United Kingdom',
-    },
+    areaServed: [
+      { '@type': 'City', name: 'London' },
+      { '@type': 'City', name: 'Birmingham' },
+      { '@type': 'City', name: 'Manchester' },
+      { '@type': 'City', name: 'Glasgow' },
+      { '@type': 'City', name: 'Leeds' },
+      { '@type': 'City', name: 'Liverpool' },
+      { '@type': 'City', name: 'Newcastle' },
+      { '@type': 'City', name: 'Sheffield' },
+      { '@type': 'City', name: 'Bristol' },
+      { '@type': 'City', name: 'Leicester' },
+      { '@type': 'City', name: 'Edinburgh' },
+      { '@type': 'City', name: 'Cardiff' },
+      { '@type': 'City', name: 'Belfast' }
+    ],
     openingHoursSpecification: [
       {
         '@type': 'OpeningHoursSpecification',
