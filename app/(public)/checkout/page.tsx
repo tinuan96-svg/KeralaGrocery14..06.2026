@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingBag, Truck, Shield, Lock, CreditCard, Banknote, ChevronRight, Package, CircleCheck as CheckCircle, Wallet, MapPin, BookOpen, Zap } from 'lucide-react';
+import { ShoppingBag, Truck, Shield, Lock, CreditCard, Banknote, ChevronRight, Package, CircleCheck as CheckCircle, Wallet, MapPin, BookOpen, Zap, CircleAlert as AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSupabase } from '@/lib/supabase/client';
@@ -38,6 +38,7 @@ export default function CheckoutPage() {
   const [addressMode, setAddressMode] = useState<'saved' | 'manual'>('saved');
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [stockError, setStockError] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('worldpay');
   const [deliveryFee, setDeliveryFee]     = useState(0);
@@ -230,20 +231,17 @@ export default function CheckoutPage() {
       });
 
       if (cartChanged) {
-        // If there were issues, we need to refresh the cart state and alert the user
-        // For simplicity in this UI, we'll use toast to inform and ask them to review
+        setStockError(issues.join(' '));
         toast({
           title: 'Stock Update',
           description: issues.join(' '),
           variant: 'destructive',
           duration: 6000,
         });
-
-        // Re-sync cart logic would go here, but for now we block the checkout
-        // to let the user see the updated totals/items.
         return false;
       }
 
+      setStockError(null);
       return true;
     } catch (err) {
       console.error('Stock validation error:', err);
@@ -659,6 +657,22 @@ export default function CheckoutPage() {
 
               {paymentMethod === 'worldpay' && (
                 <div className="space-y-3">
+                  {stockError && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-red-800">Inventory Issue</p>
+                        <p className="text-xs text-red-700 mt-1">{stockError}</p>
+                        <Button
+                          variant="link"
+                          className="h-auto p-0 text-xs font-bold text-red-800 underline mt-2"
+                          onClick={() => setStockError(null)}
+                        >
+                          I understand, let me proceed
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
                     <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
                     <p className="text-xs text-blue-700 font-medium">
@@ -667,7 +681,7 @@ export default function CheckoutPage() {
                   </div>
                   <Button
                     className="w-full h-12 bg-[#0B5D3B] hover:bg-green-700 text-white font-bold rounded-xl text-sm transition-colors"
-                    disabled={isProcessing}
+                    disabled={isProcessing || !!stockError}
                     onClick={handleWorldpayPayment}>
                     {isProcessing ? (
                       <span className="flex items-center gap-2">
@@ -824,7 +838,7 @@ export default function CheckoutPage() {
         </div>
         <Button
           className="bg-[#0B5D3B] hover:bg-green-700 text-white font-bold px-6 h-11 rounded-xl text-sm"
-          disabled={isProcessing}
+          disabled={isProcessing || !!stockError}
           onClick={handleWorldpayPayment}>
           {isProcessing ? 'Processing...' : 'Pay Now'}
         </Button>
