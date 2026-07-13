@@ -84,11 +84,6 @@ export default function AssistantChat() {
         throw new Error(`Error ${response.status}`);
       }
 
-      // Handle Streaming
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedText = "";
-
       const contentType = response.headers.get('Content-Type');
       const isJson = contentType?.includes('application/json');
 
@@ -110,37 +105,43 @@ export default function AssistantChat() {
         }
 
         setMessages(prev => [...prev, { role: 'assistant', content }]);
-      } else if (reader) {
-        setMessages(prev => [...prev, { role: 'assistant', content: "" }]);
-        setEmotion('talking');
+      } else {
+        const reader = response.body?.getReader();
+        if (reader) {
+          const decoder = new TextDecoder();
+          let accumulatedText = "";
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+          setMessages(prev => [...prev, { role: 'assistant', content: "" }]);
+          setEmotion('talking');
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const dataStr = line.slice(6);
-              if (dataStr === '[DONE]') continue;
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
 
-              try {
-                const json = JSON.parse(dataStr);
-                const content = json.choices[0]?.delta?.content || "";
-                if (content) {
-                  accumulatedText += content;
-                  setMessages(prev => {
-                    const last = prev[prev.length - 1];
-                    if (last.role === 'assistant') {
-                      return [...prev.slice(0, -1), { ...last, content: accumulatedText }];
-                    }
-                    return prev;
-                  });
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const dataStr = line.slice(6);
+                if (dataStr === '[DONE]') continue;
+
+                try {
+                  const json = JSON.parse(dataStr);
+                  const content = json.choices[0]?.delta?.content || "";
+                  if (content) {
+                    accumulatedText += content;
+                    setMessages(prev => {
+                      const last = prev[prev.length - 1];
+                      if (last.role === 'assistant') {
+                        return [...prev.slice(0, -1), { ...last, content: accumulatedText }];
+                      }
+                      return prev;
+                    });
+                  }
+                } catch (e) {
+                  // Ignore parse errors for incomplete chunks
                 }
-              } catch (e) {
-                // Ignore parse errors for incomplete chunks
               }
             }
           }
