@@ -29,31 +29,30 @@ export default function DealsSection({ products }: DealsSectionProps) {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <section className="ka-section pt-6 pb-4 border-b border-[#d1ead9]">
+    <section className="pt-6 pb-4 bg-white border-b border-[#fef2f2]">
       <div className="max-w-7xl mx-auto">
         {/* Section header */}
-        <div className="flex items-center justify-between px-4 mb-4">
-          <div className="flex items-center gap-2">
-            <Flame className="ka-icon h-4 w-4 animate-pulse flex-shrink-0" />
+        <div className="flex items-center justify-between px-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-red-50 flex items-center justify-center border border-red-100 shadow-sm">
+              <Flame className="h-5 w-5 text-red-500 fill-red-500/20 animate-pulse" />
+            </div>
             <div>
-              <h2 className="text-[14px] font-extrabold text-[#0a3d22] leading-none">Flash Deals</h2>
-              <div className="flex items-center gap-1 mt-0.5">
-                <Clock className="ka-icon h-2.5 w-2.5 flex-shrink-0" />
-                <span className="ka-timer text-[10px] font-bold font-mono">
-                  {pad(timeLeft.hours)}:{pad(timeLeft.minutes)}:{pad(timeLeft.seconds)} remaining
+              <h2 className="text-[17px] font-black text-[#991b1b] leading-none tracking-tight">Flash Deals</h2>
+              <div className="flex items-center gap-1.5 mt-1">
+                <Clock className="h-3 w-3 text-red-400" />
+                <span className="text-[11px] font-bold font-mono text-red-500 tracking-tighter">
+                  {pad(timeLeft.hours)}h {pad(timeLeft.minutes)}m {pad(timeLeft.seconds)}s left
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-400 font-medium">{dealsProducts.length} deals</span>
-            <Link
-              href="/products?filter=deals"
-              className="ka-view-all inline-flex items-center gap-0.5 text-xs font-bold border rounded-full px-3 py-1 hover:opacity-90 transition-opacity whitespace-nowrap"
-            >
-              View All <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
+          <Link
+            href="/products?filter=deals"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-100 hover:bg-red-100 transition-all"
+          >
+            View All <ChevronRight className="h-3 w-3" />
+          </Link>
         </div>
 
         {/* Carousel */}

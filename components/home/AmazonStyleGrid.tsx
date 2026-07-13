@@ -94,33 +94,33 @@ export default function AmazonStyleGrid() {
   }
 
   return (
-    <div className="max-w-[1500px] mx-auto px-4 py-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {cards.map((card) => (
-          <div key={card.id} className="bg-white p-4 flex flex-col h-full shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1">{card.title}</h2>
+          <div key={card.id} className="bg-white p-4 sm:p-5 flex flex-col h-full shadow-[0_2px_12px_rgba(0,0,0,0.04)] rounded-2xl border border-gray-50">
+            <h2 className="text-[17px] sm:text-xl font-black text-gray-900 mb-4 tracking-tight leading-tight">{card.title}</h2>
 
             <div className="flex-1">
               {card.layout_type === 'grid_2x2' ? (
-                <div className="grid grid-cols-2 gap-3 h-full">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 h-full">
                   {card.items.slice(0, 4).map((item, idx) => (
-                    <Link key={idx} href={item.link} className="flex flex-col group">
-                      <div className="relative aspect-square overflow-hidden bg-gray-50 mb-1">
+                    <Link key={idx} href={item.link} className="flex flex-col group active:opacity-80 transition-opacity">
+                      <div className="relative aspect-square overflow-hidden bg-gray-50 mb-2 rounded-xl border border-gray-100/50">
                         <Image
                           src={item.image_url}
                           alt={item.label || ''}
                           fill
-                          className="object-cover transition-transform group-hover:scale-105"
-                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          sizes="(max-width: 768px) 45vw, 25vw"
                         />
                         {item.badge && (
-                          <div className="absolute bottom-1 left-1 bg-red-600 text-white text-[10px] font-bold px-1 py-0.5 rounded-sm">
+                          <div className="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider">
                             {item.badge}
                           </div>
                         )}
                       </div>
                       {item.label && (
-                        <p className="text-[12px] text-gray-700 font-medium group-hover:text-blue-700 truncate">
+                        <p className="text-[11px] sm:text-[13px] text-gray-800 font-bold group-hover:text-[#0B5D3B] truncate transition-colors">
                           {item.label}
                         </p>
                       )}
@@ -128,26 +128,29 @@ export default function AmazonStyleGrid() {
                   ))}
                 </div>
               ) : (
-                <Link href={card.items[0]?.link || '#'} className="block h-full relative group">
-                  <div className="relative h-full min-h-[300px] w-full overflow-hidden">
+                <Link href={card.items[0]?.link || '#'} className="block h-full relative group active:opacity-90 transition-opacity">
+                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-2xl border border-gray-100">
                     <Image
                       src={card.items[0]?.image_url || '/placeholder.webp'}
                       alt={card.title}
                       fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                      sizes="(max-width: 1024px) 100vw, 25vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 1024px) 95vw, 25vw"
                     />
                   </div>
                 </Link>
               )}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 pt-2">
               <Link
                 href={card.layout_type === 'grid_2x2' ? card.items[0]?.link || '#' : card.items[0]?.link || '#'}
-                className="text-sm text-blue-600 hover:text-red-700 hover:underline transition-colors font-medium"
+                className="text-[13px] sm:text-sm text-[#0B5D3B] hover:text-emerald-700 transition-colors font-extrabold flex items-center gap-1 group/link"
               >
                 {card.layout_type === 'grid_2x2' ? 'See more' : 'Shop now'}
+                <div className="w-4 h-4 rounded-full bg-emerald-50 flex items-center justify-center group-hover/link:translate-x-0.5 transition-transform">
+                  <ChevronRight className="w-2.5 h-2.5" />
+                </div>
               </Link>
             </div>
           </div>
@@ -156,3 +159,7 @@ export default function AmazonStyleGrid() {
     </div>
   );
 }
+
+const ChevronRight = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>
+);

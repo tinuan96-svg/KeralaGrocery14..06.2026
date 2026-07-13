@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 import { fetchCategoryCarouselData, type CategoryCarouselItem } from '@/lib/services/storeProductsService';
 
 const CATEGORY_GRADIENTS: Record<string, { from: string; to: string; emoji: string }> = {
@@ -161,20 +162,28 @@ export default function CategoryDiscoveryCarousel() {
 
   return (
     <section
-      className="px-4 py-5 bg-white border-b border-[#d1ead9]"
+      className="px-4 py-8 bg-white border-b border-[#f0f9f4]"
       onTouchStart={() => { pausedRef.current = true; }}
       onTouchEnd={() => { setTimeout(() => { pausedRef.current = false; }, 1800); }}
       onMouseEnter={() => { pausedRef.current = true; }}
       onMouseLeave={() => { pausedRef.current = false; }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[14px] font-extrabold text-[#0a3d22] tracking-tight">Shop By Category</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-2xl bg-[#f4faf6] flex items-center justify-center border border-[#d1ead9] shadow-sm">
+            <svg className="w-5 h-5 text-[#0B5D3B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </div>
+          <div>
+            <h2 className="text-[17px] font-black text-[#0a3d22] leading-none tracking-tight">Shop By Category</h2>
+            <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Our full collection</p>
+          </div>
+        </div>
         <Link
           href="/categories"
-          className="ka-view-all text-[11px] font-semibold border rounded-full px-2.5 py-0.5 hover:opacity-90 transition-opacity"
+          className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#0B5D3B] bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100"
         >
-          View All →
+          View All <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
 

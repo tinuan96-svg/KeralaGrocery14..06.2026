@@ -28,10 +28,10 @@ export default function MarketingBannerStrip({ offset = 0, limit = 1 }: { offset
           <section key={banner.id} className="max-w-7xl mx-auto px-4">
             <Link
               href={banner.cta_link}
-              className="block relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group"
+              className="block relative rounded-[32px] overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.18)] transition-all duration-500 group"
             >
               <div
-                className="relative flex flex-col md:flex-row items-center min-h-[220px] md:min-h-[160px] overflow-hidden"
+                className="relative flex flex-col md:flex-row items-center min-h-[200px] md:min-h-[160px] overflow-hidden"
                 style={{ background: bg }}
               >
                 {/* Decorative overlay */}

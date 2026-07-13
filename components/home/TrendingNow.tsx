@@ -14,23 +14,23 @@ export default function TrendingNow({ products }: TrendingNowProps) {
   const items = products.slice(0, 12);
 
   return (
-    <section className="pt-8 pb-6 bg-white border-b border-[#d1ead9]">
+    <section className="pt-8 pb-6 bg-white border-b border-[#f0f9f4]">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between px-4 mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-green-50 flex items-center justify-center">
+        <div className="flex items-center justify-between px-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shadow-sm">
               <TrendingUp className="h-5 w-5 text-[#0B5D3B]" />
             </div>
             <div>
-              <h2 className="text-[18px] font-extrabold text-[#0a3d22] leading-none">Trending Now</h2>
-              <p className="text-[12px] text-gray-500 mt-1">Popular picks from our Kerala community</p>
+              <h2 className="text-[17px] font-black text-[#0a3d22] leading-none tracking-tight">Trending Now</h2>
+              <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Popular this week</p>
             </div>
           </div>
           <Link
             href="/products"
-            className="ka-view-all inline-flex items-center gap-1 text-sm font-bold text-[#0B5D3B] hover:underline transition-all whitespace-nowrap"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#0B5D3B] bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-all"
           >
-            Explore All <ChevronRight className="h-4 w-4" />
+            See All <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
 

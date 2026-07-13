@@ -292,8 +292,8 @@ export default function PromoBannerCarousel() {
 
   return (
     <section
-      className="relative overflow-hidden w-full"
-      style={{ height: 'clamp(170px, 26vw, 280px)' }}
+      className="relative overflow-hidden w-full sm:rounded-3xl sm:mx-4 sm:w-[calc(100%-2rem)] sm:my-4 shadow-sm"
+      style={{ height: 'clamp(180px, 32vw, 320px)' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}

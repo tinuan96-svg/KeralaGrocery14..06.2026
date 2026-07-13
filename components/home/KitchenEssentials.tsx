@@ -23,23 +23,23 @@ export default function KitchenEssentials({ products }: KitchenEssentialsProps) 
   if (essentials.length === 0) return null;
 
   return (
-    <section className="pt-8 pb-10 bg-[#F8F6F2] border-b border-[#e5e1da]">
+    <section className="pt-8 pb-10 bg-[#FBFBF9] border-b border-[#ecece8]">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between px-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-2xl bg-amber-100 flex items-center justify-center border border-amber-200 shadow-sm">
               <ChefHat className="h-6 w-6 text-amber-700" />
             </div>
             <div>
-              <h2 className="text-[20px] font-extrabold text-gray-900 leading-none">Kitchen Essentials</h2>
-              <p className="text-[13px] text-gray-500 mt-1.5 font-medium">Must-have authentic ingredients for every Kerala home</p>
+              <h2 className="text-[17px] font-black text-gray-900 leading-none tracking-tight">Kitchen Essentials</h2>
+              <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Must-have ingredients</p>
             </div>
           </div>
           <Link
             href="/products?filter=essentials"
-            className="ka-view-all inline-flex items-center gap-1 text-sm font-bold text-amber-700 hover:underline transition-all whitespace-nowrap"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100 hover:bg-amber-100 transition-all"
           >
-            Shop Essentials <ChevronRight className="h-4 w-4" />
+            Shop All <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
 

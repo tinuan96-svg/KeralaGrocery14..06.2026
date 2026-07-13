@@ -39,45 +39,41 @@ export default function LoyaltyBanner() {
   const tierIdx = TIERS.findIndex(t => t.key === currentTier);
 
   return (
-    <section className="py-4 bg-white border-b border-gray-100">
+    <section className="py-6 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="relative rounded-2xl overflow-hidden bg-[#0a3d22]">
+        <div className="relative rounded-[32px] overflow-hidden bg-[#0a3d22] shadow-[0_12px_40px_rgba(10,61,34,0.15)]">
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              backgroundImage: `radial-gradient(ellipse at 90% 50%, rgba(245,158,11,0.12) 0%, transparent 60%),
-                                radial-gradient(ellipse at 10% 100%, rgba(16,185,129,0.08) 0%, transparent 50%)`,
+              backgroundImage: `radial-gradient(ellipse at 90% 50%, rgba(245,158,11,0.18) 0%, transparent 60%),
+                                radial-gradient(ellipse at 10% 100%, rgba(16,185,129,0.12) 0%, transparent 50%)`,
             }}
           />
 
-          <div className="relative z-10 px-4 py-4">
+          <div className="relative z-10 px-5 py-6">
             {/* Top row: copy + CTAs */}
-            <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-start justify-between gap-3 mb-5">
               <div className="min-w-0">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Wallet className="h-3.5 w-3.5 text-amber-400 flex-shrink-0" />
-                  <span className="text-amber-300 text-[10px] font-bold uppercase tracking-widest">KG Wallet Rewards</span>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <div className="w-6 h-6 rounded-lg bg-amber-400/20 flex items-center justify-center">
+                    <Wallet className="h-3.5 w-3.5 text-amber-400 flex-shrink-0" />
+                  </div>
+                  <span className="text-amber-300 text-[10px] font-black uppercase tracking-[0.15em]">KG Wallet Rewards</span>
                 </div>
-                <h2 className="text-white text-[16px] font-extrabold leading-tight">
+                <h2 className="text-white text-[19px] font-black leading-tight tracking-tight">
                   Earn Up To <span className="text-amber-400">15% Cashback</span>
                 </h2>
-                <p className="text-white/55 text-[11px] mt-0.5 leading-snug">
+                <p className="text-white/60 text-[12px] mt-1 leading-snug font-medium">
                   Shop more and unlock bigger rewards.
                 </p>
               </div>
 
-              <div className="flex flex-col gap-1.5 flex-shrink-0">
+              <div className="flex flex-col gap-2 flex-shrink-0">
                 <Link
                   href="/account/wallet"
-                  className="inline-flex items-center justify-center gap-1 bg-amber-400 hover:bg-amber-300 text-[#0a3d22] font-extrabold text-[11px] px-3 py-1.5 rounded-xl transition-colors shadow-md shadow-amber-500/20 whitespace-nowrap"
+                  className="inline-flex items-center justify-center gap-1 bg-amber-400 hover:bg-amber-300 text-[#0a3d22] font-black text-[11px] px-4 py-2 rounded-2xl transition-all shadow-lg shadow-amber-500/30 whitespace-nowrap active:scale-95"
                 >
                   <Wallet className="h-3 w-3" /> View Wallet
-                </Link>
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center gap-1 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-[11px] px-3 py-1.5 rounded-xl transition-colors whitespace-nowrap"
-                >
-                  Shop &amp; Earn <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>

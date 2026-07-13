@@ -12,24 +12,24 @@ export default function BestSellers({ products }: BestSellersProps) {
   if (items.length === 0) return null;
 
   return (
-    <section className="ka-section pt-8 pb-6 border-b border-[#d1ead9]">
+    <section className="pt-8 pb-6 bg-white border-b border-[#fffbeb]">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-yellow-50 flex items-center justify-center">
-              <Star className="h-5 w-5 text-yellow-600 fill-yellow-600" />
+        <div className="flex items-center justify-between px-4 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100 shadow-sm">
+              <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
             </div>
             <div>
-              <h2 className="text-[18px] font-extrabold text-[#0a3d22] leading-none">Top Sellers</h2>
-              <p className="text-[12px] text-gray-500 mt-1">Our most loved authentic products</p>
+              <h2 className="text-[17px] font-black text-[#0a3d22] leading-none tracking-tight">Top Sellers</h2>
+              <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Most loved products</p>
             </div>
           </div>
           <Link
             href="/products"
-            className="ka-view-all inline-flex items-center gap-1 text-sm font-bold text-[#0B5D3B] hover:underline transition-all whitespace-nowrap"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100 hover:bg-amber-100 transition-all"
           >
-            See All <ChevronRight className="h-4 w-4" />
+            See All <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
 

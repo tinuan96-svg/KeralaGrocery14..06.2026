@@ -68,12 +68,18 @@ export default function DiscoverMoreFeed() {
   }
 
   return (
-    <section className="py-4 px-4 max-w-7xl mx-auto">
+    <section className="py-6 px-4 max-w-7xl mx-auto">
       {/* Section header */}
-      <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="h-4 w-4 text-amber-500" />
-        <h2 className="text-[15px] font-extrabold text-gray-900 tracking-tight">Discover More</h2>
-        <span className="text-xs text-gray-400 font-medium">Keep browsing</span>
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100 shadow-sm">
+            <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500/20" />
+          </div>
+          <div>
+            <h2 className="text-[17px] font-black text-gray-900 tracking-tight leading-none">Discover More</h2>
+            <p className="text-[11px] text-gray-400 font-bold mt-1 uppercase tracking-widest">Handpicked for you</p>
+          </div>
+        </div>
       </div>
 
       {/* Product grid - Increased density */}
