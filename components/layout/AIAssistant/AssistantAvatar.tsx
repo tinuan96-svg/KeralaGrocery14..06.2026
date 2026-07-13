@@ -77,52 +77,34 @@ export default function AssistantAvatar() {
       animate={controls}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      className="relative z-50 group"
+      className="relative z-50 group flex items-end justify-center"
       aria-label="Assistant Kichu"
     >
-      <div className="relative w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] lg:w-[90px] lg:h-[90px] bg-white rounded-full border-4 border-white shadow-2xl overflow-hidden">
-        {/* Glow Effect */}
-        <div className="absolute inset-0 bg-green-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+      <div className="relative h-[75px] w-auto sm:h-[90px] lg:h-[110px] aspect-[1/1.4] transition-all duration-300">
+        {/* Glow Effect (Soft radial behind) */}
+        <div className="absolute inset-0 bg-green-400/10 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-150 pointer-events-none" />
 
-        {/* Main Mascot Image */}
+        {/* Main Mascot Image - FULL BODY, NO CROPPING */}
         <Image
           src="/ai-character.png"
           alt="Kichu"
           fill
-          className={`object-cover transition-transform duration-500 ${
-            emotion === 'thinking' ? 'scale-[3.2] -translate-y-2' : 'scale-[2.8]'
-          }`}
-          style={{ objectPosition: 'center 42%' }}
+          className="object-contain transition-transform duration-500 overflow-visible"
           priority
+          onError={(e) => {
+            (e.currentTarget as any).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👩‍💼%3C/text%3E%3C/svg%3E";
+          }}
         />
-
-        {/* Procedural Blinking Overlay */}
-        {isBlinking && (
-          <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
-             <div className="w-full h-full bg-[#0B5D3B]/5 mix-blend-multiply" />
-          </div>
-        )}
-
-        {/* Thinking / Listening Sparkle */}
-        {emotion === 'thinking' && (
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
-          >
-            <div className="w-full h-full border-2 border-dashed border-yellow-400 rounded-full opacity-40" />
-          </motion.div>
-        )}
       </div>
 
       {/* Mini "AI" Badge */}
-      <span className="absolute -top-1 -right-1 flex h-6 w-6 z-50">
+      <span className="absolute top-0 right-0 flex h-6 w-6 z-50">
         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
         <span className="relative inline-flex rounded-full h-6 w-6 bg-yellow-500 text-[10px] items-center justify-center font-black text-green-950 shadow-md">AI</span>
       </span>
 
       {/* Online Pulse */}
-      <div className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full z-50 shadow-sm" />
+      <div className="absolute bottom-1 left-2 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full z-50 shadow-sm" />
     </motion.button>
   );
 }

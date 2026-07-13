@@ -125,8 +125,8 @@ export default function AssistantChat() {
           {/* Header - Kerala Green Gradient */}
           <div className="bg-gradient-to-br from-[#0B5D3B] to-[#064e3b] p-6 text-white flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden border-2 border-white/30 shadow-inner">
-                 <Image src="/ai-character.png" alt="Kichu" width={80} height={80} className="object-cover scale-[3.2]" style={{ objectPosition: 'center 42%' }} />
+              <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center overflow-hidden border border-white/20 shadow-inner p-1">
+                 <Image src="/ai-character.png" alt="Kichu" width={100} height={100} className="object-contain scale-125 translate-y-1" />
               </div>
               <div>
                 <h3 className="text-base font-black tracking-tight">Kichu Guide</h3>
