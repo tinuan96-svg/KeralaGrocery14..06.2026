@@ -8,19 +8,6 @@ import { AssistantProvider, useAssistant } from './AssistantContext';
 
 function KichuAssistantContent() {
   const { isOpen, setIsOpen, emotion, setEmotion, bubbleText, setBubbleText } = useAssistant();
-  const [hasGreeted, setHasGreeted] = useState(false);
-
-  // Initial Greeting Logic
-  useEffect(() => {
-    if (!hasGreeted) {
-      const timer = setTimeout(() => {
-        setBubbleText("🙏 Namaskaram! I'm Kichu. Need help shopping?");
-        setEmotion('waving');
-        setHasGreeted(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasGreeted, setBubbleText, setEmotion]);
 
   const handleAvatarClick = () => {
     setIsOpen(!isOpen);
