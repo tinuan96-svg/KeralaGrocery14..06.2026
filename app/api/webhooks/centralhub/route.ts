@@ -99,7 +99,6 @@ export async function POST(req: NextRequest) {
         // CentralHub price is treated as the COST price.
         supplier_price: costPrice,
         cost_price: costPrice,
-        supplier_price_raw: costPrice,
         last_sync_at: new Date().toISOString(),
         updated_at: productData.updated_at || new Date().toISOString(),
         is_deleted: false,
