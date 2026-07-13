@@ -1,39 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getProducts, type RpcProduct } from '@/lib/services/rpcApiClient';
-import { fetchHomepageCategories } from '@/lib/services/storeProductsService';
+import { fetchStoreProducts, fetchHomepageCategories } from '@/lib/services/storeProductsService';
 import type { ProductWithDetails, Category } from '@/lib/types/database';
-
-function toProductWithDetails(p: RpcProduct): ProductWithDetails {
-  return {
-    id: p.id,
-    name: p.display_title,
-    slug: p.slug ?? p.id,
-    description: p.description,
-    price: p.price,
-    original_price: p.original_price,
-    image_main: p.image_url,
-    image_url: p.image_url,
-    category_id: null,
-    brand_id: null,
-    created_at: p.created_at ?? '',
-    stock: p.stock,
-    is_active: true,
-    discount_percentage: p.discount_pct,
-    category: p.category ? { id: '', name: p.category, slug: '' } : undefined,
-    brand: p.brand ? {
-      id:          p.brand,
-      name:        p.brand,
-      slug:        p.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-      logo_url:    null,
-      description: null,
-      created_at:  '',
-      updated_at:  '',
-    } : undefined,
-    rating: 4.5,
-  };
-}
 
 export interface HomepageData {
   allProducts: ProductWithDetails[];
@@ -45,15 +14,6 @@ export interface HomepageData {
   isLoading: boolean;
 }
 
-function shuffleArray<T>(array: T[]): T[] {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
 export function useHomepageData(): HomepageData {
   const [trending, setTrending]       = useState<ProductWithDetails[]>([]);
   const [deals, setDeals]             = useState<ProductWithDetails[]>([]);
@@ -61,44 +21,42 @@ export function useHomepageData(): HomepageData {
   const [newArrivals, setNewArrivals] = useState<ProductWithDetails[]>([]);
   const [categories, setCategories]   = useState<Category[]>([]);
   const [isLoading, setIsLoading]     = useState(true);
+  const [allProducts, setAllProducts] = useState<ProductWithDetails[]>([]);
 
   useEffect(() => {
     let cancelled = false;
 
-    // Fetch larger pools for rotation
-    Promise.all([
-      getProducts({ page: 1, limit: 30, sort: 'newest',     status: 'active' }),
-      getProducts({ page: 1, limit: 30, sort: 'price_desc', status: 'active' }),
-      getProducts({ page: 2, limit: 30, sort: 'newest',     status: 'active' }),
-      getProducts({ page: 1, limit: 30, sort: 'price_asc',  status: 'active' }),
-      fetchHomepageCategories(),
-    ]).then(([newestRes, topPriceRes, page2Res, budgetRes, cats]) => {
+    async function loadData() {
+      const [{ products }, cats] = await Promise.all([
+        fetchStoreProducts(),
+        fetchHomepageCategories(),
+      ]);
+
       if (cancelled) return;
 
-      const seen = new Set<string>();
-      const dedup = (items: RpcProduct[]) =>
-        shuffleArray(items)
-          .filter((p) => !seen.has(p.id) && (seen.add(p.id), true))
-          .map(toProductWithDetails)
-          .slice(0, 10);
+      // Group products into logical sections based on flags or simple distribution
+      // in a real app, these would come from specialized queries, but here we
+      // derive them from the main pool for efficiency.
+      const trendingItems = products.filter(p => p.is_featured || p.is_hot_product).slice(0, 10);
+      const dealItems = products.filter(p => p.is_deal || (p.discount_percentage && p.discount_percentage > 0)).slice(0, 10);
+      const bestsellerItems = products.filter(p => p.is_bestseller).slice(0, 10);
+      const arrivalItems = products.filter(p => p.is_new_arrival).slice(0, 10);
 
-      setTrending(dedup(newestRes.products));
-      setDeals(dedup(topPriceRes.products));
-      setBestsellers(dedup(page2Res.products));
-      setNewArrivals(dedup(budgetRes.products));
+      // Fallbacks if sections are empty
+      setTrending(trendingItems.length > 0 ? trendingItems : products.slice(0, 10));
+      setDeals(dealItems.length > 0 ? dealItems : products.slice(10, 20));
+      setBestsellers(bestsellerItems.length > 0 ? bestsellerItems : products.slice(20, 30));
+      setNewArrivals(arrivalItems.length > 0 ? arrivalItems : products.slice(30, 40));
+
+      setAllProducts(products);
       setCategories(cats);
       setIsLoading(false);
-    });
+    }
+
+    loadData();
 
     return () => { cancelled = true; };
   }, []);
-
-  const allProducts = [
-    ...trending,
-    ...deals,
-    ...bestsellers,
-    ...newArrivals,
-  ].filter((p, i, arr) => arr.findIndex((x) => x.id === p.id) === i);
 
   return {
     allProducts,

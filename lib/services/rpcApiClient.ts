@@ -187,9 +187,7 @@ export async function getProducts(
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .neq('visibility_status', false)
-      .not('centralhub_product_id', 'is', null)
-      .not('brand', 'ilike', 'Brahmins')
-      .not('source_brand', 'ilike', 'Brahmins');
+      .not('centralhub_product_id', 'is', null);
 
     if (search) {
       query = query.ilike('name', `%${search}%`);
@@ -219,9 +217,7 @@ export async function getProducts(
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .neq('visibility_status', false)
-      .not('centralhub_product_id', 'is', null)
-      .not('brand', 'ilike', 'Brahmins')
-      .not('source_brand', 'ilike', 'Brahmins');
+      .not('centralhub_product_id', 'is', null);
 
     const total = countRes.count ?? 0;
     const totalPages = Math.ceil(total / limit);
@@ -295,9 +291,7 @@ export async function getProductDetail(
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .neq('visibility_status', false)
-      .not('centralhub_product_id', 'is', null)
-      .not('brand', 'ilike', 'Brahmins')
-      .not('source_brand', 'ilike', 'Brahmins');
+      .not('centralhub_product_id', 'is', null);
 
     if (isUuid) {
       query = query.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
@@ -370,8 +364,6 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .neq('is_deleted', true)
         .neq('visibility_status', false)
         .not('centralhub_product_id', 'is', null)
-        .not('brand', 'ilike', 'Brahmins')
-        .not('source_brand', 'ilike', 'Brahmins')
         .not('category_id', 'is', null),
       // Use brand column (populated from CentralHub verbatim during sync)
       supabase
@@ -381,8 +373,6 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .neq('is_deleted', true)
         .neq('visibility_status', false)
         .not('centralhub_product_id', 'is', null)
-        .not('brand', 'ilike', 'Brahmins')
-        .not('source_brand', 'ilike', 'Brahmins')
         .not('brand', 'is', null)
         .neq('brand', ''),
       supabase
@@ -391,9 +381,7 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .eq('approval_status', 'approved')
         .neq('is_deleted', true)
         .neq('visibility_status', false)
-        .not('centralhub_product_id', 'is', null)
-        .not('brand', 'ilike', 'Brahmins')
-        .not('source_brand', 'ilike', 'Brahmins'),
+        .not('centralhub_product_id', 'is', null),
       supabase
         .from('categories')
         .select('id, name, is_active')

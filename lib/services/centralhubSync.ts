@@ -3,7 +3,7 @@
  */
 
 export async function triggerFullSync() {
-  const CENTRALHUB_SYNC_URL = 'https://centralhub-network.netlify.app/api/products/sync';
+  const CENTRALHUB_SYNC_URL = process.env.NEXT_PUBLIC_CENTRALHUB_SYNC_URL || 'https://centralhub-network.netlify.app/api/products/sync';
 
   try {
     console.log('Triggering full sync from CentralHub...');

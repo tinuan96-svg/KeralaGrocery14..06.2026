@@ -7,6 +7,15 @@ import WhyChooseUs from '@/components/home/WhyChooseUs';
 import { EmailCapture } from '@/components/home/EmailCapture';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import dynamic from 'next/dynamic';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Kerala Grocery UK | Buy Authentic Kerala Groceries Online',
+  description: 'The UK\'s #1 Kerala Grocery store for authentic South Indian products. Fast delivery of spices, Matta rice, snacks, and pickles nationwide.',
+  alternates: {
+    canonical: 'https://keralagrocery.com',
+  },
+};
 
 const StickySearchBar = dynamic(
   () => import('@/components/home/StickySearchBar'),

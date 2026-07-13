@@ -97,7 +97,6 @@ export async function fetchStoreProducts(
       .neq('is_deleted', true)
       .neq('visibility_status', false)
       .not('centralhub_product_id', 'is', null)
-      .not('brand', 'ilike', 'Brahmins')
       .order('created_at', { ascending: false });
 
     if (error) {

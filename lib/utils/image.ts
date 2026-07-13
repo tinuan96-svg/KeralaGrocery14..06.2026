@@ -73,7 +73,12 @@ export function resolveProductImage(
 
     // Handle Supabase relative paths (e.g. products/123.jpg or /storage/v1/...)
     if (supabaseUrl && (url.startsWith('products/') || url.startsWith('categories/') || url.startsWith('/storage/v1/'))) {
-      const path = url.startsWith('/') ? url : `/storage/v1/object/public/product-images/${url}`;
+      let bucket = 'product-images';
+      if (url.startsWith('categories/')) {
+        bucket = 'category-images';
+      }
+
+      const path = url.startsWith('/') ? url : `/storage/v1/object/public/${bucket}/${url}`;
       const fullUrl = `${supabaseUrl}${path}`;
       const ts = updatedAt ?? product.updated_at;
       return ts ? `${fullUrl}?v=${new Date(ts).getTime()}` : fullUrl;
