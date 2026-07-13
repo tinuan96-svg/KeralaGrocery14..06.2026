@@ -253,20 +253,65 @@ export default function AiAssistant() {
       {/* Floating Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-24 left-6 z-50 w-14 h-14 bg-gradient-to-br from-emerald-500 to-[#0B5D3B] text-white rounded-full shadow-[0_10px_40px_rgba(11,93,59,0.3)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+        className="fixed bottom-24 left-6 z-50 w-20 h-20 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
       >
-        {isOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <div className="relative flex items-center justify-center">
-            <span className="text-3xl animate-float-slow">👩‍💼</span>
-            <span className="absolute -top-1 -right-2 text-sm animate-pulse">✨</span>
-          </div>
-        )}
-        <span className="absolute -top-1 -right-1 flex h-4 w-4">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-4 w-4 bg-yellow-500 text-[10px] items-center justify-center font-bold text-green-950">AI</span>
-        </span>
+        <AnimatePresence mode="wait">
+          {isOpen ? (
+            <motion.div
+              key="close-icon"
+              initial={{ opacity: 0, rotate: -90 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              exit={{ opacity: 0, rotate: 90 }}
+              className="w-12 h-12 bg-white rounded-full shadow-xl border border-green-100 flex items-center justify-center text-[#0B5D3B]"
+            >
+              <X className="w-6 h-6" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="ai-character"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{
+                y: [0, -8, 0],
+                opacity: 1
+              }}
+              transition={{
+                y: {
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+              className="relative w-full h-full"
+            >
+              {/* Hand Wave Animation */}
+              <motion.div
+                animate={{ rotate: [0, 15, 0, 15, 0] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 3,
+                  ease: "easeInOut"
+                }}
+                className="absolute inset-0 z-10 origin-bottom-right pointer-events-none"
+              />
+
+              <Image
+                src="/ai-character.png"
+                alt="AI Assistant"
+                width={80}
+                height={80}
+                className="object-contain drop-shadow-2xl"
+                priority
+              />
+
+              {/* Status Indicator */}
+              <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-4 w-4 bg-yellow-500 text-[8px] items-center justify-center font-bold text-green-950">AI</span>
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </button>
 
       {/* Chat Window */}
@@ -276,19 +321,23 @@ export default function AiAssistant() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-40 left-6 z-50 w-[350px] sm:w-[400px] h-[550px] bg-white rounded-[2.5rem] shadow-2xl border border-green-100 flex flex-col overflow-hidden"
+            className="fixed bottom-48 left-6 z-50 w-[350px] sm:w-[400px] h-[550px] bg-white rounded-[2.5rem] shadow-2xl border border-green-100 flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="bg-[#0B5D3B] p-6 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                  <span className="text-2xl">👩‍💼</span>
-                </div>
+                <motion.div
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center overflow-hidden"
+                >
+                  <Image src="/ai-character.png" alt="" width={40} height={40} className="object-contain mt-1" />
+                </motion.div>
                 <div>
-                  <h3 className="font-bold text-sm">Personal Guide</h3>
+                  <h3 className="font-bold text-sm">Kerala Guide</h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-[10px] text-green-100 font-medium">Online</span>
+                    <span className="text-[10px] text-green-100 font-medium">Happy to help!</span>
                   </div>
                 </div>
               </div>
