@@ -8,6 +8,7 @@ import { useCart, useCartData } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useWallet } from '@/hooks/useWallet';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { getSupabase } from '@/lib/supabase/client';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -33,21 +34,37 @@ interface Action {
 export default function AiAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [nudge, setNudge] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hi there! 👋 I am your Kerala Grocery assistant. I can help you find products, track your orders, or share traditional recipes. How can I help today?" }
-  ]);
+
+  const { user, profile } = useAuth();
+  const { wallet } = useWallet();
+  const { addToCart } = useCart();
+  const { cartCount, cartTotal } = useCartData();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isAdmin = !!(user?.app_metadata?.is_admin);
+
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [recommendedRecipes, setRecommendedRecipes] = useState<any[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { addToCart } = useCart();
-  const { cartCount, cartTotal } = useCartData();
-  const { user, profile } = useAuth();
-  const { wallet } = useWallet();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const isAdmin = !!(user?.app_metadata?.is_admin);
+
+  // Relationship-focused Greeting Logic
+  useEffect(() => {
+    const hour = new Date().getHours();
+    const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const name = profile?.name?.split(' ')[0] || 'friend';
+
+    let initialMsg = '';
+    if (user) {
+      initialMsg = `${timeGreeting}, ${name}! 👋 Welcome back. I'm here to help you find your kitchen essentials or check on your recent orders. What's on your mind?`;
+    } else {
+      initialMsg = `Namaste! 👋 I'm your Kerala Grocery guide. Looking to bring a "Taste of Home" to your kitchen today? I can help you find authentic products and traditional recipes.`;
+    }
+
+    setMessages([{ role: 'assistant', content: initialMsg }]);
+  }, [user, profile]);
 
   // Interaction Monitor Logic
   useEffect(() => {
@@ -56,30 +73,27 @@ export default function AiAssistant() {
       return;
     }
 
+    const name = profile?.name?.split(' ')[0] || 'there';
     const timers: ReturnType<typeof setTimeout>[] = [];
 
-    // --- Path Based Nudges (Errors & Gratitude) ---
+    // --- Path Based Nudges (Relationship focused) ---
 
-    // 1. Order Success / Gratitude
     if (pathname.includes('order-success') || pathname.includes('payment-success')) {
-      const orderNum = searchParams.get('order');
-      setNudge(`Thank you for your order${orderNum ? ' #' + orderNum : ''}! ❤️ I'm so happy to help you get a taste of home.`);
+      setNudge(`We're so grateful for your support, ${name}! ❤️ Your order is in safe hands and we'll start packing it with care right away.`);
       return;
     }
 
-    // 2. Payment/Order Failures
     if (pathname.includes('failed') || pathname.includes('error')) {
-      setNudge("I noticed a payment issue. 🛠️ Don't worry, I can help you retry or check your wallet balance!");
+      setNudge(`I'm so sorry about that issue, ${name}. 🛠️ Don't worry, your cart is safe. I can help you finish your order!`);
       return;
     }
 
-    // 3. Login/Auth Issues (usually detected by search params on redirect)
-    if (searchParams.get('error') === 'auth_failed') {
-      setNudge("Trouble logging in? 🔑 I can help you reset your password or try a different method.");
-      return;
+    // --- Loyalty/Relationship Nudges ---
+    if (wallet && wallet.balance > 2 && pathname === '/') {
+      setNudge(`Hi ${name}, did you know you have £${Number(wallet.balance).toFixed(2)} in your wallet? 🎁 Use it to save on your favorite spices today!`);
     }
 
-    // --- Proactive Order Updates ---
+    // --- Order Updates ---
     if (user && pathname === '/') {
        const fetchLastOrder = async () => {
          const supabase = getSupabase();
@@ -94,7 +108,7 @@ export default function AiAssistant() {
            .maybeSingle();
 
          if (data) {
-           setNudge(`Update: Your order #${data.order_number} is currently ${data.order_status.toUpperCase()}. 🚚`);
+           setNudge(`Good news ${name}! Your order #${data.order_number} is ${data.order_status.toUpperCase()}. 🚚 Bringing a taste of home to you!`);
          }
        };
        fetchLastOrder();
@@ -103,30 +117,13 @@ export default function AiAssistant() {
     // Nudge 1: Cart is empty but user has been on site for a while
     if (cartCount === 0 && pathname === '/') {
       const t = setTimeout(() => {
-        setNudge("Looking for something special? I can find authentic Kerala brands for you! 🥥");
+        setNudge(`Looking for something special, ${name}? I can find authentic Kerala brands for you! 🥥`);
       }, 20000);
       timers.push(t);
     }
 
-    // Nudge 2: Almost reached free delivery threshold
-    if (cartCount > 0 && cartTotal > 30 && cartTotal < 45) {
-      setNudge(`You're only £${(45 - cartTotal).toFixed(2)} away from FREE delivery! Want a snack suggestion? 🍿`);
-    }
-
     return () => timers.forEach(clearTimeout);
-  }, [cartCount, cartTotal, isAdmin, isOpen]);
-
-  // Interaction Monitor: Watch for errors or struggle
-  useEffect(() => {
-    const handleGlobalError = () => {
-      setNudge("Oops, something went wrong! I can help you finish your order if you're stuck. 🛠️");
-    };
-    window.addEventListener('error', handleGlobalError);
-    return () => window.removeEventListener('error', handleGlobalError);
-  }, []);
-
-  // Deep Audit Fix: Completely hide the assistant for Admins as requested
-  if (isAdmin) return null;
+  }, [cartCount, cartTotal, isAdmin, isOpen, pathname, user, profile, wallet]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -196,6 +193,8 @@ export default function AiAssistant() {
 
   const handleSuggestionClick = (suggestion: string) => processMessage(suggestion);
 
+  if (isAdmin) return null;
+
   return (
     <>
       {/* Interaction Nudge */}
@@ -215,7 +214,6 @@ export default function AiAssistant() {
               >
                 <X className="w-3 h-3" />
               </button>
-              {/* Pointer triangle */}
               <div className="absolute top-full right-4 w-3 h-3 bg-white border-r border-b border-green-50 rotate-45 -mt-1.5" />
             </div>
           </motion.div>
@@ -254,13 +252,13 @@ export default function AiAssistant() {
             <div className="bg-[#0B5D3B] p-6 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-yellow-400" />
+                  <span className="text-2xl">👩‍💼</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm">Shopping Assistant</h3>
+                  <h3 className="font-bold text-sm">Personal Guide</h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                    <span className="text-[10px] text-green-100 font-medium">Powered by GPT-4</span>
+                    <span className="text-[10px] text-green-100 font-medium">Online</span>
                   </div>
                 </div>
               </div>
@@ -278,9 +276,7 @@ export default function AiAssistant() {
                       ? 'bg-[#0B5D3B] text-white rounded-tr-none font-medium'
                       : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
                   }`}>
-                    {/* Simple formatting for bolding and bullets */}
                     {msg.content.split('\n').map((line, idx) => {
-                      // Handle bold text **like this**
                       const parts = line.split(/(\*\*.*?\*\*)/g);
                       return (
                         <p key={idx} className={idx > 0 ? 'mt-1' : ''}>
@@ -315,7 +311,6 @@ export default function AiAssistant() {
                   animate={{ y: 0, opacity: 1 }}
                   className="bg-white border-t border-green-50 p-4 flex gap-3 overflow-x-auto scrollbar-hide relative"
                 >
-                  {/* Products */}
                   {recommendedProducts.map((p) => (
                     <div key={p.id} className="flex-shrink-0 w-32 bg-gray-50 rounded-2xl p-2 border border-gray-100 relative group">
                       <div className="relative h-20 w-full mb-1">
@@ -344,7 +339,6 @@ export default function AiAssistant() {
                     </div>
                   ))}
 
-                  {/* Recipes */}
                   {recommendedRecipes.map((r) => (
                     <Link
                       key={r.slug}
@@ -387,10 +381,7 @@ export default function AiAssistant() {
 
             {/* Input area */}
             <div className="p-4 bg-white border-t border-gray-100">
-              <form
-                onSubmit={handleSend}
-                className="flex items-center gap-2"
-              >
+              <form onSubmit={handleSend} className="flex items-center gap-2">
                 <div className="flex-1 relative">
                   <input
                     value={input}
