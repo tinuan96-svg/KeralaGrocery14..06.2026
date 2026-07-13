@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { TriangleAlert as AlertTriangle, RefreshCw, Chrome as Home } from 'lucide-react';
+import { getSupabase } from '@/lib/supabase/client';
 
 interface Props {
   children: React.ReactNode;
@@ -24,8 +25,28 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
+  async componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[ErrorBoundary] Caught rendering error:', error.message, info.componentStack);
+
+    try {
+      const supabase = getSupabase();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      await supabase.from('client_error_logs').insert({
+        message: error.message,
+        stack: error.stack,
+        component_stack: info.componentStack,
+        url: window.location.href,
+        user_id: session?.user?.id || null,
+        user_agent: navigator.userAgent,
+        metadata: {
+          platform: 'web',
+        }
+      });
+    } catch (e) {
+      // Silent fail if logging fails
+      console.error('[ErrorBoundary] Failed to log error to database:', e);
+    }
   }
 
   handleRetry = () => {
