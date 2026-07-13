@@ -21,6 +21,7 @@ import AddressSelector from '@/components/account/AddressSelector';
 import { fetchDeliverySettings, calcDelivery } from '@/lib/services/deliveryService';
 import { maxWalletUsable, getEstimatedCashback } from '@/lib/services/walletService';
 import { useAddresses } from '@/hooks/useAddresses';
+import type { CustomerAddress } from '@/lib/services/addressService';
 import { sendOrderPlacedNotification } from '@/lib/services/notificationService';
 
 type PaymentMethod = 'worldpay';

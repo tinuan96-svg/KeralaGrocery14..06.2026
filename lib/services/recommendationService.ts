@@ -113,3 +113,27 @@ export async function getHighMarginProducts(limit: number = 5): Promise<RpcProdu
     return [];
   }
 }
+
+/**
+ * Frequently Bought Together
+ * Suggests products commonly purchased with the current one.
+ */
+export async function getFrequentlyBoughtTogether(
+  productId: string,
+  categoryName?: string | null,
+  limit: number = 2
+): Promise<RpcProduct[]> {
+  try {
+    const { products } = await getProducts({
+      category: categoryName || undefined,
+      limit: limit + 1,
+      sort: 'newest',
+      status: 'active'
+    });
+
+    return products.filter(p => p.id !== productId).slice(0, limit);
+  } catch (error) {
+    console.error('[recommendationService] getFrequentlyBoughtTogether error:', error);
+    return [];
+  }
+}
