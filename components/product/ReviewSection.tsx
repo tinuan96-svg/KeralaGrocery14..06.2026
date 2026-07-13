@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Star, MessageSquare, CheckCircle2, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,20 +27,20 @@ export default function ReviewSection({ productId, productName }: Props) {
   const [comment, setComment] = useState('');
   const [name, setName] = useState(profile?.name || '');
 
-  useEffect(() => {
-    loadReviews();
-  }, [productId]);
-
-  useEffect(() => {
-    if (profile?.name) setName(profile.name);
-  }, [profile]);
-
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     setIsLoading(true);
     const data = await fetchProductReviews(productId);
     setReviews(data);
     setIsLoading(false);
-  };
+  }, [productId]);
+
+  useEffect(() => {
+    loadReviews();
+  }, [loadReviews]);
+
+  useEffect(() => {
+    if (profile?.name) setName(profile.name);
+  }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
