@@ -120,13 +120,13 @@ export default function AssistantChat() {
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
-          className="fixed bottom-4 left-6 z-[100] w-[360px] sm:w-[420px] h-[580px] bg-white/90 backdrop-blur-xl rounded-[3rem] border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
+          className="fixed bottom-24 right-6 z-[100] w-[360px] sm:w-[420px] h-[580px] bg-white/90 backdrop-blur-xl rounded-[3rem] border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
         >
           {/* Header - Kerala Green Gradient */}
           <div className="bg-gradient-to-br from-[#0B5D3B] to-[#064e3b] p-6 text-white flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center overflow-hidden border border-white/20 shadow-inner p-1">
-                 <Image src="/ai-character.png" alt="Kichu" width={100} height={100} className="object-contain scale-125 translate-y-1" />
+                 <Image src="/assistant/kichu.png" alt="Kichu" width={100} height={100} className="object-contain scale-125 translate-y-1" />
               </div>
               <div>
                 <h3 className="text-base font-black tracking-tight">Kichu Guide</h3>
