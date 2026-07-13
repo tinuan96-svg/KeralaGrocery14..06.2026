@@ -32,10 +32,8 @@ export default function AccountPage() {
   const { toast } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
-  const [userProfile, setUserProfile] = useState<any>(null);
 
-  // Admin users bypass phone-verification onboarding — they are set up outside
-  // the normal signup flow and may never have a user_profiles row.
+  // Admin users bypass phone-verification onboarding
   const isAdmin = !!(user?.app_metadata?.is_admin);
 
   // First-time Google OAuth users have a valid session but no profile row yet.
@@ -86,28 +84,11 @@ export default function AccountPage() {
     }
   }, [user?.id]);
 
-  const fetchUserProfile = useCallback(async () => {
-    try {
-      const supabase = getSupabase();
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      setUserProfile(data);
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  }, [user?.id]);
-
   useEffect(() => {
     if (user) {
       fetchRecentOrders();
-      fetchUserProfile();
     }
-  }, [user, fetchRecentOrders, fetchUserProfile]);
+  }, [user, fetchRecentOrders]);
 
   const handleLogout = async () => {
     await signOut();
@@ -145,13 +126,13 @@ export default function AccountPage() {
     }
   };
 
-  const displayEmail = userProfile?.email && !userProfile.email.includes('@keralagrocery.phone')
-    ? userProfile.email
+  const displayEmail = profile?.email && !profile.email.includes('@keralagrocery.phone')
+    ? profile.email
     : user?.email && !user.email.includes('@keralagrocery.phone')
     ? user.email
     : '';
-  const displayPhone = userProfile?.phone || user?.phone || '';
-  const displayName = userProfile?.name || userProfile?.display_name || (displayEmail ? displayEmail.split('@')[0] : 'User');
+  const displayPhone = profile?.phone || user?.phone || '';
+  const displayName = profile?.name || profile?.display_name || (displayEmail ? displayEmail.split('@')[0] : 'User');
   const mockUser = {
     name: displayName,
     email: displayEmail,
@@ -228,12 +209,12 @@ export default function AccountPage() {
               <h3 className="font-semibold">Delivery Address</h3>
             </div>
 
-            {userProfile?.address ? (
+            {profile?.address ? (
               <div className="bg-gray-50 rounded-lg p-4 mb-4">
                 <p className="text-sm text-gray-600">
-                  {userProfile.address}<br />
-                  {userProfile.city}<br />
-                  {userProfile.postcode}
+                  {profile.address}<br />
+                  {profile.city}<br />
+                  {profile.postcode}
                 </p>
               </div>
             ) : (
@@ -252,7 +233,7 @@ export default function AccountPage() {
                 profileForm?.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }}
             >
-              {userProfile?.address ? 'Edit Address' : 'Add Address'}
+              {profile?.address ? 'Edit Address' : 'Add Address'}
             </Button>
           </Card>
 
