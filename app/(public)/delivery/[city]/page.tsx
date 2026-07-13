@@ -16,6 +16,12 @@ const VALID_CITIES = [
   'reading', 'cambridge', 'oxford', 'cardiff', 'coventry', 'croydon'
 ];
 
+export async function generateStaticParams() {
+  return VALID_CITIES.map((city) => ({
+    city,
+  }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const city = params.city.charAt(0).toUpperCase() + params.city.slice(1);
 
