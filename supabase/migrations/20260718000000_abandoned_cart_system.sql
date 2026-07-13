@@ -30,6 +30,14 @@ CREATE TABLE IF NOT EXISTS abandoned_cart_recovery_logs (
 
 ALTER TABLE abandoned_cart_recovery_logs ENABLE ROW LEVEL SECURITY;
 
+CREATE POLICY "Admins can view all recovery logs"
+  ON abandoned_cart_recovery_logs FOR SELECT
+  TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE auth.uid() = id AND (app_metadata->>'is_admin')::boolean = true
+  ));
+
 -- Index for cron job performance
 CREATE INDEX IF NOT EXISTS idx_cart_items_user_updated ON cart_items(user_id, updated_at);
 

@@ -135,11 +135,29 @@ export default function CategoriesPage() {
       const supabase = getSupabase();
       const ext = uploadFile.name.split('.').pop() ?? 'jpg';
       const path = `categories/${categoryId}-${Date.now()}.${ext}`;
+
+      // Use the 'category-images' bucket for categories if it exists,
+      // or stick to 'product-images' as the master public bucket.
+      // Based on lib/utils/image.ts, we've separated them.
+      const bucket = 'category-images';
+
       const { error: upErr } = await supabase.storage
-        .from('product-images')
+        .from(bucket)
         .upload(path, uploadFile, { upsert: true });
-      if (upErr) throw upErr;
-      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+
+      // Fallback to product-images if category-images bucket doesn't exist
+      if (upErr && upErr.message.includes('not found')) {
+        const { error: fallbackErr } = await supabase.storage
+          .from('product-images')
+          .upload(path, uploadFile, { upsert: true });
+        if (fallbackErr) throw fallbackErr;
+        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+        return publicUrl;
+      } else if (upErr) {
+        throw upErr;
+      }
+
+      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path);
       return publicUrl;
     } finally {
       setUploading(false);
