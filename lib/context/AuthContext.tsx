@@ -154,10 +154,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!Capacitor.isNativePlatform()) return;
 
       const handleUrl = async (urlStr: string) => {
-        const isCustomScheme = urlStr.startsWith('com.keralagrocery.app://auth');
+        const isKgAppScheme = urlStr.startsWith('kgapp://auth');
+        const isAndroidScheme = urlStr.startsWith('com.keralagrocery.app://auth');
         const isWebCallback = urlStr.includes('keralagrocery.com/auth/callback');
 
-        if (isCustomScheme || isWebCallback) {
+        if (isKgAppScheme || isAndroidScheme || isWebCallback) {
           const closeBrowser = async () => {
             try { await Browser.close(); } catch (e) {}
           };
@@ -166,7 +167,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(closeBrowser, 1500);
 
           let webUrlStr = urlStr;
-          if (isCustomScheme) {
+          if (isKgAppScheme) {
+            webUrlStr = urlStr.replace('kgapp://auth', 'https://keralagrocery.com/auth/callback');
+          } else if (isAndroidScheme) {
             webUrlStr = urlStr.replace('com.keralagrocery.app://auth', 'https://keralagrocery.com/auth/callback');
           }
 
@@ -236,10 +239,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     const supabase = getSupabase();
     const isApp = Capacitor.isNativePlatform();
-    
-    // Use com.keralagrocery.app://auth to match Android strings.xml and intent filters
+    const platform = Capacitor.getPlatform();
+
+    // Select correct scheme for platform
+    const nativeRedirect = platform === 'ios' ? 'kgapp://auth' : 'com.keralagrocery.app://auth';
+
     const redirectTo = isApp
-      ? 'com.keralagrocery.app://auth'
+      ? nativeRedirect
       : `${window.location.origin}/auth/callback`;
 
     console.log('[Auth] signInWithGoogle - isApp:', isApp, 'redirectTo:', redirectTo);
@@ -268,8 +274,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithApple = async () => {
     const supabase = getSupabase();
     const isApp = Capacitor.isNativePlatform();
+    const platform = Capacitor.getPlatform();
+
+    const nativeRedirect = platform === 'ios' ? 'kgapp://auth' : 'com.keralagrocery.app://auth';
+
     const redirectTo = isApp
-      ? 'com.keralagrocery.app://auth'
+      ? nativeRedirect
       : `${window.location.origin}/auth/callback`;
 
     const { data, error } = await supabase.auth.signInWithOAuth({

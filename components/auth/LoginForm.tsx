@@ -177,7 +177,6 @@ export default function LoginForm() {
     }
     setIsSubmitting(true);
     try {
-      console.log('SEND PHONE:', e164);
       const { error } = await signInWithPhoneOtp(e164);
       if (error) {
         toast({ title: 'Failed to send code', description: error.message, variant: 'destructive' });
@@ -205,7 +204,6 @@ export default function LoginForm() {
     }
     setIsSubmitting(true);
     try {
-      console.log('SEND PHONE (resend):', e164);
       const { error } = await signInWithPhoneOtp(e164);
       if (error) {
         toast({ title: 'Failed to resend', description: error.message, variant: 'destructive' });
@@ -235,7 +233,6 @@ export default function LoginForm() {
 
     setIsSubmitting(true);
     try {
-      console.log('VERIFY PHONE:', sentPhone);
       const { error } = await verifyPhoneOtp(sentPhone, otp);
       if (error) {
         const msg = error.message?.toLowerCase() ?? '';

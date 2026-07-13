@@ -242,7 +242,6 @@ The Supabase `redirectTo` URL should be `kgapp://auth/callback`.
 ### App rejected under guideline 4.2
 
 Add more native functionality:
-- Enable biometric login (Face ID) using `@capacitor-community/biometric-auth`
 - Add barcode/QR scanner for product lookup
 
 ---

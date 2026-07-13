@@ -52,8 +52,6 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Kerala Groceries needs camera access to let you take a profile photo.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Kerala Groceries can use Face ID to sign in securely.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Kerala Groceries uses your location to suggest your nearest delivery address.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
