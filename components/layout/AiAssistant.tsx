@@ -148,12 +148,26 @@ export default function AiAssistant() {
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3.5 rounded-2xl text-sm ${
+                  <div className={`max-w-[85%] p-3.5 rounded-2xl text-sm whitespace-pre-wrap ${
                     msg.role === 'user'
-                      ? 'bg-[#0B5D3B] text-white rounded-tr-none'
+                      ? 'bg-[#0B5D3B] text-white rounded-tr-none font-medium'
                       : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none shadow-sm'
                   }`}>
-                    {msg.content}
+                    {/* Simple formatting for bolding and bullets */}
+                    {msg.content.split('\n').map((line, idx) => {
+                      // Handle bold text **like this**
+                      const parts = line.split(/(\*\*.*?\*\*)/g);
+                      return (
+                        <p key={idx} className={idx > 0 ? 'mt-1' : ''}>
+                          {parts.map((part, pIdx) => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                              return <strong key={pIdx} className="font-black">{part.slice(2, -2)}</strong>;
+                            }
+                            return part;
+                          })}
+                        </p>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
