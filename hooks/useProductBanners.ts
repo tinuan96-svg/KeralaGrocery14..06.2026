@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
 import { resolveProductImage } from '@/lib/utils/image';
 
-const BANNER_LIMIT = 8;
+const BANNER_FETCH_LIMIT = 32;
+const BANNER_DISPLAY_LIMIT = 10;
 
 export interface BannerProduct {
   id: string;
@@ -119,6 +120,15 @@ function resolveImage(row: ProductRow): string | null {
   });
 }
 
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 function toProduct(row: ProductRow, catMap: Record<string, LookupRow>, brdMap: Record<string, LookupRow>): BannerProduct {
   const price = Number(row.price ?? 0);
   const orig = row.original_price ? Number(row.original_price) : null;
@@ -168,7 +178,7 @@ export function useProductBanners(): ProductBannersData {
     async function load() {
       const supabase = getSupabase();
 
-      // Fetch lookup maps safely — if brands doesn't exist, we just skip it
+      // Fetch lookup maps safely
       const [catRes, brdRes] = await Promise.all([
         supabase.from('categories').select('id,name,slug'),
         (async () => {
@@ -187,7 +197,7 @@ export function useProductBanners(): ProductBannersData {
       const brdMap: Record<string, LookupRow> = {};
       for (const r of (brdRes.data ?? []) as LookupRow[]) brdMap[r.id] = r;
 
-      // Fetch all banner buckets in parallel
+      // Fetch larger pools for rotation
       const [bestsellers, newArrivals, featured, readyFoods, recent] = await Promise.all([
         supabase
           .from('products')
@@ -199,7 +209,7 @@ export function useProductBanners(): ProductBannersData {
           .not('brand', 'ilike', 'Brahmins')
           .eq('is_bestseller', true)
           .order('sold_count', { ascending: false })
-          .limit(BANNER_LIMIT),
+          .limit(BANNER_FETCH_LIMIT),
         supabase
           .from('products')
           .select(SELECT)
@@ -210,7 +220,7 @@ export function useProductBanners(): ProductBannersData {
           .not('brand', 'ilike', 'Brahmins')
           .eq('is_new_arrival', true)
           .order('created_at', { ascending: false })
-          .limit(BANNER_LIMIT),
+          .limit(BANNER_FETCH_LIMIT),
         supabase
           .from('products')
           .select(SELECT)
@@ -220,7 +230,7 @@ export function useProductBanners(): ProductBannersData {
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
           .eq('is_featured', true)
-          .limit(BANNER_LIMIT),
+          .limit(BANNER_FETCH_LIMIT),
         readyToEatCat
           ? supabase
               .from('products')
@@ -231,7 +241,7 @@ export function useProductBanners(): ProductBannersData {
               .not('centralhub_product_id', 'is', null)
               .not('brand', 'ilike', 'Brahmins')
               .eq('category_id', readyToEatCat.id)
-              .limit(BANNER_LIMIT)
+              .limit(BANNER_FETCH_LIMIT)
           : Promise.resolve({ data: [] }),
         supabase
           .from('products')
@@ -242,25 +252,25 @@ export function useProductBanners(): ProductBannersData {
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
           .order('created_at', { ascending: false })
-          .limit(BANNER_LIMIT * 2),
+          .limit(BANNER_FETCH_LIMIT * 2),
       ]);
 
       if (cancelled) return;
 
-      const recentRows = (recent.data ?? []) as ProductRow[];
-      const readyRows = (readyFoods.data ?? []) as ProductRow[];
+      const mapRows = (rows: any[]) => (rows ?? []).map(r => toProduct(r, catMap, brdMap));
 
+      // Shuffle and slice to rotate visibility
       const allBanners = {
-        top_sellers:  ((bestsellers.data ?? []) as ProductRow[]).map(r => toProduct(r, catMap, brdMap)),
-        new_arrivals: ((newArrivals.data ?? []) as ProductRow[]).map(r => toProduct(r, catMap, brdMap)),
-        featured:     ((featured.data ?? []) as ProductRow[]).map(r => toProduct(r, catMap, brdMap)),
-        ready_foods:  (readyRows.length > 0 ? readyRows : recentRows.slice(0, BANNER_LIMIT)).map(r => toProduct(r, catMap, brdMap)),
-        random_picks: recentRows.slice(BANNER_LIMIT, BANNER_LIMIT * 2).map(r => toProduct(r, catMap, brdMap)),
+        top_sellers:  shuffleArray(mapRows(bestsellers.data as any)).slice(0, BANNER_DISPLAY_LIMIT),
+        new_arrivals: shuffleArray(mapRows(newArrivals.data as any)).slice(0, BANNER_DISPLAY_LIMIT),
+        featured:     shuffleArray(mapRows(featured.data as any)).slice(0, BANNER_DISPLAY_LIMIT),
+        ready_foods:  shuffleArray(mapRows(readyFoods.data as any)).slice(0, BANNER_DISPLAY_LIMIT),
+        random_picks: shuffleArray(mapRows(recent.data as any)).slice(0, BANNER_DISPLAY_LIMIT),
       };
 
-      // Fallback for missing images across all buckets
-      const allProducts = Object.values(allBanners).flat();
-      const missingIds = allProducts.filter((p) => !p.image_url).map((p) => p.id);
+      // Fallback for missing images
+      const allProductsFlat = Object.values(allBanners).flat();
+      const missingIds = allProductsFlat.filter((p) => !p.image_url).map((p) => p.id);
 
       if (missingIds.length > 0) {
         const { data: galleryRows } = await supabase
@@ -277,7 +287,6 @@ export function useProductBanners(): ProductBannersData {
               if (url?.startsWith('http')) galleryMap.set(g.product_id, url);
             }
           }
-          // Update the banner products with found gallery images
           for (const key of Object.keys(allBanners) as BannerKey[]) {
             for (const p of allBanners[key]) {
               if (!p.image_url && galleryMap.has(p.id)) {

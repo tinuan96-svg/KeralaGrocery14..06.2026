@@ -45,6 +45,15 @@ export interface HomepageData {
   isLoading: boolean;
 }
 
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export function useHomepageData(): HomepageData {
   const [trending, setTrending]       = useState<ProductWithDetails[]>([]);
   const [deals, setDeals]             = useState<ProductWithDetails[]>([]);
@@ -56,20 +65,22 @@ export function useHomepageData(): HomepageData {
   useEffect(() => {
     let cancelled = false;
 
+    // Fetch larger pools for rotation
     Promise.all([
-      getProducts({ page: 1, limit: 10, sort: 'newest',     status: 'active' }),
-      getProducts({ page: 1, limit: 10, sort: 'price_desc', status: 'active' }),
-      getProducts({ page: 2, limit: 10, sort: 'newest',     status: 'active' }),
-      getProducts({ page: 1, limit: 10, sort: 'price_asc',  status: 'active' }),
+      getProducts({ page: 1, limit: 30, sort: 'newest',     status: 'active' }),
+      getProducts({ page: 1, limit: 30, sort: 'price_desc', status: 'active' }),
+      getProducts({ page: 2, limit: 30, sort: 'newest',     status: 'active' }),
+      getProducts({ page: 1, limit: 30, sort: 'price_asc',  status: 'active' }),
       fetchHomepageCategories(),
     ]).then(([newestRes, topPriceRes, page2Res, budgetRes, cats]) => {
       if (cancelled) return;
 
       const seen = new Set<string>();
       const dedup = (items: RpcProduct[]) =>
-        items
+        shuffleArray(items)
           .filter((p) => !seen.has(p.id) && (seen.add(p.id), true))
-          .map(toProductWithDetails);
+          .map(toProductWithDetails)
+          .slice(0, 10);
 
       setTrending(dedup(newestRes.products));
       setDeals(dedup(topPriceRes.products));
