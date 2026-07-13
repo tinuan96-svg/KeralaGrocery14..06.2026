@@ -6,8 +6,8 @@
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const CENTRALHUB_URL = 'https://icnvrpnzjjcbvgcqgiua.supabase.co';
-const CENTRALHUB_ANON_KEY = 'sb_publishable_6IwwngtJYA8G9zrIy0q5vw_eaQXWO5k';
+const CENTRALHUB_URL = process.env.NEXT_PUBLIC_CENTRALHUB_URL || 'https://icnvrpnzjjcbvgcqgiua.supabase.co';
+const CENTRALHUB_ANON_KEY = process.env.NEXT_PUBLIC_CENTRALHUB_ANON_KEY || 'sb_publishable_6IwwngtJYA8G9zrIy0q5vw_eaQXWO5k';
 
 let client: SupabaseClient | undefined;
 

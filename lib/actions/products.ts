@@ -1,5 +1,7 @@
-// This file is now client-compatible for static export
-// Remove 'use server' to prevent build errors in static environments
+/**
+ * Product and Category related actions.
+ * Optimized for static export environments.
+ */
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 // import { revalidatePath } from 'next/cache';

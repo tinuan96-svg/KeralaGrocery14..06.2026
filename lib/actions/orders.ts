@@ -1,5 +1,7 @@
-// This file is now client-compatible for static export
-// Remove 'use server' to prevent build errors in static environments
+/**
+ * Order related actions for the storefront.
+ * Optimized for both web and native platforms.
+ */
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 

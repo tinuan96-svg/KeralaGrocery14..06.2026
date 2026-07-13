@@ -123,20 +123,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const syncCart = async () => {
       const supabase = getSupabase();
 
-      // 1. Clear existing items for this user to avoid duplicates and handle deletions
-      // (This is a simple sync strategy; for production, a delta-based approach is better)
-      await supabase.from('cart_items').delete().eq('user_id', user.id);
+      if (state.cart.length === 0) {
+        await supabase.from('cart_items').delete().eq('user_id', user.id);
+        return;
+      }
 
-      // 2. Insert current items
-      if (state.cart.length > 0) {
-        const itemsToInsert = state.cart.map(item => ({
-          user_id: user.id,
-          product_id: item.id,
-          quantity: item.quantity,
-          updated_at: new Date().toISOString()
-        }));
+      const itemsToSync = state.cart.map(item => ({
+        user_id: user.id,
+        product_id: item.id,
+        quantity: item.quantity,
+        updated_at: new Date().toISOString()
+      }));
 
-        await supabase.from('cart_items').insert(itemsToInsert);
+      // 1. Upsert current items (preserves what we have if the next step fails)
+      const { error: upsertError } = await supabase.from('cart_items')
+        .upsert(itemsToSync, { onConflict: 'user_id, product_id' });
+
+      if (upsertError) {
+        console.error('[CartContext] syncCart upsert error:', upsertError);
+        return;
+      }
+
+      // 2. Remove items that are no longer in the local cart
+      const currentProductIds = state.cart.map(i => i.id);
+      const { error: deleteError } = await supabase.from('cart_items')
+        .delete()
+        .eq('user_id', user.id)
+        .filter('product_id', 'not.in', `(${currentProductIds.join(',')})`);
+
+      if (deleteError) {
+        console.error('[CartContext] syncCart cleanup error:', deleteError);
       }
     };
 

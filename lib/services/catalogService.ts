@@ -98,12 +98,16 @@ export async function fetchProductTypes(): Promise<string[]> {
       .not('product_type', 'is', null)
       .order('product_type', { ascending: true });
 
-    if (error || !data) return [];
+    if (error || !data) {
+      if (error) console.error('[catalogService] fetchProductTypes error:', error);
+      return [];
+    }
 
     return Array.from(
       new Set((data as { product_type: string }[]).map((r) => r.product_type).filter(Boolean))
     ).sort();
-  } catch {
+  } catch (err) {
+    console.error('[catalogService] fetchProductTypes unexpected:', err);
     return [];
   }
 }
