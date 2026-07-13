@@ -41,7 +41,7 @@ export async function GET() {
         .eq('is_active', true)
         .neq('is_deleted', true)
         .neq('visibility_status', false)
-        .not('centralhub_product_id', 'is', null)
+        .not('slug', 'is', null)
         .limit(5000);
 
       products = data ?? [];
