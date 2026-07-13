@@ -227,7 +227,8 @@ export default function CheckoutPage() {
 
       products?.forEach(p => {
         const cartItem = cart.find(i => i.id === p.id);
-        const available = p.stock_quantity ?? p.stock ?? 0;
+        // Robust check: use the maximum of both stock columns to avoid sync issues
+        const available = Math.max(Number(p.stock || 0), Number(p.stock_quantity || 0));
 
         if (cartItem && cartItem.quantity > available) {
           cartChanged = true;

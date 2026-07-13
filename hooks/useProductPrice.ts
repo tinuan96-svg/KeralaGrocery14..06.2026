@@ -26,7 +26,8 @@ export function useProductPrice(productId: string, initialPrice: number, initial
         const rawPrice = Number(row.selling_price ?? row.price ?? initialPrice);
         setData({
           price: roundUpToNearestTen(rawPrice),
-          stock: Number(row.stock ?? row.stock_quantity ?? 0)
+          // Robust check: use max of both columns
+          stock: Math.max(Number(row.stock || 0), Number(row.stock_quantity || 0))
         });
       }
     } catch (err) {

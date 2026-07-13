@@ -81,7 +81,7 @@ export async function fetchProducts(): Promise<{
         image_url, image_main, is_active, is_deleted, is_featured,
         is_bestseller, is_deal, is_new_arrival, rating, review_count,
         sold_count, discount_percentage, created_at, category_id, brand_id,
-        approval_status, visibility_status,
+        approval_status, visibility_status, stock, stock_quantity,
         categories(id, name, slug),
         brands(id, name, slug, logo_url)
       `)

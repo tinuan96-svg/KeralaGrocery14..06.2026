@@ -130,7 +130,7 @@ function mapRow(
     unit:            (row.unit as string | null) ?? null,
     weight_qnty:     row.weight_qnty != null ? Number(row.weight_qnty) : null,
     weight:          row.weight != null ? Number(row.weight) : null,
-    stock:           Number(row.stock ?? row.stock_quantity ?? 0),
+    stock:           Math.max(Number(row.stock || 0), Number(row.stock_quantity || 0)),
     image_url:       imageUrl,
     slug:              (row.slug as string | null) ?? String(row.id ?? ''),
     description:       (row.description as string | null) ?? null,
