@@ -40,7 +40,15 @@ interface Order {
 
 function OrderStatusTimeline({ status }: { status: string }) {
   const statuses = ['pending', 'processing', 'shipped', 'delivered'];
-  const currentIndex = statuses.indexOf(status.toLowerCase());
+
+  // Map sub-statuses to primary timeline steps
+  const normalizedStatus = status.toLowerCase();
+  let mappedStatus = normalizedStatus;
+  if (['picking', 'packed', 'ready for dispatch', 'confirmed'].includes(normalizedStatus)) {
+    mappedStatus = 'processing';
+  }
+
+  const currentIndex = statuses.indexOf(mappedStatus);
 
   const getStatusIcon = (step: string, index: number) => {
     const isActive = index <= currentIndex;

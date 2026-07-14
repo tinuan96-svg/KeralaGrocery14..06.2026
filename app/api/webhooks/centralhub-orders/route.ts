@@ -43,6 +43,13 @@ export async function POST(req: NextRequest) {
     if (type === 'INSERT' || type === 'UPDATE') {
       const { items, ...orderData } = record;
 
+      // Map incoming status to local primary statuses if necessary
+      // "Picking" and "Packed" are treated as "processing" for the main timeline
+      let localStatus = orderData.order_status?.toLowerCase() || 'pending';
+      if (['picking', 'packed', 'ready for dispatch'].includes(localStatus)) {
+        localStatus = 'processing';
+      }
+
       // Match existing order by external_order_id or local ID
       const { data: existing } = await supabase
         .from('orders')
@@ -66,7 +73,7 @@ export async function POST(req: NextRequest) {
         total: orderData.total,
         payment_method: orderData.payment_method,
         payment_status: orderData.payment_status,
-        order_status: orderData.order_status,
+        order_status: localStatus, // Use mapped status
         payment_reference: orderData.payment_reference,
         notes: orderData.notes,
         shipment_id: orderData.shipment_id,
