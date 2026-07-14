@@ -35,7 +35,7 @@ export default function LocalCityBanner() {
   const cityToShow = profile?.city || UK_CITIES[cityIndex];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 mb-8">
+    <div className="max-w-7xl mx-auto px-4 mb-8 hidden md:block">
       <div className="bg-white rounded-[2rem] border border-green-100 overflow-hidden shadow-sm flex flex-col md:flex-row items-center">
         <div className="bg-[#0B5D3B] p-6 md:p-10 text-white flex-1 w-full">
           <div className="flex items-center gap-2 mb-4 bg-white/10 w-fit px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
