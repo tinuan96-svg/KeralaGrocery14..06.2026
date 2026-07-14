@@ -12,9 +12,16 @@ interface OrderSMSRequest {
 }
 
 const generateSMSMessage = (order: any): string | null => {
-  const { order_status, payment_status, customer_name, order_number, tracking_number } = order;
+  const {
+    order_status,
+    shipment_status,
+    payment_status,
+    customer_name,
+    order_number,
+    tracking_number
+  } = order;
 
-  // Priority for payment status events if they are not the main order_status
+  // Priority for payment status events
   if (payment_status === 'failed') {
     return `Hi ${customer_name}, payment for order ${order_number} failed.\n\nPlease try again or contact our support team.`;
   }
@@ -28,25 +35,24 @@ const generateSMSMessage = (order: any): string | null => {
     ? `https://keralagrocery.com/track/${tracking_number}`
     : `https://keralagrocery.com/account/orders/${order_number}`;
 
-  switch (order_status) {
-    case 'pending':
-      return `Hi ${customer_name}, your Kerala Grocery order ${order_number} has been received and is awaiting confirmation.`;
-    case 'confirmed':
-      return `Hi ${customer_name}, your Kerala Grocery order ${order_number} has been confirmed. We're preparing it now.`;
-    case 'processing':
-      return `Hi ${customer_name}, we're preparing your Kerala Grocery order ${order_number}.`;
-    case 'packed':
-      return `Hi ${customer_name}, your order ${order_number} has been packed and is ready for dispatch.`;
-    case 'shipped':
-      return `Hi ${customer_name}, your Kerala Grocery order ${order_number} has been shipped.\n\nTrack your order:\n${trackingUrl}`;
-    case 'out_for_delivery':
-      return `Hi ${customer_name}, your Kerala Grocery order ${order_number} is out for delivery today.`;
-    case 'delivered':
-      return `Hi ${customer_name}, your Kerala Grocery order ${order_number} has been delivered.\n\nThank you for shopping with Kerala Grocery.`;
-    case 'cancelled':
-      return `Hi ${customer_name}, your Kerala Grocery order ${order_number} has been cancelled.\n\nPlease contact support if you need assistance.`;
-    default:
-      return null;
+  // Categorize statuses to choose the right template
+  const shipmentStatuses = ['shipped', 'out_for_delivery', 'delivered'];
+
+  // If order_status is a shipment-related status, or if we have a specific shipment_status set
+  const isShipmentUpdate = shipmentStatuses.includes(order_status) || (shipment_status && shipment_status !== 'pending' && shipment_status !== '');
+
+  const statusToDisplay = (isShipmentUpdate && shipment_status && shipment_status !== 'pending')
+    ? shipment_status
+    : order_status;
+
+  const displayStatus = statusToDisplay.replace(/_/g, ' ').toUpperCase();
+
+  if (isShipmentUpdate) {
+    // Template 2: Shipment changes
+    return `Hi ${customer_name}, your shipment for order #${order_number} is now ${displayStatus}.\n\nTrack your order:\n${trackingUrl}`;
+  } else {
+    // Template 1: Order status changes
+    return `Hi ${customer_name}, your order #${order_number} status has been updated to ${displayStatus}.\n\nView details: https://keralagrocery.com/account/orders/${order_number}`;
   }
 };
 

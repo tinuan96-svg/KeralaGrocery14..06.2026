@@ -96,6 +96,12 @@ export async function POST(req: NextRequest) {
 
       if (oError) throw oError;
 
+      // Handle delivered status specific actions (cashback release)
+      if (existing && existing.order_status !== orderData.order_status && orderData.order_status === 'delivered') {
+        const { error: releaseErr } = await supabase.rpc('release_order_cashback', { p_order_id: targetId });
+        if (releaseErr) console.error('[Webhook] cashback release failed:', releaseErr);
+      }
+
       // Handle Order Items if provided
       if (Array.isArray(items) && items.length > 0) {
         const itemsUpsert = items.map((item: any) => ({
@@ -112,50 +118,7 @@ export async function POST(req: NextRequest) {
         const { error: iError } = await supabase.from('order_items').insert(itemsUpsert);
         if (iError) console.error('Order Items Sync Error:', iError.message);
       }
-
-      // 3. Trigger Customer Notifications on Status Change
-      if (existing && existing.order_status !== orderData.order_status) {
-        const phone = existing.customer_phone || orderData.customer_phone;
-        const orderNumber = existing.order_number || orderData.order_number;
-
-        if (phone && orderNumber) {
-          const notificationUrl = `${supabaseUrl}/functions/v1/send-sms-notification`;
-
-          let message = '';
-          let type = '';
-
-          if (orderData.order_status === 'shipped') {
-            message = `Your order #${orderNumber} has been shipped! tracking number: ${orderData.tracking_number || 'available soon'}`;
-            type = 'order_shipped';
-          } else if (orderData.order_status === 'delivered') {
-            message = `Good news! Your order #${orderNumber} has been delivered. Enjoy your groceries!`;
-            type = 'order_delivered';
-
-            // Release pending cashback instantly to available balance
-            const { error: releaseErr } = await supabase.rpc('release_order_cashback', { p_order_id: targetId });
-            if (releaseErr) console.error('[Webhook] cashback release failed:', releaseErr);
-          }
-
-          if (type) {
-            await fetch(notificationUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${supabaseServiceKey}`
-              },
-              body: JSON.stringify({
-                phone,
-                customer_name: existing.customer_name,
-                order_number: orderNumber,
-                message,
-                type,
-                tracking_number: orderData.tracking_number,
-                courier_name: orderData.courier_name
-              }),
-            }).catch(err => console.error('Notification Error:', err));
-          }
-        }
-      }
+    }
     }
 
     return NextResponse.json({ ok: true }, { headers: corsHeaders });

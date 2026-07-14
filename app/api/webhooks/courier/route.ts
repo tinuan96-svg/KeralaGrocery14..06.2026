@@ -58,22 +58,6 @@ export async function POST(req: NextRequest) {
         const { error: rpcErr } = await supabase.rpc('release_order_cashback', { p_order_id: order.id });
         if (rpcErr) console.error('[courier-webhook] Cashback release failed:', rpcErr);
       }
-
-      // 3. Trigger SMS Notification
-      if (order.customer_phone) {
-        const message = nextStatus === 'delivered'
-          ? `Good news! Your order #${order.order_number} has been delivered. Enjoy your Kerala groceries! ✅`
-          : `Your order #${order.order_number} is on the way! Track it here: https://keralagrocery.com/orders`;
-
-        await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseKey}`
-          },
-          body: JSON.stringify({ phone: order.customer_phone, message }),
-        }).catch(err => console.error('Notification error:', err));
-      }
     }
 
     return NextResponse.json({ ok: true, order_number: order.order_number, new_status: nextStatus });
