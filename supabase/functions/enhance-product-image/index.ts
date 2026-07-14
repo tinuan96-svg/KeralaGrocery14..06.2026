@@ -919,7 +919,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { productId, imageUrl, galleryMode = false } = await req.json();
+    const { productId, imageUrl, galleryMode = false, premium = true } = await req.json();
 
     if (!productId || !imageUrl) {
       return new Response(
@@ -973,11 +973,11 @@ Deno.serve(async (req: Request) => {
     const photoroomKey = config?.value?.api_key;
 
     let packshotPromise;
-    if (photoroomKey) {
+    if (premium && photoroomKey) {
       console.log("[enhance] using photoroom for transparent background removal");
       packshotPromise = removeBackgroundPhotoroom(photoroomKey, origBuf);
     } else {
-      console.log("[enhance] photoroom key not found, using openai fallback");
+      console.log("[enhance] photoroom key not found or premium disabled, using openai fallback");
       packshotPromise = generatePackshot(openaiKey, origBuf, originalMime);
     }
 

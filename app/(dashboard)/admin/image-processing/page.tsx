@@ -335,7 +335,7 @@ export default function ImageProcessingPage() {
       await fetch(`${SUPABASE_URL}/functions/v1/enhance-product-image`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: product.id, image_url: product.image_url }),
+        body: JSON.stringify({ product_id: product.id, image_url: product.image_url, premium: true }),
       });
       setTimeout(() => { fetchProducts(); fetchStats(); }, 3000);
     } finally { setEnhancing(null); }
@@ -361,10 +361,10 @@ export default function ImageProcessingPage() {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/bulk-process-images`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ limit: 10 }),
+        body: JSON.stringify({ limit: 20 }), // Increased to 20
       });
       const data = await res.json();
-      setRunResult(`Queued ${data.processed ?? data.count ?? 0} images.`);
+      setRunResult(`Queued ${data.processed ?? data.count ?? 0} images for Premium Photoroom processing.`);
       await fetchStats();
     } catch (err) {
       setRunResult(`Error: ${err instanceof Error ? err.message : String(err)}`);
@@ -488,7 +488,7 @@ export default function ImageProcessingPage() {
             {productStats.unprocessed > 0 && (
               <button onClick={handleRunBackfill} disabled={running}
                 className="flex items-center gap-1.5 text-sm px-3 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors">
-                {running ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Running…</> : <><Play className="w-3.5 h-3.5" /> Process next 10</>}
+                {running ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Running…</> : <><Sparkles className="w-3.5 h-3.5" /> Bulk Premium Process (Photoroom)</>}
               </button>
             )}
             <button onClick={() => handleNormalizeAll(false)} disabled={normalizing}

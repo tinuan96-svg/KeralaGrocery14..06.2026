@@ -353,7 +353,7 @@ export default function ProductEditModal({ product, onClose, onSave }: Props) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId: product.id, imageUrl: sourceUrl }),
+        body: JSON.stringify({ productId: product.id, imageUrl: sourceUrl, premium: true }),
       });
 
       const json = await res.json();

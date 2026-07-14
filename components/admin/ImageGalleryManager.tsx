@@ -582,6 +582,7 @@ export default function ImageGalleryManager({ productId, initial, onChange }: Pr
             productId: galleryRowId,
             imageUrl,
             galleryMode: true,
+            premium: true,
           }),
         }
       );
