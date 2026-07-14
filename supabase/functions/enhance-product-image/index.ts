@@ -1051,7 +1051,7 @@ Deno.serve(async (req: Request) => {
     console.log("[enhance] upload and enhanced OCR complete.");
 
     // Step 6: Validate — pixel similarity uses pre-normalization bytes for accurate comparison
-    const validation = validateProtectedFields(originalFields, enhancedFields, origBytes, openaiBytes);
+    const validation = validateProtectedFields(originalFields, enhancedFields, origBytes, aiBytes);
     const message    = validationMessage(validation);
 
     console.log("[enhance] validation result:", {
