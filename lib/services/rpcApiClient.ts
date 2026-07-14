@@ -130,7 +130,7 @@ function mapRow(
     unit:            (row.unit as string | null) ?? null,
     weight_qnty:     row.weight_qnty != null ? Number(row.weight_qnty) : null,
     weight:          row.weight != null ? Number(row.weight) : null,
-    stock:           Math.max(Number(row.stock || 0), Number(row.stock_quantity || 0)),
+    stock:           Number(row.stock || 0),
     image_url:       imageUrl,
     slug:              (row.slug as string | null) ?? String(row.id ?? ''),
     description:       (row.description as string | null) ?? null,
@@ -227,7 +227,7 @@ export async function getProducts(
     let query = supabase
       .from('products')
       .select(
-        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_quantity',
+        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock',
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
@@ -327,7 +327,7 @@ export async function getProductDetail(
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, image_medium, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_quantity')
+      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .neq('visibility_status', false)

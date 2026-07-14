@@ -15,9 +15,6 @@ const PRODUCTS_SELECT = `
   image_main,
   image_path,
   enhanced_image_url,
-  image_medium,
-  rating,
-  review_count,
   discount_percentage,
   is_active,
   is_deleted,
@@ -32,7 +29,6 @@ const PRODUCTS_SELECT = `
   category_id,
   brand_id,
   stock,
-  stock_quantity,
   categories:category_id(id, name, slug),
   brands:brand_id(id, name, slug, logo_url)
 `;
@@ -42,7 +38,6 @@ function mapProduct(p: any): ProductWithDetails {
     image_main: p.image_main,
     enhanced_image_url: p.enhanced_image_url,
     image_url: p.image_url,
-    image_medium: p.image_medium,
   });
 
   return {
@@ -54,12 +49,12 @@ function mapProduct(p: any): ProductWithDetails {
     original_price: p.original_price ? roundUpToNearestTen(p.original_price) : null,
     image_main: imageUrl,
     image_url: imageUrl,
+    enhanced_image_url: p.enhanced_image_url ?? null,
     image_path: p.image_path ?? null,
     category_id: p.category_id ?? null,
     brand_id: p.brand_id ?? null,
     created_at: p.created_at ?? '',
-    stock: p.stock ?? p.stock_quantity ?? 0,
-    stock_quantity: p.stock_quantity ?? p.stock ?? 0,
+    stock: p.stock ?? 0,
     is_active: p.is_active ?? true,
     discount_percentage: p.discount_percentage ?? undefined,
     is_bestseller: p.is_bestseller ?? undefined,
@@ -69,8 +64,6 @@ function mapProduct(p: any): ProductWithDetails {
     hot_product_expires_at: p.hot_product_expires_at ?? undefined,
     is_deal: p.is_deal ?? undefined,
     sold_count: p.sold_count ?? undefined,
-    rating: p.rating ?? undefined,
-    review_count: p.review_count ?? undefined,
     category: p.categories ?? undefined,
     brand: p.brands
       ? { ...p.brands, description: null, created_at: '', updated_at: '' }

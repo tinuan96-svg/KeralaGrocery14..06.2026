@@ -96,7 +96,7 @@ const SELECT = `
   approval_status, visibility_status, approved_at, last_sync_at,
   seo_title, seo_description, seo_keywords, tags,
   created_at, updated_at,
-  original_image_url, enhanced_image_url, thumbnail_url, image_processing_status, image_processed_at
+  original_image_url, enhanced_image_url, image_processing_status, image_processed_at
 `;
 
 export function isMissingRequiredFields(p: ApprovalProduct | Pick<ApprovalProduct, 'category_id' | 'image_url' | 'image_main' | 'short_description' | 'description' | 'price' | 'selling_price'>): string[] {
