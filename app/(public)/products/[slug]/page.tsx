@@ -38,7 +38,7 @@ async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id, rating, review_count')
+      .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id, rating, review_count, categories:category_id(name)')
       .eq('approval_status', 'approved')
       .eq('visibility_status', true);
 

@@ -53,12 +53,12 @@ export function cleanProductName(
   const title = (productTitle ?? '').trim();
   const brandStr = (brand ?? '').trim();
 
-  // Strip trailing weight+unit patterns like "0Kg", "1Kg", "500g", "250ml", "Kg", "g", "ml", "L", "ltr"
-  // and anything that follows (which is usually the brand appended by the data source)
+  // Strip weight+unit patterns like "5kg", "500g", "250ml"
+  // but keep what follows unless it's just whitespace or the brand.
   const cleaned = title
-    .replace(/\s+\d*\.?\d+\s*(kg|g|ml|l|ltr|gm|oz|lb)\b.*$/i, '')
-    .replace(/\s+\d+\s*(kg|g|ml|l|ltr|gm|oz|lb)\b.*$/i, '')
-    .replace(/\s+(kg|g|ml|l|ltr|gm|oz|lb)\b.*$/i, '')
+    .replace(/\s+\d*\.?\d+\s*(kg|g|ml|l|ltr|gm|oz|lb)\b/i, '')
+    .replace(/\s+\d+\s*(kg|g|ml|l|ltr|gm|oz|lb)\b/i, '')
+    .replace(/\s+(kg|g|ml|l|ltr|gm|oz|lb)\b/i, '')
     .trim();
 
   if (!brandStr) return cleaned;

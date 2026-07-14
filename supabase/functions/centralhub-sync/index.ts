@@ -852,17 +852,27 @@ Deno.serve(async (req: Request) => {
 
               // AI Enrichment Trigger:
               // If it's a new product or force resync, and short_description is missing,
-              // fire the AI description generator in the background.
+              // fire the AI description generator.
               if (upserted && !upserted.short_description) {
                 const fnUrl = `${supabaseUrl}/functions/v1/generate-descriptions`;
-                fetch(fnUrl, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${serviceKey}`,
-                  },
-                  body: JSON.stringify({ productId: upserted.id, mode: "both" }),
-                }).catch(err => console.error(`[sync-ai] Trigger failed for ${upserted.id}:`, err));
+                // Use a non-awaited promise to avoid blocking the sync loop,
+                // but we should ideally ensure they are all tracked.
+                // For now, we'll just keep it but note it might be terminated in some runtimes.
+                // In Supabase Edge Functions, background tasks are generally killed after response.
+                // Awaiting would be slow, but necessary for reliability if not using a queue.
+                // We'll await it to ensure reliability as per "Fix All" request.
+                try {
+                  await fetch(fnUrl, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "Authorization": `Bearer ${serviceKey}`,
+                    },
+                    body: JSON.stringify({ productId: upserted.id, mode: "both" }),
+                  });
+                } catch (err) {
+                  console.error(`[sync-ai] Trigger failed for ${upserted.id}:`, err);
+                }
               }
 
             } catch (e) {

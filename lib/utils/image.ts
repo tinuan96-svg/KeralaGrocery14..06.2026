@@ -95,17 +95,38 @@ export function resolveProductThumbnail(
   product: ProductImageFields,
   updatedAt?: string | null,
 ): string | null {
-  const thumb =
-    product.image_thumbnail ??
-    product.image_cdn_url ??
-    product.image_override ??
-    product.image_main ??
-    product.image_medium ??
-    product.enhanced_image_url ??
-    product.image_url;
-  if (thumb && thumb.startsWith('http')) {
-    const ts = updatedAt ?? product.updated_at;
-    return ts ? `${thumb}?v=${new Date(ts).getTime()}` : thumb;
+  const candidates = [
+    product.image_thumbnail,
+    product.image_cdn_url,
+    product.image_override,
+    product.image_main,
+    product.image_medium,
+    product.enhanced_image_url,
+    product.image_url,
+  ];
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  for (let url of candidates) {
+    if (!url || typeof url !== 'string' || url.trim() === '') continue;
+
+    if (url.startsWith('http')) {
+      const ts = updatedAt ?? product.updated_at;
+      return ts ? `${url}?v=${new Date(ts).getTime()}` : url;
+    }
+
+    if (url.startsWith('blob:')) continue;
+
+    if (supabaseUrl && (url.startsWith('products/') || url.startsWith('categories/') || url.startsWith('/storage/v1/'))) {
+      let bucket = 'product-images';
+      if (url.startsWith('categories/')) {
+        bucket = 'category-images';
+      }
+      const path = url.startsWith('/') ? url : `/storage/v1/object/public/${bucket}/${url}`;
+      const fullUrl = `${supabaseUrl}${path}`;
+      const ts = updatedAt ?? product.updated_at;
+      return ts ? `${fullUrl}?v=${new Date(ts).getTime()}` : fullUrl;
+    }
   }
   return null;
 }

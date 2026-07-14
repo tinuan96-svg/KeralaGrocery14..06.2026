@@ -1,4 +1,6 @@
 /**
+ * @deprecated This service is legacy. Use the 'centralhub-sync' Supabase Edge Function instead.
+ *
  * CentralHub → KeralaGroceries Sync Service
  *
  * This runs server-side (Edge Function or server action). It is the only place
