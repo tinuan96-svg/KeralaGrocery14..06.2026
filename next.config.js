@@ -22,8 +22,9 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.webcontainer-api.io' },
     ],
   },
+  transpilePackages: ['lucide-react'],
   experimental: {
-    optimizePackageImports: ['lucide-react'],
+    // optimizePackageImports: ['lucide-react'],
   },
   webpack: (config, { dev }) => {
     if (dev) {
