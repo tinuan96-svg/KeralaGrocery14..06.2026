@@ -6,7 +6,7 @@ import { Heart, Plus, Minus, ShoppingCart, CheckCircle } from 'lucide-react';
 import type { ProductWithDetails } from '@/lib/types/database';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { getProductImageSrc } from '@/lib/utils/image';
 import { useProductPrice } from '@/hooks/useProductPrice';
 import { haptics } from '@/lib/utils/haptics';
