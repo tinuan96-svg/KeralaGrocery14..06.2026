@@ -543,7 +543,7 @@ function validationMessage(v: ValidationResult): string {
 // ── Studio normalization — 1600×1600 canvas, 75-80% product height ────────────
 //
 // Produces a standardised output canvas regardless of original image dimensions:
-//  • Pure white 1600×1600 background
+//  • Pure white 1600×1600 background (now supports transparency if Photoroom used)
 //  • Product scaled so its height occupies 75-80% of the canvas (target 77%)
 //  • Horizontally and vertically centred
 //  • Soft natural drop shadow beneath the product
@@ -558,13 +558,13 @@ interface NormalizationResult {
   qualityScore: number;  // 0-100 composite
 }
 
-async function normalizeToStudio(inputBytes: Uint8Array): Promise<NormalizationResult> {
+async function normalizeToStudio(inputBytes: Uint8Array, isTransparent: boolean = false): Promise<NormalizationResult> {
   const CANVAS = 1600;
   const TARGET = 0.77; // 77% of canvas height
 
   try {
     // @ts-ignore — ImageDecoder available in Deno Deploy
-    const decoder = new ImageDecoder({ data: inputBytes.buffer, type: "image/png" });
+    const decoder = new ImageDecoder({ data: inputBytes.buffer, type: isTransparent ? "image/png" : "image/jpeg" });
     const frame   = await decoder.decode();
     // @ts-ignore
     const bitmap  = await createImageBitmap(frame.image);
@@ -588,9 +588,13 @@ async function normalizeToStudio(inputBytes: Uint8Array): Promise<NormalizationR
     // @ts-ignore
     const ctx    = canvas.getContext("2d");
 
-    // White background
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, CANVAS, CANVAS);
+    // Clear background if transparent, else white
+    if (isTransparent) {
+      ctx.clearRect(0, 0, CANVAS, CANVAS);
+    } else {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, CANVAS, CANVAS);
+    }
 
     // Soft drop shadow
     ctx.shadowColor   = "rgba(0,0,0,0.10)";
@@ -627,6 +631,45 @@ async function normalizeToStudio(inputBytes: Uint8Array): Promise<NormalizationR
     console.warn("[normalize] OffscreenCanvas unavailable, returning original:", err);
     return { bytes: inputBytes, occupancyPct: 0, centered: false, qualityScore: 0 };
   }
+}
+
+// ── Photoroom Background Removal ──────────────────────────────────────────
+
+async function removeBackgroundPhotoroom(
+  apiKey: string,
+  imageBuf: ArrayBuffer
+): Promise<{ bytes: Uint8Array; diagnostics: ApiDiagnostics }> {
+  const endpoint = "https://sdk.photoroom.com/v1/segment";
+  const model = "photoroom-segment-v1";
+
+  const form = new FormData();
+  form.append("image_file", new Blob([imageBuf]), "product.jpg");
+  // We want transparent background for premium looks
+  form.append("background_color", "transparent");
+
+  console.log("[enhance] photoroom request:", { endpoint, imageSizeBytes: imageBuf.byteLength });
+
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: { "x-api-key": apiKey },
+    body: form,
+    signal: AbortSignal.timeout(60000),
+  });
+
+  const responseStatus = res.status;
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw Object.assign(
+      new Error(`Photoroom API error ${responseStatus}: ${errorText}`),
+      { diagnostics: { endpoint, model, params: { background_color: "transparent" }, responseStatus, errorMessage: errorText } }
+    );
+  }
+
+  const resultBytes = new Uint8Array(await res.arrayBuffer());
+  return {
+    bytes: resultBytes,
+    diagnostics: { endpoint, model, params: { background_color: "transparent" }, responseStatus, errorMessage: null }
+  };
 }
 
 // ── Diagnostics ───────────────────────────────────────────────────────────────
@@ -917,30 +960,50 @@ Deno.serve(async (req: Request) => {
     console.log("[enhance] original fetched:", { imageUrl, originalMime, sizeBytes: origBuf.byteLength });
 
     // Step 2 & 3: Parallelize OCR on original and AI Packshot generation
-    // This saves 5-15 seconds of sequential waiting.
+    // We prioritize Photoroom if available for background removal (transparency)
     console.log("[enhance] starting parallel OCR and packshot generation...");
+
+    // Check for Photoroom API Key in app_config
+    const { data: config } = await supabase
+      .from("app_config")
+      .select("value")
+      .eq("id", "photoroom_config")
+      .maybeSingle();
+
+    const photoroomKey = config?.value?.api_key;
+
+    let packshotPromise;
+    if (photoroomKey) {
+      console.log("[enhance] using photoroom for transparent background removal");
+      packshotPromise = removeBackgroundPhotoroom(photoroomKey, origBuf);
+    } else {
+      console.log("[enhance] photoroom key not found, using openai fallback");
+      packshotPromise = generatePackshot(openaiKey, origBuf, originalMime);
+    }
+
     const [originalFields, packshotResult] = await Promise.all([
       extractProtectedFields(openaiKey, imageUrl),
-      generatePackshot(openaiKey, origBuf, originalMime)
+      packshotPromise
     ]);
 
-    let openaiBytes: Uint8Array = packshotResult.bytes;
+    let aiBytes: Uint8Array = packshotResult.bytes;
     let apiDiagnostics: ApiDiagnostics = packshotResult.diagnostics;
+    const isTransparent = photoroomKey ? true : false;
+
     console.log("[enhance] original OCR and packshot complete:", {
       model: apiDiagnostics.model,
-      imageType: originalFields.imageType
+      imageType: originalFields.imageType,
+      isTransparent
     });
 
-    // Step 3.5: Pixel similarity — compare original vs raw OpenAI output BEFORE canvas normalization
-    // This gives an accurate signal of whether OpenAI altered the label text.
-    const rawPixelSim = pixelSimilarity(origBytes, openaiBytes);
+    // Step 3.5: Pixel similarity — compare original vs raw AI output BEFORE canvas normalization
+    const rawPixelSim = pixelSimilarity(origBytes, aiBytes);
     console.log("[enhance] pre-normalization pixel similarity:", rawPixelSim);
 
     // FAST-PATH: If pixels are near-identical, we can skip the second OCR and normalize directly.
-    // Score >= 99.8 indicates visually identical content (only minute compression artifacts).
     if (rawPixelSim >= 99.8) {
       console.log("[enhance] pixel similarity perfect (>=99.8), skipping second OCR pass.");
-      const normResult = await normalizeToStudio(openaiBytes);
+      const normResult = await normalizeToStudio(aiBytes, isTransparent);
       const enhancedBytes = normResult.bytes;
       const prefix = galleryMode ? "gallery" : "products";
       const enhancedPath = `${prefix}/${productId}-studio-${Date.now()}.png`;
@@ -968,8 +1031,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Step 3.6: Normalize to studio format (1600×1600, 75-80% height, shadow, watermark)
-    const normResult   = await normalizeToStudio(openaiBytes);
+    // Step 3.6: Normalize to studio format
+    const normResult   = await normalizeToStudio(aiBytes, isTransparent);
     const enhancedBytes = normResult.bytes;
     const enhancedMime = "image/png";
     console.log("[enhance] normalization complete, starting parallel upload and enhanced OCR...");
