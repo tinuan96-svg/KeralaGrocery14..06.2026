@@ -144,16 +144,31 @@ function mapRow(
   };
 }
 
+let globalCategoryMap: Record<string, string> | null = null;
+let categoryFetchPromise: Promise<Record<string, string>> | null = null;
+
 async function fetchCategoryMap(): Promise<Record<string, string>> {
-  try {
-    const supabase = getSupabase();
-    const { data } = await supabase.from('categories').select('id, name');
-    const map: Record<string, string> = {};
-    for (const row of (data ?? []) as { id: string; name: string }[]) {
-      map[row.id] = row.name;
+  if (globalCategoryMap) return globalCategoryMap;
+  if (categoryFetchPromise) return categoryFetchPromise;
+
+  categoryFetchPromise = (async () => {
+    try {
+      const supabase = getSupabase();
+      const { data } = await supabase.from('categories').select('id, name');
+      const map: Record<string, string> = {};
+      for (const row of (data ?? []) as { id: string; name: string }[]) {
+        map[row.id] = row.name;
+      }
+      globalCategoryMap = map;
+      return map;
+    } catch {
+      return {};
+    } finally {
+      categoryFetchPromise = null;
     }
-    return map;
-  } catch { return {}; }
+  })();
+
+  return categoryFetchPromise;
 }
 
 

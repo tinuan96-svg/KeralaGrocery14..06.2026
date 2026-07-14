@@ -37,13 +37,14 @@ export function useProductPrice(productId: string, initialPrice: number, initial
   }, [productId, initialPrice]);
 
   useEffect(() => {
-    // Initial fetch
-    fetchPrice();
+    // We NO LONGER call fetchPrice() immediately on mount to prevent
+    // flooding the network when many cards are displayed.
+    // The props provide the initial authoritative state.
 
-    // Set up polling interval (every 60 seconds to be conservative)
-    const interval = setInterval(fetchPrice, 60000);
+    // Set up polling interval (every 90 seconds - slightly more conservative)
+    const interval = setInterval(fetchPrice, 90000);
 
-    // Also fetch on window focus
+    // Also fetch on window focus (helps ensure data is fresh when user returns)
     const handleFocus = () => fetchPrice();
     window.addEventListener('focus', handleFocus);
 

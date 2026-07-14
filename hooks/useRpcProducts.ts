@@ -11,7 +11,7 @@ import {
   type RpcSortOption,
 } from '@/lib/services/rpcApiClient';
 
-const DEFAULT_LIMIT = 2000;
+const DEFAULT_LIMIT = 40;
 
 export interface UseRpcProductsReturn {
   products: RpcProduct[];
