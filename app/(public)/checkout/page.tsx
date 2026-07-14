@@ -25,7 +25,7 @@ import { useAddresses } from '@/hooks/useAddresses';
 import type { CustomerAddress } from '@/lib/services/addressService';
 import { sendOrderPlacedNotification } from '@/lib/services/notificationService';
 
-type PaymentMethod = 'worldpay';
+type PaymentMethod = 'stripe';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [stockError, setStockError] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('worldpay');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
   const [deliveryFee, setDeliveryFee]     = useState(0);
   const [isFreeDelivery, setIsFreeDelivery] = useState(false);
   const [deliveryMsg, setDeliveryMsg]     = useState('');
@@ -309,7 +309,7 @@ export default function CheckoutPage() {
     return data;
   };
 
-  const handleWorldpayPayment = async () => {
+  const handleStripePayment = async () => {
     if (!validateForm()) return;
     if (paymentInitiated.current) return;
 
@@ -364,28 +364,23 @@ export default function CheckoutPage() {
       }
 
       // Normal card payment flow
-      const result      = await createOrder('pending');
+      const result = await createOrder('pending');
       const orderNumber = result.order.order_number;
 
-      const supabase    = getSupabase();
+      const supabase = getSupabase();
       const { data: { session } } = await supabase.auth.getSession();
-      const authToken   = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const authToken = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/worldpay-payment`,
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/stripe-payment`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
           body: JSON.stringify({
-            amount:               cardChargeFinal,
-            transactionReference: orderNumber,
-            narrative:            'Kerala Groceries UK',
-            billingAddress: {
-              address1:    formData.address,
-              city:        formData.city,
-              postalCode:  formData.postcode,
-              countryCode: 'GB',
-            },
+            amount: cardChargeFinal,
+            orderNumber: orderNumber,
+            customerEmail: formData.email,
+            customerName: formData.name,
           }),
         }
       );
@@ -672,7 +667,7 @@ export default function CheckoutPage() {
               )}
 
               <div className="grid sm:grid-cols-2 gap-3 mb-5">
-                <button type="button" onClick={() => setPaymentMethod('worldpay')}
+                <button type="button" onClick={() => setPaymentMethod('stripe')}
                   className="flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left border-green-500 bg-green-50">
                   <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center border-green-500">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -681,11 +676,13 @@ export default function CheckoutPage() {
                     <p className="font-semibold text-sm text-gray-900">Pay by Card</p>
                     <p className="text-xs text-gray-500">Visa, Mastercard &amp; more</p>
                   </div>
-                  <CreditCard className="w-5 h-5 text-blue-600 ml-auto flex-shrink-0" />
+                  <div className="flex items-center gap-1 ml-auto">
+                    <CreditCard className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                  </div>
                 </button>
               </div>
 
-              {paymentMethod === 'worldpay' && (
+              {paymentMethod === 'stripe' && (
                 <div className="space-y-3">
                   {stockError && (
                     <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
@@ -706,13 +703,13 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
                     <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
                     <p className="text-xs text-blue-700 font-medium">
-                      Secured by Worldpay. You&apos;ll be redirected to a secure payment page.
+                      Secured by Stripe. You&apos;ll be redirected to a secure payment page.
                     </p>
                   </div>
                   <Button
                     className="w-full h-12 bg-[#0B5D3B] hover:bg-green-700 text-white font-bold rounded-xl text-sm transition-colors"
                     disabled={isProcessing || !!stockError}
-                    onClick={handleWorldpayPayment}>
+                    onClick={handleStripePayment}>
                     {isProcessing ? (
                       <span className="flex items-center gap-2">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -869,7 +866,7 @@ export default function CheckoutPage() {
         <Button
           className="bg-[#0B5D3B] hover:bg-green-700 text-white font-bold px-6 h-11 rounded-xl text-sm"
           disabled={isProcessing || !!stockError}
-          onClick={handleWorldpayPayment}>
+          onClick={handleStripePayment}>
           {isProcessing ? 'Processing...' : 'Pay Now'}
         </Button>
       </div>

@@ -63,7 +63,6 @@ self.addEventListener('fetch', (event) => {
   if (
     url.hostname.includes('supabase.co') ||
     url.hostname.includes('supabase.in') ||
-    url.hostname.includes('worldpay.com') ||
     url.hostname.includes('stripe.com') ||
     url.hostname.includes('google-analytics.com') ||
     url.hostname.includes('googletagmanager.com')

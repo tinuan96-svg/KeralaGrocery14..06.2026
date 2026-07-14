@@ -146,18 +146,20 @@ export default function PaymentDiagnosticsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-      const res = await fetch(`${supabaseUrl}/functions/v1/worldpay-webhook`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/stripe-webhook`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
           'Authorization': `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({
-          eventDetails: {
-            type:                 'authorized',
-            transactionReference: orderNumber,
-            downstreamReference:  `manual-retry-${Date.now()}`,
-          },
+          type: 'checkout.session.completed',
+          data: {
+            object: {
+              client_reference_id: orderNumber,
+              payment_intent: `manual-retry-${Date.now()}`,
+            }
+          }
         }),
       });
       const json = await res.json();
@@ -181,7 +183,7 @@ export default function PaymentDiagnosticsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-      const res = await fetch(`${supabaseUrl}/functions/v1/worldpay-payment`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/stripe-payment`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
@@ -189,8 +191,9 @@ export default function PaymentDiagnosticsPage() {
         },
         body: JSON.stringify({
           amount:               row.total,
-          transactionReference: row.order_number,
-          narrative:            'Kerala Groceries UK',
+          orderNumber:          row.order_number,
+          customerEmail:        row.customer_email,
+          customerName:         row.customer_name,
         }),
       });
       const data = await res.json();
