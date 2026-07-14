@@ -8,7 +8,6 @@ import { getProducts, type RpcProduct } from '@/lib/services/rpcApiClient';
 import { useClickAway } from '@/hooks/useClickAway';
 import { useRouter } from 'next/navigation';
 import { haptics } from '@/lib/utils/haptics';
-import { ImpactStyle } from '@capacitor/haptics';
 
 interface Props {
   placeholder?: string;
@@ -59,7 +58,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
         });
         setResults(products);
         if (products.length > 0) {
-          haptics.impact(ImpactStyle.Light); // Success feedback when results found
+          haptics.impact('light'); // Success feedback when results found
         }
       } catch (err) {
         console.error('Search error:', err);
@@ -75,7 +74,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
     e.preventDefault();
     if (query.trim()) {
       addToHistory(query.trim());
-      haptics.impact(ImpactStyle.Medium);
+      haptics.impact('medium');
       router.push(`/products?search=${encodeURIComponent(query.trim())}`);
       setIsOpen(false);
       onSearch?.(query);
@@ -124,7 +123,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
                   <History className="w-3 h-3" /> Recent Searches
                 </span>
                 <button
-                  onClick={() => { setHistory([]); localStorage.removeItem('kg-search-history'); haptics.impact(ImpactStyle.Light); }}
+                  onClick={() => { setHistory([]); localStorage.removeItem('kg-search-history'); haptics.impact('light'); }}
                   className="text-[10px] font-bold text-red-500 hover:underline"
                 >
                   Clear All
@@ -133,7 +132,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
               {history.map((term, i) => (
                 <button
                   key={i}
-                  onClick={() => { setQuery(term); addToHistory(term); haptics.impact(ImpactStyle.Light); }}
+                  onClick={() => { setQuery(term); addToHistory(term); haptics.impact('light'); }}
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left text-sm text-gray-600 transition-colors"
                 >
                   <Search className="w-3.5 h-3.5 text-gray-300" />
@@ -150,7 +149,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
                 <Link
                   href={`/products?search=${encodeURIComponent(query)}`}
                   className="text-[10px] font-bold text-green-700 hover:underline"
-                  onClick={() => { setIsOpen(false); haptics.impact(ImpactStyle.Light); }}
+                  onClick={() => { setIsOpen(false); haptics.impact('light'); }}
                 >
                   View All Results
                 </Link>
@@ -162,7 +161,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
                     href={`/products/${product.slug || product.id}`}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors group"
                     onClick={() => {
-                      haptics.impact(ImpactStyle.Medium);
+                      haptics.impact('medium');
                       setIsOpen(false);
                       setQuery('');
                     }}

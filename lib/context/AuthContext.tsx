@@ -5,9 +5,6 @@ import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 import { sendWelcomeNotification } from '@/lib/services/notificationService';
-import { App } from '@capacitor/app';
-import { Browser } from '@capacitor/browser';
-import { Capacitor } from '@capacitor/core';
 
 const USER_STORAGE_KEY = 'kerala-grocery-user';
 
@@ -163,7 +160,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // ── Capacitor Native URL Handling ────────────────────────────────────────
     // Listen for custom scheme redirects (e.g. kgapp://auth)
     const setupNativeListener = async () => {
+      const { Capacitor } = await import('@capacitor/core');
       if (!Capacitor.isNativePlatform()) return;
+
+      const { App } = await import('@capacitor/app');
+      const { Browser } = await import('@capacitor/browser');
 
       const handleUrl = async (urlStr: string) => {
         const isKgAppScheme = urlStr.startsWith('kgapp://auth');
@@ -271,6 +272,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     const supabase = getSupabase();
+    const { Capacitor } = await import('@capacitor/core');
+    const { Browser } = await import('@capacitor/browser');
     const isApp = Capacitor.isNativePlatform();
 
     // For both platforms, we go through the web callback as a "bridge"
@@ -301,6 +304,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithApple = async () => {
     const supabase = getSupabase();
+    const { Capacitor } = await import('@capacitor/core');
+    const { Browser } = await import('@capacitor/browser');
     const isApp = Capacitor.isNativePlatform();
 
     const redirectTo = `${window.location.origin}/auth/callback?platform=native`;

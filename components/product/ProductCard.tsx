@@ -10,7 +10,6 @@ import { memo } from 'react';
 import { getProductImageSrc } from '@/lib/utils/image';
 import { useProductPrice } from '@/hooks/useProductPrice';
 import { haptics } from '@/lib/utils/haptics';
-import { ImpactStyle } from '@capacitor/haptics';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -50,27 +49,27 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
     e?.preventDefault();
     e?.stopPropagation();
     if (stock === 0) return;
-    haptics.impact(ImpactStyle.Medium); // (Suggestion 2)
+    haptics.impact('medium'); // (Suggestion 2)
     addToCart(cartItem);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (stock === 0) return;
-    haptics.impact(ImpactStyle.Light); // (Suggestion 2)
+    haptics.impact('light'); // (Suggestion 2)
     addToCart(cartItem);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    haptics.impact(ImpactStyle.Light); // (Suggestion 2)
+    haptics.impact('light'); // (Suggestion 2)
     if (qty === 1) removeFromCart(product.id);
     else if (qty > 1) addToCart(cartItem, -1);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    haptics.impact(ImpactStyle.Medium); // (Suggestion 2)
+    haptics.impact('medium'); // (Suggestion 2)
     toggleWishlist(cartItem);
   };
 
