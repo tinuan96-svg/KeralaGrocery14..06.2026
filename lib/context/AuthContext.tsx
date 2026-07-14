@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 import { sendWelcomeNotification } from '@/lib/services/notificationService';
@@ -69,6 +70,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ProfileState>(undefined);
@@ -185,16 +187,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           try {
             const url = new URL(webUrlStr);
-            const params = new URLSearchParams(url.search || url.hash.substring(1));
-            const code = params.get('code');
-            const accessToken = params.get('access_token');
-            const refreshToken = params.get('refresh_token');
+            // Handle both PKCE (?code=) and Implicit Flow (#access_token=)
+            const searchParams = new URLSearchParams(url.search);
+            const code = searchParams.get('code');
+
+            // For implicit flow, the fragment contains access_token etc.
+            const fragmentParams = new URLSearchParams(url.hash.substring(1));
+            const accessToken = fragmentParams.get('access_token');
+            const refreshToken = fragmentParams.get('refresh_token');
 
             if (code) {
-              await supabase.auth.exchangeCodeForSession(code);
+              console.log('[Auth] Exchanging code for session');
+              const { error } = await supabase.auth.exchangeCodeForSession(code);
+              if (error) throw error;
             } else if (accessToken && refreshToken) {
-              await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+              console.log('[Auth] Setting session from fragment tokens');
+              const { error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              });
+              if (error) throw error;
             }
+
+            // Redirect to account once session is established
+            router.push('/account');
+
           } catch (err) {
             console.error('[Auth] OAuth handling error:', err);
           }
@@ -255,14 +272,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     const supabase = getSupabase();
     const isApp = Capacitor.isNativePlatform();
-    const platform = Capacitor.getPlatform();
 
-    // Select correct scheme for platform
-    const nativeRedirect = platform === 'ios' ? 'kgapp://auth' : 'com.keralagrocery.app://auth';
-
-    const redirectTo = isApp
-      ? nativeRedirect
-      : `${window.location.origin}/auth/callback`;
+    // For both platforms, we go through the web callback as a "bridge"
+    // to ensure deep links work reliably and because Supabase whitelists it by default.
+    const redirectTo = `${window.location.origin}/auth/callback?platform=native`;
 
     console.log('[Auth] signInWithGoogle - isApp:', isApp, 'redirectTo:', redirectTo);
 
@@ -280,7 +293,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!error && isApp && data?.url) {
       console.log('[Auth] Opening OAuth URL in browser:', data.url);
-      // Use windowName: '_blank' to ensure it opens as a new tab/overlay
       await Browser.open({ url: data.url, windowName: '_blank' });
     }
 
@@ -290,13 +302,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithApple = async () => {
     const supabase = getSupabase();
     const isApp = Capacitor.isNativePlatform();
-    const platform = Capacitor.getPlatform();
 
-    const nativeRedirect = platform === 'ios' ? 'kgapp://auth' : 'com.keralagrocery.app://auth';
-
-    const redirectTo = isApp
-      ? nativeRedirect
-      : `${window.location.origin}/auth/callback`;
+    const redirectTo = `${window.location.origin}/auth/callback?platform=native`;
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
