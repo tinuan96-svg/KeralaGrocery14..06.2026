@@ -97,20 +97,20 @@ export default function AmazonStyleGrid() {
     <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         {cards.map((card) => (
-          <div key={card.id} className="bg-white p-4 sm:p-5 flex flex-col h-full shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-md border border-gray-200 hover:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23)] transition-shadow duration-300">
-            <h2 className="text-[18px] sm:text-xl font-bold text-gray-900 mb-4 tracking-tight leading-tight">{card.title}</h2>
+          <div key={card.id} className="bg-white p-3 sm:p-4 flex flex-col h-full shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-md border border-gray-200 hover:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23)] transition-shadow duration-300">
+            <h2 className="text-[17px] sm:text-lg font-bold text-gray-900 mb-3 tracking-tight leading-tight">{card.title}</h2>
 
             <div className="flex-1">
               {card.layout_type === 'grid_2x2' ? (
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 h-full">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 h-full">
                   {card.items.slice(0, 4).map((item, idx) => (
                     <Link key={idx} href={item.link} className="flex flex-col group active:opacity-80 transition-opacity">
-                      <div className="relative aspect-square overflow-hidden mb-2 rounded-xl border border-gray-100/50">
+                      <div className="relative aspect-square overflow-hidden bg-white mb-1.5 rounded-lg border border-gray-100/50">
                         <Image
                           src={item.image_url}
                           alt={item.label || ''}
                           fill
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
+                          className="object-contain transition-transform duration-500 scale-[1.05] group-hover:scale-115"
                           sizes="(max-width: 768px) 45vw, 25vw"
                         />
                         {item.badge && (
@@ -129,12 +129,12 @@ export default function AmazonStyleGrid() {
                 </div>
               ) : (
                 <Link href={card.items[0]?.link || '#'} className="block h-full relative group active:opacity-90 transition-opacity">
-                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-2xl border border-gray-100">
+                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100">
                     <Image
                       src={card.items[0]?.image_url || '/placeholder.webp'}
                       alt={card.title}
                       fill
-                      className="object-contain p-2 transition-transform duration-700 group-hover:scale-105"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
                       sizes="(max-width: 1024px) 95vw, 25vw"
                     />
                   </div>
