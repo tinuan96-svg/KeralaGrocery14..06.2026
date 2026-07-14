@@ -79,9 +79,9 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
 
       {/* Image */}
       <Link href={`/products/${product.slug}`} className="block flex-shrink-0">
-        <div className="relative w-full bg-white overflow-hidden rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
-          {/* Subtle radial highlight */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] pointer-events-none" />
+        <div className="relative w-full overflow-hidden rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
+          {/* Subtle radial highlight — removed bg-white so transparent images can shine */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] opacity-40 pointer-events-none" />
 
           <div className="absolute inset-0 flex items-center justify-center z-10 p-1">
             <Image

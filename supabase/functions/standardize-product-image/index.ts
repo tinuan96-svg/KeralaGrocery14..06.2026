@@ -201,9 +201,10 @@ async function processImage(inputBuffer: Buffer): Promise<{
   const lightingBuffer = buildLightingBuffer(CANVAS_SIZE);
   const watermarkBuffer = buildWatermarkBuffer(CANVAS_SIZE);
 
-  // 5. Composite: white canvas → shadow → product → lighting → watermark
+  // 5. Composite: transparent canvas → shadow → product → lighting → watermark
+  // Changed to channels: 4 and transparent background to support premium "floating" look
   const composited = await Sharp({
-    create: { width: CANVAS_SIZE, height: CANVAS_SIZE, channels: 3, background: { r: 255, g: 255, b: 255 } },
+    create: { width: CANVAS_SIZE, height: CANVAS_SIZE, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
   })
     .composite([
       { input: shadowBuffer,   top: 0,       left: 0 },
