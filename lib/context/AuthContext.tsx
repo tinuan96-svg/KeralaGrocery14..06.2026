@@ -108,15 +108,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const applySession = useCallback(async (s: Session | null) => {
-    setSession(s);
-    setUser(s?.user ?? null);
-    saveUser(s?.user ?? null);
+    try {
+      setSession(s);
+      setUser(s?.user ?? null);
+      saveUser(s?.user ?? null);
 
-    if (s?.user) {
-      setProfile(undefined);
-      const p = await fetchProfile(s.user.id);
-      setProfile(p);
-    } else {
+      if (s?.user) {
+        setProfile(undefined);
+        const p = await fetchProfile(s.user.id);
+        setProfile(p);
+      } else {
+        setProfile(null);
+      }
+    } catch (err) {
+      console.error('[Auth] applySession crash:', err);
       setProfile(null);
     }
   }, [fetchProfile]);
@@ -128,8 +133,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const raw = localStorage.getItem(USER_STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {}
+      if (raw && raw !== 'undefined' && raw !== 'null') {
+        setUser(JSON.parse(raw));
+      }
+    } catch (e) {
+      console.warn('[Auth] localStorage parse error:', e);
+      localStorage.removeItem(USER_STORAGE_KEY);
+    }
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       (async () => {

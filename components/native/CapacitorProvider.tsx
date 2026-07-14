@@ -56,6 +56,15 @@ export function CapacitorProvider({ children }: { children: ReactNode }) {
             console.warn('[StatusBar] init error', e);
           }
 
+          // Handle global errors to prevent native crashes where possible
+          window.addEventListener('error', (event) => {
+            console.error('[Global Error] Caught:', event.message);
+          });
+
+          window.addEventListener('unhandledrejection', (event) => {
+            console.error('[Unhandled Rejection] Caught:', event.reason);
+          });
+
           // Hide the splash screen only after the web content is fully painted.
           try {
             const { SplashScreen } = await import('@capacitor/splash-screen');

@@ -3,8 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { getSupabase } from '@/lib/supabase/client';
-import { LayoutGrid, Package, Image as ImageIcon, LogOut, ShieldCheck, X, Cpu, Wand as Wand2, ClipboardCheck, ArrowDownToLine, Tag, TrendingUp, Activity, Zap, Users, MoveHorizontal as MoreHorizontal, ChevronRight, Layers, ShoppingCart, TriangleAlert as AlertTriangle, Truck, MessageSquare, Wallet, Stethoscope, Megaphone, MonitorPlay } from 'lucide-react';
+import { useAuth } from '@/lib/context/AuthContext';
+import {
+  LayoutGrid, Package, Image as ImageIcon, LogOut, ShieldCheck, X, Cpu,
+  Wand as Wand2, ClipboardCheck, ArrowDownToLine, Tag, TrendingUp,
+  Activity, Zap, Users, MoveHorizontal as MoreHorizontal,
+  ChevronRight, ShoppingCart, TriangleAlert as AlertTriangle,
+  Truck, Wallet, Stethoscope, Megaphone, MonitorPlay
+} from 'lucide-react';
 
 // Bottom nav tabs (mobile primary navigation)
 const BOTTOM_NAV = [
@@ -71,30 +77,28 @@ const DRAWER_NAV = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [checking, setChecking] = useState(true);
+  const { user, loading: authLoading, signOut } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    if (pathname === '/admin/login') { setChecking(false); return; }
-    const supabase = getSupabase();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session || session.user?.app_metadata?.is_admin !== true) {
-        router.replace('/admin/login');
-      } else {
-        setChecking(false);
-      }
-    });
-  }, [pathname, router]);
+    if (authLoading) return;
+    if (pathname === '/admin/login') return;
+
+    const isAdmin = user?.app_metadata?.is_admin === true;
+
+    if (!user || !isAdmin) {
+      router.replace('/admin/login');
+    }
+  }, [user, authLoading, pathname, router]);
 
   const handleSignOut = async () => {
-    const supabase = getSupabase();
-    await supabase.auth.signOut();
+    await signOut();
     router.replace('/admin/login');
   };
 
   if (pathname === '/admin/login') return <>{children}</>;
 
-  if (checking) {
+  if (authLoading || (!user || user.app_metadata?.is_admin !== true)) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
