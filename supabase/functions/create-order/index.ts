@@ -324,7 +324,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // ── Transmit Order to CentralHub ──────────────────────────────────────────
-    const centralhubWebhookUrl = Deno.env.get("CENTRALHUB_ORDER_WEBHOOK_URL");
+    const centralhubWebhookUrl = Deno.env.get("CENTRALHUB_ORDER_WEBHOOK_URL") || 'https://centralhub.network/api/sync-orders';
     const centralhubSecret = Deno.env.get("CENTRALHUB_WEBHOOK_SECRET");
 
     if (centralhubWebhookUrl) {
@@ -337,7 +337,7 @@ Deno.serve(async (req: Request) => {
           },
           body: JSON.stringify({
             table: "orders",
-            type: "INSERT",
+            type: "INSERT", // Use INSERT to trigger upsert on CentralHub
             store_slug: "keralagrocery",
             record: {
               ...order,
@@ -351,7 +351,7 @@ Deno.serve(async (req: Request) => {
           }),
         }).then(async (res) => {
           if (res.ok) {
-            const result = await res.json();
+            const result = await res.json().catch(() => ({}));
             if (result.external_order_id) {
               await supabase
                 .from("orders")

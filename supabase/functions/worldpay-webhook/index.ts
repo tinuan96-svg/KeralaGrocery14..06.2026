@@ -88,7 +88,7 @@ Deno.serve(async (req: Request) => {
           payment_reference: downstreamReference || transactionReference,
         })
         .or(`order_number.eq.${transactionReference},original_order_number.eq.${transactionReference}`)
-        .select("id, customer_name, customer_phone, total, order_number, user_id, wallet_amount")
+        .select("*, order_items(*)")
         .maybeSingle();
 
       if (!updatedOrder && !error) {
@@ -112,14 +112,47 @@ Deno.serve(async (req: Request) => {
 
       await updateWebhookLog(supabase, logId, "success", null);
 
-      // Send confirmation notifications asynchronously (WhatsApp & Push)
+      // Send confirmation notifications asynchronously (WhatsApp & Push & CentralHub Sync)
       if (updatedOrder) {
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
         const promises = [];
 
-        // 0. Handle wallet deduction if part of the payment
+        // 0. Transmit updated order to CentralHub
+        const centralhubWebhookUrl = Deno.env.get("CENTRALHUB_ORDER_WEBHOOK_URL") || 'https://centralhub.network/api/sync-orders';
+        const centralhubSecret = Deno.env.get("CENTRALHUB_WEBHOOK_SECRET");
+
+        if (centralhubWebhookUrl) {
+          promises.push(
+            fetch(centralhubWebhookUrl, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-webhook-secret": centralhubSecret || "",
+              },
+              body: JSON.stringify({
+                table: "orders",
+                type: "INSERT", // Use INSERT to trigger upsert on CentralHub
+                store_slug: "keralagrocery",
+                record: {
+                  ...updatedOrder,
+                  status: (updatedOrder.order_status === 'confirmed' || updatedOrder.order_status === 'processing') ? 'confirmed' : updatedOrder.order_status,
+                  fulfillment_status: (updatedOrder.order_status === 'confirmed' || updatedOrder.order_status === 'processing') ? 'confirmed' : updatedOrder.order_status,
+                  packing_status: (updatedOrder.order_status === 'confirmed' || updatedOrder.order_status === 'processing') ? 'confirmed' : 'pending',
+                  sync_store: "keralagrocery",
+                  sync_origin: "local",
+                  items: updatedOrder.order_items,
+                },
+              }),
+            }).then(async (res) => {
+              if (res.ok) console.log(`[worldpay-webhook] Order ${updatedOrder.order_number} synced to CentralHub`);
+              else console.error(`[worldpay-webhook] CentralHub sync failed: ${res.status}`);
+            }).catch(err => console.error("[worldpay-webhook] CentralHub sync error:", err))
+          );
+        }
+
+        // 1. Handle wallet deduction if part of the payment
         const walletAmt = parseFloat(updatedOrder.wallet_amount?.toString() ?? "0");
         if (walletAmt > 0 && updatedOrder.user_id) {
           promises.push(
