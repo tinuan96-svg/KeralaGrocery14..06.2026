@@ -44,9 +44,10 @@ export async function POST(req: NextRequest) {
       const { items, ...orderData } = record;
 
       // Map incoming status to local primary statuses if necessary
-      // "Picking" and "Packed" are treated as "processing" for the main timeline
       let localStatus = orderData.order_status?.toLowerCase() || 'pending';
-      if (['picking', 'packed', 'ready for dispatch'].includes(localStatus)) {
+      const processingStatuses = ['picking', 'ready_for_packing', 'packing', 'ready_to_ship', 'confirmed', 'processing'];
+
+      if (processingStatuses.includes(localStatus)) {
         localStatus = 'processing';
       }
 

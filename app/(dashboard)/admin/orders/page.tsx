@@ -33,14 +33,17 @@ function Skel({ className = '' }: { className?: string }) {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  pending:    'bg-amber-500/10 text-amber-400 border-amber-500/30',
-  confirmed:  'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  processing: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
-  picking:    'bg-sky-500/10 text-sky-400 border-sky-500/30',
-  packed:     'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
-  shipped:    'bg-violet-500/10 text-violet-400 border-violet-500/30',
-  delivered:  'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-  cancelled:  'bg-red-500/10 text-red-400 border-red-500/30',
+  pending:           'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  confirmed:         'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  processing:        'bg-sky-500/10 text-sky-400 border-sky-500/30',
+  picking:           'bg-sky-500/10 text-sky-400 border-sky-500/30',
+  ready_for_packing: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+  packing:           'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+  ready_to_ship:     'bg-violet-500/10 text-violet-400 border-violet-500/30',
+  shipped:           'bg-violet-500/10 text-violet-400 border-violet-500/30',
+  delivered:         'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  cancelled:         'bg-red-500/10 text-red-400 border-red-500/30',
+  refunded:          'bg-gray-500/10 text-gray-400 border-gray-500/30',
 };
 
 const PAYMENT_STYLES: Record<string, string> = {

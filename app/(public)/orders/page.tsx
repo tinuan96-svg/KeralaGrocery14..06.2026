@@ -44,7 +44,9 @@ function OrderStatusTimeline({ status }: { status: string }) {
   // Map sub-statuses to primary timeline steps
   const normalizedStatus = status.toLowerCase();
   let mappedStatus = normalizedStatus;
-  if (['picking', 'packed', 'ready for dispatch', 'confirmed'].includes(normalizedStatus)) {
+
+  const processingStatuses = ['picking', 'ready_for_packing', 'packing', 'ready_to_ship', 'confirmed', 'processing'];
+  if (processingStatuses.includes(normalizedStatus)) {
     mappedStatus = 'processing';
   }
 
