@@ -28,6 +28,13 @@ const PRODUCTS_SELECT = `
 `;
 
 export function mapProduct(p: any): ProductWithDetails {
+  const imageUrl = (
+      (p.enhanced_image_url?.startsWith('http') ? p.enhanced_image_url : null) ??
+      (p.image_main?.startsWith('http') ? p.image_main : null) ??
+      (p.image_url?.startsWith('http') ? p.image_url : null) ??
+      null
+    );
+
   return {
     id: p.id,
     name: p.name,
@@ -37,12 +44,7 @@ export function mapProduct(p: any): ProductWithDetails {
     original_price: p.original_price,
     image_main: p.image_main?.startsWith('http') ? p.image_main : null,
     enhanced_image_url: p.enhanced_image_url?.startsWith('http') ? p.enhanced_image_url : null,
-    image_url: (
-      (p.enhanced_image_url?.startsWith('http') ? p.enhanced_image_url : null) ??
-      (p.image_main?.startsWith('http') ? p.image_main : null) ??
-      (p.image_url?.startsWith('http') ? p.image_url : null) ??
-      null
-    ),
+    image_url: imageUrl,
     image_path: p.image_path,
     category_id: p.category_id,
     brand_id: p.brand_id,

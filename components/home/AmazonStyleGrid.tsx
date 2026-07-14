@@ -110,7 +110,7 @@ export default function AmazonStyleGrid() {
                           src={item.image_url}
                           alt={item.label || ''}
                           fill
-                          className="object-contain transition-transform duration-500 scale-[1.05] group-hover:scale-115"
+                          className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05]"
                           sizes="(max-width: 768px) 45vw, 25vw"
                         />
                         {item.badge && (
@@ -129,12 +129,12 @@ export default function AmazonStyleGrid() {
                 </div>
               ) : (
                 <Link href={card.items[0]?.link || '#'} className="block h-full relative group active:opacity-90 transition-opacity">
-                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100">
+                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100 bg-white">
                     <Image
                       src={card.items[0]?.image_url || '/placeholder.webp'}
                       alt={card.title}
                       fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="object-contain p-2 transition-transform duration-700 group-hover:scale-[1.02]"
                       sizes="(max-width: 1024px) 95vw, 25vw"
                     />
                   </div>

@@ -89,7 +89,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
               priority={priority}
-              className="object-contain transition-transform duration-500 scale-[1.05] group-hover:scale-[1.12]"
+              className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05]"
               loading={priority ? undefined : 'lazy'}
             />
           </div>

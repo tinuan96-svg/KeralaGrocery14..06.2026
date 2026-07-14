@@ -125,15 +125,15 @@ Deno.serve(async (req: Request) => {
 
       // Use waitUntil so the response returns immediately while processing continues
       const processPromise = productId
-        ? fetch(`${SUPABASE_URL}/functions/v1/standardize-product-image`, {
+        ? fetch(`${SUPABASE_URL}/functions/v1/enhance-product-image`, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${ANON_KEY}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ product_id: productId, image_url: url }),
+            body: JSON.stringify({ productId, imageUrl: url, premium: true }),
           }).then((r) => r.json().catch(() => ({}))).catch((e) =>
-            console.error("[auto-process-image] standardize error:", e)
+            console.error("[auto-process-image] enhance error:", e)
           )
         : Promise.resolve();
 

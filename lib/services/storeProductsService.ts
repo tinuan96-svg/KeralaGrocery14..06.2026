@@ -38,6 +38,8 @@ function mapProduct(p: any): ProductWithDetails {
     image_main: p.image_main,
     enhanced_image_url: p.enhanced_image_url,
     image_url: p.image_url,
+    image_cdn_url: p.image_cdn_url,
+    image_override: p.image_override,
   });
 
   return {

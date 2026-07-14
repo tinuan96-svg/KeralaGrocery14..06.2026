@@ -93,7 +93,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const results: { product_id: string; name: string; status: string; error?: string }[] = [];
-    const CONCURRENCY = 4; // Process 4 images in parallel
+    const CONCURRENCY = 6; // Increased to 6 for faster processing
     const queue = [...products];
 
     const worker = async () => {
