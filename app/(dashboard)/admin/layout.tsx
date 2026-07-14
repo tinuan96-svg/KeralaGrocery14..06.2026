@@ -9,7 +9,7 @@ import {
   Wand as Wand2, ClipboardCheck, ArrowDownToLine, Tag, TrendingUp,
   Activity, Zap, Users, MoveHorizontal as MoreHorizontal,
   ChevronRight, ShoppingCart, TriangleAlert as AlertTriangle,
-  Truck, Wallet, Stethoscope, Megaphone, MonitorPlay
+  Truck, Wallet, Stethoscope, Megaphone, MonitorPlay, MessageSquare
 } from 'lucide-react';
 
 // Bottom nav tabs (mobile primary navigation)
