@@ -46,7 +46,7 @@ Deno.serve(async (req: Request) => {
       product_ids?: string[];
     };
 
-    const limit = Math.min(body.limit ?? 30, 100);
+    const limit = Math.min(body.limit ?? 50, 100);
     const dryRun = body.dry_run ?? false;
     const force = body.force ?? false;
 
@@ -93,40 +93,50 @@ Deno.serve(async (req: Request) => {
     }
 
     const results: { product_id: string; name: string; status: string; error?: string }[] = [];
+    const CONCURRENCY = 4; // Process 4 images in parallel
+    const queue = [...products];
 
-    for (const product of products) {
-      try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/enhance-product-image`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            productId: product.id,
-            imageUrl: product.image_url,
-            premium: true,
-          }),
-        });
+    const worker = async () => {
+      while (queue.length > 0) {
+        const product = queue.shift();
+        if (!product) break;
 
-        const data = await res.json().catch(() => ({ error: "no json" }));
-        results.push({
-          product_id: product.id,
-          name: product.name,
-          status: data.success ? "completed" : "error",
-          ...(data.error ? { error: data.error } : {}),
-        });
-      } catch (err) {
-        results.push({
-          product_id: product.id,
-          name: product.name,
-          status: "error",
-          error: err instanceof Error ? err.message : String(err),
-        });
+        try {
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/enhance-product-image`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${SERVICE_ROLE_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              productId: product.id,
+              imageUrl: product.image_url,
+              premium: true,
+            }),
+          });
+
+          const data = await res.json().catch(() => ({ error: "no json" }));
+          results.push({
+            product_id: product.id,
+            name: product.name,
+            status: data.success ? "completed" : "error",
+            ...(data.error ? { error: data.error } : {}),
+          });
+        } catch (err) {
+          results.push({
+            product_id: product.id,
+            name: product.name,
+            status: "error",
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+        // Small delay between starts to avoid hitting rate limits too hard
+        await new Promise((r) => setTimeout(r, 200));
       }
+    };
 
-      await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
-    }
+    // Start workers
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, products.length) }).map(worker));
 
     const completed = results.filter((r) => r.status === "completed").length;
     const failed = results.filter((r) => r.status === "error" || r.status === "failed").length;
