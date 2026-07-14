@@ -83,14 +83,14 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
           {/* Subtle radial highlight */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] pointer-events-none" />
 
-          <div className="absolute inset-0 flex items-center justify-center z-10 p-2">
+          <div className="absolute inset-0 flex items-center justify-center z-10 p-1">
             <Image
               src={displayImage}
               alt={`${displayName} - Kerala Grocery`}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
               priority={priority}
-              className="object-contain transition-transform duration-500 scale-[0.9] group-hover:scale-[1.0]"
+              className="object-contain transition-transform duration-500 scale-[1.0] group-hover:scale-[1.05]"
               loading={priority ? undefined : 'lazy'}
             />
           </div>

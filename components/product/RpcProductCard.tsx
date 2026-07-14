@@ -66,7 +66,7 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
             alt={product.display_title}
             fill
             priority={priority}
-            className="object-contain transition-transform duration-500 scale-[0.9] group-hover:scale-[1.0]"
+            className="object-contain transition-transform duration-500 scale-[1.0] group-hover:scale-[1.08]"
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
           />
 

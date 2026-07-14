@@ -110,7 +110,7 @@ export default function AmazonStyleGrid() {
                           src={item.image_url}
                           alt={item.label || ''}
                           fill
-                          className="object-contain p-1.5 transition-transform duration-500 group-hover:scale-110"
+                          className="object-contain transition-transform duration-500 group-hover:scale-110"
                           sizes="(max-width: 768px) 45vw, 25vw"
                         />
                         {item.badge && (
