@@ -1,26 +1,46 @@
 import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductCardSkeleton() {
   return (
-    <Card className="overflow-hidden border border-gray-100 bg-white rounded-2xl flex flex-col h-full">
-      {/* Image — matches h-[160px] sm:h-[180px] md:h-[220px] */}
-      <Skeleton className="h-[160px] sm:h-[180px] md:h-[220px] w-full rounded-none flex-shrink-0" />
-      <div className="px-2.5 pt-2 pb-2.5 flex flex-col gap-0">
-        {/* Category — h-5 */}
-        <Skeleton className="h-4 w-16 rounded-full mb-1" />
-        {/* Name — h-[34px] */}
-        <div className="mb-1.5 space-y-1">
-          <Skeleton className="h-3.5 w-full rounded" />
-          <Skeleton className="h-3.5 w-4/5 rounded" />
+    <Card className="overflow-hidden border border-gray-100 bg-white rounded-2xl flex flex-col h-full shadow-sm">
+      {/* Image — Shimmer Effect */}
+      <div className="h-[160px] sm:h-[180px] md:h-[220px] w-full bg-gray-50 relative overflow-hidden">
+        <div className="absolute inset-0 shimmer" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-20 h-28 bg-gray-100 rounded-lg opacity-40" />
         </div>
-        {/* Price — h-6 */}
-        <div className="flex items-center justify-between h-6 mb-1.5">
-          <Skeleton className="h-4 w-14 rounded" />
-          <Skeleton className="h-3 w-8 rounded" />
+      </div>
+
+      <div className="px-2.5 pt-3 pb-3 flex flex-col gap-1.5 flex-1">
+        {/* Category */}
+        <div className="h-3.5 w-16 bg-gray-100 rounded-full relative overflow-hidden">
+          <div className="absolute inset-0 shimmer" />
         </div>
-        {/* Button — h-8 */}
-        <Skeleton className="h-8 w-full rounded-xl mt-auto" />
+
+        {/* Name */}
+        <div className="space-y-1.5">
+          <div className="h-3 w-full bg-gray-100 rounded relative overflow-hidden">
+            <div className="absolute inset-0 shimmer" />
+          </div>
+          <div className="h-3 w-4/5 bg-gray-100 rounded relative overflow-hidden">
+            <div className="absolute inset-0 shimmer" />
+          </div>
+        </div>
+
+        {/* Price */}
+        <div className="flex items-center gap-2 mt-auto pt-2">
+          <div className="h-5 w-12 bg-gray-100 rounded relative overflow-hidden">
+            <div className="absolute inset-0 shimmer" />
+          </div>
+          <div className="h-3 w-8 bg-gray-50 rounded relative overflow-hidden">
+            <div className="absolute inset-0 shimmer" />
+          </div>
+        </div>
+
+        {/* Button */}
+        <div className="h-8 w-full bg-gray-100 rounded-xl mt-2 relative overflow-hidden">
+          <div className="absolute inset-0 shimmer" />
+        </div>
       </div>
     </Card>
   );

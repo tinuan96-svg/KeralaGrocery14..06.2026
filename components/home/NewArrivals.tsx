@@ -12,12 +12,12 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
   const items = products.slice(0, 12);
 
   return (
-    <section className="pt-8 pb-6 bg-white border-b border-[#f5f3ff]">
+    <section className="pt-8 pb-6 bg-white border-b border-[#f5f3ff] ka-section">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between px-4 mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center border border-purple-100 shadow-sm">
-              <Sparkles className="h-5 w-5 text-purple-600 fill-purple-600/10" />
+            <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center border border-gray-100 shadow-sm ka-icon-bg">
+              <Sparkles className="h-5 w-5 ka-icon" />
             </div>
             <div>
               <h2 className="text-[17px] font-black text-gray-900 leading-none tracking-tight">New Arrivals</h2>
@@ -26,7 +26,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
           </div>
           <Link
             href="/products?sort=new"
-            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-100 hover:bg-purple-100 transition-all"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider ka-view-all px-3 py-1.5 rounded-full border transition-all"
           >
             Explore All <ChevronRight className="h-3 w-3" />
           </Link>

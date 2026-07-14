@@ -14,12 +14,12 @@ export default function TrendingNow({ products }: TrendingNowProps) {
   const items = products.slice(0, 12);
 
   return (
-    <section className="pt-8 pb-6 bg-white border-b border-[#f0f9f4]">
+    <section className="pt-8 pb-6 bg-white border-b border-[#f0f9f4] ka-section">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between px-4 mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shadow-sm">
-              <TrendingUp className="h-5 w-5 text-[#0B5D3B]" />
+            <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center border border-gray-100 shadow-sm ka-icon-bg">
+              <TrendingUp className="h-5 w-5 ka-icon" />
             </div>
             <div>
               <h2 className="text-[17px] font-black text-[#0a3d22] leading-none tracking-tight">Trending Now</h2>
@@ -28,7 +28,7 @@ export default function TrendingNow({ products }: TrendingNowProps) {
           </div>
           <Link
             href="/products"
-            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#0B5D3B] bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-all"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider ka-view-all px-3 py-1.5 rounded-full border transition-all"
           >
             See All <ChevronRight className="h-3 w-3" />
           </Link>

@@ -26,21 +26,28 @@ const FALLBACK = { from: '#F1F5F9', to: '#E2E8F0', emoji: '🛒' };
 
 function Skeleton() {
   return (
-    <section className="px-4 py-5 bg-white border-b border-[#d1ead9]">
-      <div className="flex items-center justify-between mb-3">
-        <div className="h-4 w-32 bg-gray-200 animate-pulse rounded-full" />
-        <div className="h-3 w-14 bg-gray-100 animate-pulse rounded-full" />
-      </div>
-      {[0, 1].map((row) => (
-        <div key={row} className="flex gap-4 overflow-hidden mb-2.5">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 flex flex-col items-center gap-1.5" style={{ width: 80 }}>
-              <div className="w-[72px] h-[72px] rounded-2xl bg-gray-100 animate-pulse" />
-              <div className="h-2.5 w-12 bg-gray-100 animate-pulse rounded-full" />
-            </div>
-          ))}
+    <section className="px-4 py-8 bg-white border-b border-[#f0f9f4] ka-section">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-2xl bg-gray-50 animate-pulse border border-gray-100" />
+          <div className="space-y-1.5">
+            <div className="h-4 w-32 bg-gray-100 animate-pulse rounded-full" />
+            <div className="h-2.5 w-24 bg-gray-50 animate-pulse rounded-full" />
+          </div>
         </div>
-      ))}
+      </div>
+      <div className="flex gap-4 overflow-hidden">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2" style={{ width: 85 }}>
+            <div className="w-[76px] h-[76px] rounded-[28px] bg-gray-100 relative overflow-hidden">
+              <div className="absolute inset-0 shimmer" />
+            </div>
+            <div className="h-3 w-14 bg-gray-50 rounded-full relative overflow-hidden">
+              <div className="absolute inset-0 shimmer" />
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -160,7 +167,7 @@ export default function CategoryDiscoveryCarousel() {
 
   return (
     <section
-      className="px-4 py-8 bg-white border-b border-[#f0f9f4]"
+      className="px-4 py-8 bg-white border-b border-[#f0f9f4] ka-section"
       onTouchStart={() => { pausedRef.current = true; }}
       onTouchEnd={() => { setTimeout(() => { pausedRef.current = false; }, 1800); }}
       onMouseEnter={() => { pausedRef.current = true; }}
@@ -169,8 +176,8 @@ export default function CategoryDiscoveryCarousel() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-[#f4faf6] flex items-center justify-center border border-[#d1ead9] shadow-sm">
-            <svg className="w-5 h-5 text-[#0B5D3B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center border border-gray-100 shadow-sm ka-icon-bg">
+            <svg className="w-5 h-5 ka-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
           </div>
           <div>
             <h2 className="text-[17px] font-black text-[#0a3d22] leading-none tracking-tight">Shop By Category</h2>
@@ -179,7 +186,7 @@ export default function CategoryDiscoveryCarousel() {
         </div>
         <Link
           href="/categories"
-          className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#0B5D3B] bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100"
+          className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider ka-view-all px-3 py-1.5 rounded-full border transition-all"
         >
           View All <ChevronRight className="h-3 w-3" />
         </Link>

@@ -12,13 +12,13 @@ export default function BestSellers({ products }: BestSellersProps) {
   if (items.length === 0) return null;
 
   return (
-    <section className="pt-8 pb-6 bg-white border-b border-[#fffbeb]">
+    <section className="pt-8 pb-6 bg-white border-b border-[#fffbeb] ka-section">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-4 mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100 shadow-sm">
-              <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
+            <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center border border-gray-100 shadow-sm ka-icon-bg">
+              <Star className="h-5 w-5 ka-icon" />
             </div>
             <div>
               <h2 className="text-[17px] font-black text-[#0a3d22] leading-none tracking-tight">Top Sellers</h2>
@@ -27,7 +27,7 @@ export default function BestSellers({ products }: BestSellersProps) {
           </div>
           <Link
             href="/products"
-            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100 hover:bg-amber-100 transition-all"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider ka-view-all px-3 py-1.5 rounded-full border transition-all"
           >
             See All <ChevronRight className="h-3 w-3" />
           </Link>

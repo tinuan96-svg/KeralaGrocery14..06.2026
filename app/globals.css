@@ -285,6 +285,13 @@
     transition: color 600ms cubic-bezier(0.4,0,0.2,1);
   }
 
+  .ka-icon-bg {
+    background-color: color-mix(in srgb, var(--ka-c) 10%, transparent);
+    border-color: color-mix(in srgb, var(--ka-c) 20%, transparent);
+    transition: background-color 600ms cubic-bezier(0.4,0,0.2,1),
+                border-color 600ms cubic-bezier(0.4,0,0.2,1);
+  }
+
   /* "View All" pill buttons */
   .ka-view-all {
     color: var(--ka-text);

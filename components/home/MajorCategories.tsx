@@ -35,13 +35,13 @@ export default function MajorCategories({ categories }: MajorCategoriesProps) {
   }
 
   return (
-    <section className="py-8 bg-white border-b border-gray-100">
+    <section className="py-8 bg-white border-b border-gray-100 ka-section">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header - Matching Brands Style */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 shadow-sm flex items-center justify-center">
-              <LayoutGrid className="h-5 w-5 text-[#0B5D3B]" />
+            <div className="w-10 h-10 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center ka-icon-bg">
+              <LayoutGrid className="h-5 w-5 ka-icon" />
             </div>
             <div>
               <h2 className="text-[17px] font-black text-gray-900 leading-none tracking-tight">Major Categories</h2>
@@ -50,7 +50,7 @@ export default function MajorCategories({ categories }: MajorCategoriesProps) {
           </div>
           <Link
             href="/categories"
-            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-gray-600 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm hover:bg-gray-50 transition-all"
+            className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider ka-view-all px-3 py-1.5 rounded-full border transition-all"
           >
             All Categories <ChevronRight className="h-3 w-3" />
           </Link>

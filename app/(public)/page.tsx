@@ -7,6 +7,7 @@ import LocalCityBanner from '@/components/home/LocalCityBanner';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import PersonalizedRecommendations from '@/components/product/PersonalizedRecommendations';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
+import PullToRefresh from '@/components/home/PullToRefresh';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
@@ -44,36 +45,38 @@ const homepageFAQs = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen pb-20 md:pb-0 bg-[#f1f3f4]">
-      <LocalBusinessSchema />
-      <MerchantReturnPolicySchema />
-      <ShippingPolicySchema />
-      <GroceryStoreSchema />
-      <FAQSchema items={homepageFAQs} />
+    <PullToRefresh>
+      <div className="min-h-screen pb-20 md:pb-0 bg-[#f1f3f4]">
+        <LocalBusinessSchema />
+        <MerchantReturnPolicySchema />
+        <ShippingPolicySchema />
+        <GroceryStoreSchema />
+        <FAQSchema items={homepageFAQs} />
 
-      {/* Sticky search appears below header once hero scrolls away */}
-      <StickySearchBar sentinelId="hero-end" />
+        {/* Sticky search appears below header once hero scrolls away */}
+        <StickySearchBar sentinelId="hero-end" />
 
-      <PromoBannerCarousel />
+        <PromoBannerCarousel />
 
-      {/* Sentinel — StickySearchBar watches this element */}
-      <div id="hero-end" />
+        {/* Sentinel — StickySearchBar watches this element */}
+        <div id="hero-end" />
 
-      {/* Amazon-style content grid */}
-      <AmazonStyleGrid />
+        {/* Amazon-style content grid */}
+        <AmazonStyleGrid />
 
-      <PersonalizedRecommendations />
+        <PersonalizedRecommendations />
 
-      {/* Dynamic Local City Marketing Banner */}
-      <LocalCityBanner />
+        {/* Dynamic Local City Marketing Banner */}
+        <LocalCityBanner />
 
-      {/* All product sections in feed order */}
-      <HomepageSections />
+        {/* All product sections in feed order */}
+        <HomepageSections />
 
-      <WhyChooseUs />
+        <WhyChooseUs />
 
-      <SEOContent />
-      <LocalSEOFooter />
-    </div>
+        <SEOContent />
+        <LocalSEOFooter />
+      </div>
+    </PullToRefresh>
   );
 }

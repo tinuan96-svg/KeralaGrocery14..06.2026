@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Heart, Plus, Minus, ShoppingCart, CheckCircle } from 'lucide-react';
 import type { ProductWithDetails } from '@/lib/types/database';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
@@ -10,6 +10,7 @@ import { memo } from 'react';
 import { getProductImageSrc } from '@/lib/utils/image';
 import { useProductPrice } from '@/hooks/useProductPrice';
 import { haptics } from '@/lib/utils/haptics';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -20,6 +21,7 @@ interface ProductCardProps {
 function ProductCardComponent({ product, priority = false }: ProductCardProps) {
   const { addToCart, getQuantity, removeFromCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const [isAdding, setIsAdding] = useState(false);
 
   // Real-time price and stock with SWR (Suggestion 1)
   const { price, stock } = useProductPrice(product.id, Number(product.price || 0), Number(product.stock || 0));
@@ -50,6 +52,8 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
     e?.stopPropagation();
     if (stock === 0) return;
     haptics.impact('medium'); // (Suggestion 2)
+    setIsAdding(true);
+    setTimeout(() => setIsAdding(false), 1000);
     addToCart(cartItem);
   };
   const handleIncrease = (e: React.MouseEvent) => {
@@ -79,8 +83,9 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
       {/* Image */}
       <Link href={`/products/${product.slug}`} className="block flex-shrink-0">
         <div className="relative w-full overflow-hidden rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
-          {/* Subtle radial highlight — removed bg-white so transparent images can shine */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] opacity-40 pointer-events-none" />
+          {/* Enhanced radial highlight for a premium "floating" effect */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,_rgba(11,93,59,0.08)_0%,_transparent_70%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] opacity-30 pointer-events-none" />
 
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <Image
@@ -89,7 +94,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
               priority={priority}
-              className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05]"
+              className="object-contain transition-all duration-700 scale-[0.96] group-hover:scale-[1.08] group-hover:drop-shadow-[0_20px_30px_rgba(11,93,59,0.15)]"
               loading={priority ? undefined : 'lazy'}
             />
           </div>
@@ -137,6 +142,22 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
               </span>
             </div>
           )}
+
+          {/* Success micro-animation overlay */}
+          <AnimatePresence>
+            {isAdding && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.2 }}
+                className="absolute inset-0 z-30 flex items-center justify-center bg-[#0B5D3B]/10 backdrop-blur-[1px]"
+              >
+                <div className="bg-white rounded-full p-3 shadow-xl">
+                  <CheckCircle className="w-8 h-8 text-[#0B5D3B]" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </Link>
 

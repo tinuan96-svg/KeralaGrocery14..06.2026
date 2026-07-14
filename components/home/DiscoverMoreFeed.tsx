@@ -68,12 +68,12 @@ export default function DiscoverMoreFeed() {
   }
 
   return (
-    <section className="py-6 px-4 max-w-7xl mx-auto">
+    <section className="py-6 px-4 max-w-7xl mx-auto ka-section">
       {/* Section header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100 shadow-sm">
-            <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500/20" />
+          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center border border-gray-100 shadow-sm ka-icon-bg">
+            <Sparkles className="h-4 w-4 ka-icon" />
           </div>
           <div>
             <h2 className="text-[17px] font-black text-gray-900 tracking-tight leading-none">Discover More</h2>

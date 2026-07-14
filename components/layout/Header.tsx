@@ -12,6 +12,7 @@ import { useWishlistCount } from '@/hooks/useWishlistOptimized';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import LiveSearch from '@/components/home/LiveSearch';
+import MiniCart from './MiniCart';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,7 @@ export default function Header() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [showMiniCart, setShowMiniCart] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -126,13 +128,13 @@ export default function Header() {
 
             {/* Phone — desktop only */}
             <a
-              href="tel:+447769867549"
+              href="tel:07902205199"
               title="Customer Care – Available 9AM–9PM"
               className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-gray-600 hover:text-[#0B5D3B] hover:bg-[#f4faf6] transition-all group"
               aria-label="Call customer care"
             >
               <Phone className="h-3.5 w-3.5 flex-shrink-0 text-[#6FDB2F]" />
-              <span className="text-[11px] font-semibold whitespace-nowrap">07769 867 549</span>
+              <span className="text-[11px] font-semibold whitespace-nowrap">07902205199</span>
             </a>
 
             {/* Mobile search trigger */}
@@ -159,8 +161,8 @@ export default function Header() {
             </Link>
 
             {/* Cart — mobile (icon only) + desktop (full) */}
-            <Link
-              href="/cart"
+            <button
+              onClick={() => setShowMiniCart(true)}
               className="flex lg:hidden w-9 h-9 items-center justify-center rounded-xl hover:bg-[#f4faf6] transition-colors relative"
               aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}
             >
@@ -170,7 +172,7 @@ export default function Header() {
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             <Link
               href="/cart"
@@ -257,6 +259,7 @@ export default function Header() {
           </div>
         </div>
       </div>
+      <MiniCart open={showMiniCart} onOpenChange={setShowMiniCart} />
     </header>
   );
 }
