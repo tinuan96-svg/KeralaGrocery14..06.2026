@@ -79,7 +79,7 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
             alt={product.display_title}
             fill
             priority={priority}
-            className="object-contain transition-transform duration-500 scale-[1.18] group-hover:scale-[1.28] z-10"
+            className="object-contain transition-transform duration-500 scale-[0.9] group-hover:scale-[1.0] z-10"
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
           />
 

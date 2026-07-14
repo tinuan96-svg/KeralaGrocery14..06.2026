@@ -105,12 +105,12 @@ export default function AmazonStyleGrid() {
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 h-full">
                   {card.items.slice(0, 4).map((item, idx) => (
                     <Link key={idx} href={item.link} className="flex flex-col group active:opacity-80 transition-opacity">
-                      <div className="relative aspect-square overflow-hidden bg-gray-50 mb-2 rounded-xl border border-gray-100/50">
+                      <div className="relative aspect-square overflow-hidden bg-white mb-2 rounded-xl border border-gray-100/50">
                         <Image
                           src={item.image_url}
                           alt={item.label || ''}
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="object-contain p-1.5 transition-transform duration-500 group-hover:scale-110"
                           sizes="(max-width: 768px) 45vw, 25vw"
                         />
                         {item.badge && (
