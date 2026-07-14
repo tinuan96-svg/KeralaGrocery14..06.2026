@@ -72,12 +72,12 @@ const PALETTES: Record<string, AccentPalette> = {
   },
 };
 
-// Default palette — KG brand green (cold start / unknown type)
+// Default palette — Warmer KG brand green
 const DEFAULT_PALETTE: AccentPalette = {
-  c:      '#0B5D3B',
-  bg:     '#ECFDF5',
-  border: '#6EE7B7',
-  text:   '#065F46',
+  c:      '#166534', // Warm deep green
+  bg:     '#FDFBF7', // Creamy warm background
+  border: '#DCFCE7', // Light green border
+  text:   '#064E3B', // Deep forest text
 };
 
 let lastType: string | undefined;

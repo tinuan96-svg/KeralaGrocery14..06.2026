@@ -38,7 +38,7 @@
   :root {
     /* ── KG Design tokens ──────────────────────────────────────────────── */
     /* Surfaces */
-    --background: 150 20% 98%;
+    --background: 40 30% 98%;
     --foreground: 150 15% 12%;
     --card: 0 0% 100%;
     --card-foreground: 150 15% 12%;
@@ -46,51 +46,51 @@
     --popover-foreground: 150 15% 12%;
 
     /* Brand: deep forest green #0B5D3B → hsl(152 72% 21%) */
-    --primary: 152 72% 21%;
+    --primary: 145 65% 21%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: lighter green */
-    --secondary: 152 45% 92%;
-    --secondary-foreground: 152 72% 21%;
+    /* Secondary: warmer cream tint */
+    --secondary: 45 50% 94%;
+    --secondary-foreground: 145 65% 21%;
 
     /* Muted surfaces */
-    --muted: 150 25% 96%;
-    --muted-foreground: 150 8% 48%;
+    --muted: 40 20% 96%;
+    --muted-foreground: 40 8% 48%;
 
-    /* Accent: lime green #6FDB2F → hsl(97 69% 52%) */
-    --accent: 97 69% 52%;
+    /* Accent: warm lime / amber #A3E635 → hsl(82 78% 55%) */
+    --accent: 82 78% 55%;
     --accent-foreground: 150 15% 10%;
 
     /* Semantic */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 150 15% 90%;
-    --input: 150 15% 90%;
-    --ring: 152 72% 21%;
+    --border: 40 15% 90%;
+    --input: 40 15% 90%;
+    --ring: 145 65% 21%;
     --radius: 0.875rem;
 
     /* Legacy compat */
     --orange: 27 96% 61%;
     --orange-foreground: 0 0% 100%;
-    --cream: 150 20% 98%;
-    --green-deep: 152 72% 21%;
-    --green-leaf: 152 60% 45%;
+    --cream: 40 30% 98%;
+    --green-deep: 145 65% 21%;
+    --green-leaf: 145 55% 45%;
 
     /* ── KG brand constants ────────────────────────────────────────────── */
-    --kg-green:        #0B5D3B;
-    --kg-green-dark:   #0a3d22;
-    --kg-green-deeper: #071f12;
-    --kg-green-mid:    #0d6b44;
-    --kg-lime:         #6FDB2F;
-    --kg-lime-soft:    #e8fad4;
-    --kg-surface:      #f4faf6;
-    --kg-border:       #d1ead9;
+    --kg-green:        #14532D;
+    --kg-green-dark:   #064e3b;
+    --kg-green-deeper: #022c22;
+    --kg-green-mid:    #166534;
+    --kg-lime:         #A3E635;
+    --kg-lime-soft:    #f7fee7;
+    --kg-surface:      #fdfbf7;
+    --kg-border:       #e5e7eb;
 
     /* Dynamic accent — initial values match KG brand green */
-    --ka-c:      #0B5D3B;
-    --ka-bg:     #ECFDF5;
-    --ka-border: #6EE7B7;
-    --ka-text:   #065F46;
+    --ka-c:      #14532D;
+    --ka-bg:     #fdfbf7;
+    --ka-border: #dcfce7;
+    --ka-text:   #064e3b;
   }
 
   * {
@@ -119,7 +119,7 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'cv11', 'ss01';
-    background-color: #f4faf6;
+    background-color: var(--background);
     -webkit-text-size-adjust: 100%;
   }
 
