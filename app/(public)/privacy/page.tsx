@@ -85,7 +85,7 @@ export default function PrivacyPage() {
             <a href="mailto:admin@keralagrocery.com" className="text-green-600 hover:underline">
               admin@keralagrocery.com
             </a>
-            {' '}| Phone: <a href="tel:07769867549" className="text-green-600 hover:underline">07769 867 549</a>
+            {' '}| Phone: <a href="tel:07902205199" className="text-green-600 hover:underline">07902205199</a>
           </p>
         </Section>
 
@@ -357,8 +357,9 @@ export default function PrivacyPage() {
           <address className="not-italic bg-gray-50 border border-gray-200 rounded-xl p-5 mt-3 space-y-1">
             <p className="font-semibold text-gray-900">Tasty Kerala Ltd</p>
             <p>Trading as: Kerala Groceries UK</p>
-            <p>21 Weald Bridge Nursery</p>
-            <p>Essex, CM16 6AX</p>
+            <p>21, weald bridge nursery</p>
+            <p>kents Lane, North Weald</p>
+            <p>epping CM166AX</p>
             <p>
               Email:{' '}
               <a href="mailto:admin@keralagrocery.com" className="text-green-600 hover:underline">
@@ -367,7 +368,7 @@ export default function PrivacyPage() {
             </p>
             <p>
               Phone:{' '}
-              <a href="tel:07769867549" className="text-green-600 hover:underline">07769 867 549</a>
+              <a href="tel:07902205199" className="text-green-600 hover:underline">07902205199</a>
             </p>
           </address>
         </Section>

@@ -263,7 +263,7 @@ export default function AboutUsPage() {
               admin@keralagrocery.com
             </a>
             {' '}· Phone:{' '}
-            <a href="tel:07769867549" className="text-green-600 hover:underline">07769867549</a>
+            <a href="tel:07902205199" className="text-green-600 hover:underline">07902205199</a>
           </p>
         </div>
       </section>

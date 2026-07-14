@@ -30,11 +30,11 @@ export function OrganizationSchema() {
     description:
       'Authentic Kerala and Indian groceries delivered across the United Kingdom. Operated by Tasty Kerala Ltd.',
     email: 'admin@keralagrocery.com',
-    telephone: '+447769867549',
+    telephone: '+447902205199',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '21 Weald Bridge Nursery',
-      addressRegion: 'Essex',
+      streetAddress: '21, weald bridge nursery, kents Lane, North Weald',
+      addressRegion: 'epping',
       postalCode: 'CM16 6AX',
       addressCountry: 'GB',
     },
@@ -99,7 +99,7 @@ export function GroceryStoreSchema() {
     name: 'Kerala Groceries UK',
     legalName: 'Tasty Kerala Ltd',
     url: 'https://keralagrocery.com',
-    telephone: '+447769867549',
+    telephone: '+447902205199',
     email: 'admin@keralagrocery.com',
     description:
       'UK-based online grocery store specialising in authentic Kerala and South Indian products. Fast delivery across England, Scotland, and Wales.',
@@ -109,8 +109,8 @@ export function GroceryStoreSchema() {
     paymentAccepted: 'Credit Card, Debit Card',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '21 Weald Bridge Nursery',
-      addressRegion: 'Essex',
+      streetAddress: '21, weald bridge nursery, kents Lane, North Weald',
+      addressRegion: 'epping',
       postalCode: 'CM16 6AX',
       addressCountry: 'GB',
     },
@@ -331,12 +331,12 @@ export function LocalBusinessSchema() {
     description:
       'Buy authentic Kerala groceries in the UK. Fresh spices, snacks, rice, and traditional essentials delivered to your door.',
     url: 'https://keralagrocery.com',
-    telephone: '+447769867549',
+    telephone: '+447902205199',
     email: 'admin@keralagrocery.com',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '21 Weald Bridge Nursery',
-      addressRegion: 'Essex',
+      streetAddress: '21, weald bridge nursery, kents Lane, North Weald',
+      addressRegion: 'epping',
       postalCode: 'CM16 6AX',
       addressCountry: 'GB',
     },

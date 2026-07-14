@@ -83,8 +83,8 @@ export default function ContactClient() {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900 text-sm mb-0.5">Phone</p>
-                  <a href="tel:07769867549" className="text-blue-600 hover:underline text-sm">
-                    07769 867 549
+                  <a href="tel:07902205199" className="text-blue-600 hover:underline text-sm">
+                    07902205199
                   </a>
                   <p className="text-xs text-gray-400 mt-0.5">Mon–Sat, 9 am – 6 pm (UK time)</p>
                 </div>
@@ -96,8 +96,9 @@ export default function ContactClient() {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900 text-sm mb-0.5">Address</p>
-                  <p className="text-sm text-gray-700">21 Weald Bridge Nursery</p>
-                  <p className="text-sm text-gray-700">Essex, CM16 6AX</p>
+                  <p className="text-sm text-gray-700">21, weald bridge nursery</p>
+                  <p className="text-sm text-gray-700">kents Lane, North Weald</p>
+                  <p className="text-sm text-gray-700">epping CM166AX</p>
                   <p className="text-xs text-gray-400 mt-0.5">Registered: Tasty Kerala Ltd, England & Wales</p>
                 </div>
               </div>
@@ -247,7 +248,7 @@ export default function ContactClient() {
             </p>
             <p>
               <span className="font-medium">Phone:</span>{' '}
-              <a href="tel:07769867549" className="text-green-600 hover:underline">07769 867 549</a>
+              <a href="tel:07902205199" className="text-green-600 hover:underline">07902205199</a>
             </p>
             <p><span className="font-medium">Country:</span> United Kingdom</p>
           </div>

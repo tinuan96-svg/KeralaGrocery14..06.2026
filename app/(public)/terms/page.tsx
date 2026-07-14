@@ -91,7 +91,7 @@ export default function TermsPage() {
               admin@keralagrocery.com
             </a>
             {' '}| Phone:{' '}
-            <a href="tel:07769867549" className="text-green-600 hover:underline">07769 867 549</a>
+            <a href="tel:07902205199" className="text-green-600 hover:underline">07902205199</a>
           </p>
         </Section>
 
@@ -228,7 +228,7 @@ export default function TermsPage() {
               admin@keralagrocery.com
             </a>{' '}
             or call us on{' '}
-            <a href="tel:07769867549" className="text-green-600 hover:underline">07769 867 549</a>.
+            <a href="tel:07902205199" className="text-green-600 hover:underline">07902205199</a>.
           </p>
           <p>
             Once an order has been dispatched, it cannot be cancelled. You may still be eligible for a
@@ -348,8 +348,9 @@ export default function TermsPage() {
           <address className="not-italic bg-gray-50 border border-gray-200 rounded-xl p-5 mt-3 space-y-1">
             <p className="font-semibold text-gray-900">Tasty Kerala Ltd</p>
             <p>Trading as: Kerala Groceries UK</p>
-            <p>21 Weald Bridge Nursery</p>
-            <p>Essex, CM16 6AX</p>
+            <p>21, weald bridge nursery</p>
+            <p>kents Lane, North Weald</p>
+            <p>epping CM166AX</p>
             <p>
               Email:{' '}
               <a href="mailto:admin@keralagrocery.com" className="text-green-600 hover:underline">
@@ -358,7 +359,7 @@ export default function TermsPage() {
             </p>
             <p>
               Phone:{' '}
-              <a href="tel:07769867549" className="text-green-600 hover:underline">07769 867 549</a>
+              <a href="tel:07902205199" className="text-green-600 hover:underline">07902205199</a>
             </p>
           </address>
         </Section>

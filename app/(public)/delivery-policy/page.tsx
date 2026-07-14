@@ -42,8 +42,8 @@ export default function DeliveryPolicyPage() {
             admin@keralagrocery.com
           </a>{' '}
           or call{' '}
-          <a href="tel:07769867549" className="text-blue-600 hover:underline">
-            07769867549
+          <a href="tel:07902205199" className="text-blue-600 hover:underline">
+            07902205199
           </a>
         </p>
 
@@ -52,7 +52,7 @@ export default function DeliveryPolicyPage() {
             <strong>Company Name:</strong> Tasty Kerala Ltd<br />
             <strong>Trading Name:</strong> Kerala Groceries UK<br />
             <strong>Email:</strong> <a href="mailto:admin@keralagrocery.com" className="text-blue-600 hover:underline">admin@keralagrocery.com</a><br />
-            <strong>Phone:</strong> <a href="tel:07769867549" className="text-blue-600 hover:underline">07769867549</a>
+            <strong>Phone:</strong> <a href="tel:07902205199" className="text-blue-600 hover:underline">07902205199</a>
           </p>
         </div>
       </div>
