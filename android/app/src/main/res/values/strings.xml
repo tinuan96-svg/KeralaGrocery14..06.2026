@@ -4,4 +4,58 @@
     <string name="title_activity_main">KeralaGrocery</string>
     <string name="package_name">com.keralagrocery.app</string>
     <string name="custom_url_scheme">com.keralagrocery.app</string>
+    <string name="status_bar_color">#0B5D3B</string>
+    <string name="user_agent_keyword">KeralaGroceryApp</string>
+    <string name="user_agent_suffix">" KeralaGroceryApp/1.0.0"</string>
+    <string name="ui_fixes_js"><![CDATA[
+        (function() {
+            function applyFix() {
+              var nav = document.querySelector('.kg-mobile-nav');
+              if (!nav) return;
+              nav.style.setProperty('display', 'flex', 'important');
+              nav.style.setProperty('height', '76px', 'important');
+              nav.style.setProperty('padding-bottom', 'max(env(safe-area-inset-bottom), 16px)', 'important');
+              nav.style.setProperty('background', 'rgba(255,255,255,0.95)', 'important');
+              nav.style.setProperty('backdrop-filter', 'blur(20px)', 'important');
+              nav.style.setProperty('visibility', 'visible', 'important');
+              nav.style.setProperty('opacity', '1', 'important');
+
+              var container = nav.querySelector('.flex, .grid');
+              if (container) {
+                container.style.setProperty('display', 'flex', 'important');
+                container.style.setProperty('width', '100%', 'important');
+                container.style.setProperty('height', '100%', 'important');
+                container.style.setProperty('justify-content', 'space-around', 'important');
+                container.style.setProperty('align-items', 'center', 'important');
+              }
+
+              var items = nav.querySelectorAll('a');
+              items.forEach(function(a) {
+                a.style.setProperty('display', 'flex', 'important');
+                a.style.setProperty('flex', '1', 'important');
+                a.style.setProperty('max-width', '20%', 'important');
+                a.style.setProperty('flex-direction', 'column', 'important');
+                a.style.setProperty('align-items', 'center', 'important');
+                a.style.setProperty('justify-content', 'center', 'important');
+
+                var svg = a.querySelector('svg');
+                if (svg) {
+                  svg.style.setProperty('width', '26px', 'important');
+                  svg.style.setProperty('height', '26px', 'important');
+                }
+
+                var span = a.querySelector('span');
+                if (span) {
+                  span.style.setProperty('font-size', '11px', 'important');
+                  span.style.setProperty('font-weight', '700', 'important');
+                }
+              });
+            }
+            applyFix();
+            if (!window.kgObserver) {
+              window.kgObserver = new MutationObserver(applyFix);
+              window.kgObserver.observe(document.body, { childList: true, subtree: true });
+            }
+        })();
+    ]]></string>
 </resources>
