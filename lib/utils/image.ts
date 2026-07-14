@@ -41,8 +41,8 @@ type ProductImageFields = {
 
 /**
  * Resolves the best available image URL for a product.
- * Priority (processed images first): image_cdn_url → image_override → image_main
- *   → image_medium → enhanced_image_url → image_url
+ * Priority (processed images first): image_cdn_url → image_override → enhanced_image_url
+ *   → image_main → image_medium → image_url
  */
 export function resolveProductImage(
   product: ProductImageFields,
@@ -51,9 +51,9 @@ export function resolveProductImage(
   const candidates = [
     product.image_cdn_url,
     product.image_override,
+    product.enhanced_image_url, // Prefer transparent enhanced image
     product.image_main,
     product.image_medium,
-    product.enhanced_image_url,
     product.image_url,
   ];
 
@@ -99,9 +99,9 @@ export function resolveProductThumbnail(
     product.image_thumbnail,
     product.image_cdn_url,
     product.image_override,
+    product.enhanced_image_url, // Prefer transparent enhanced thumbnail
     product.image_main,
     product.image_medium,
-    product.enhanced_image_url,
     product.image_url,
   ];
 
