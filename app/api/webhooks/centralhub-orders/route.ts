@@ -119,7 +119,6 @@ export async function POST(req: NextRequest) {
         if (iError) console.error('Order Items Sync Error:', iError.message);
       }
     }
-    }
 
     return NextResponse.json({ ok: true }, { headers: corsHeaders });
   } catch (error: any) {
