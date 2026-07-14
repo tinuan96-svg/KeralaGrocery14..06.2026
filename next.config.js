@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// Force Bolt Refresh: July 08, 2026 06:45
+// Force Bolt Refresh: July 14, 2026 09:10
 const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
