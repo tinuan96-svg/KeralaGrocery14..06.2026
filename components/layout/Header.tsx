@@ -92,7 +92,6 @@ export default function Header() {
                 height={40}
                 className="object-contain w-full h-full drop-shadow-sm"
                 priority
-                unoptimized
               />
             </div>
             <div className="flex flex-col leading-none min-w-0">

@@ -105,16 +105,14 @@ export default function AmazonStyleGrid() {
                 <div className="grid grid-cols-2 gap-2 sm:gap-3 h-full">
                   {card.items.slice(0, 4).map((item, idx) => (
                     <Link key={idx} href={item.link} className="flex flex-col group active:opacity-80 transition-opacity">
-                      <div className="relative aspect-square overflow-hidden bg-white mb-1.5 rounded-lg border border-gray-100/50 p-2">
-                        <div className="relative w-full h-full">
-                          <Image
-                            src={item.image_url}
-                            alt={item.label || ''}
-                            fill
-                            className="object-contain"
-                            sizes="(max-width: 768px) 45vw, 25vw"
-                          />
-                        </div>
+                      <div className="relative aspect-square overflow-hidden bg-white mb-1.5 rounded-lg border border-gray-100/50">
+                        <Image
+                          src={item.image_url}
+                          alt={item.label || ''}
+                          fill
+                          className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05]"
+                          sizes="(max-width: 768px) 45vw, 25vw"
+                        />
                         {item.badge && (
                           <div className="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider">
                             {item.badge}
@@ -131,12 +129,12 @@ export default function AmazonStyleGrid() {
                 </div>
               ) : (
                 <Link href={card.items[0]?.link || '#'} className="block h-full relative group active:opacity-90 transition-opacity">
-                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100">
+                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100 bg-white">
                     <Image
                       src={card.items[0]?.image_url || '/placeholder.webp'}
                       alt={card.title}
                       fill
-                      className="object-contain"
+                      className="object-contain p-2 transition-transform duration-700 group-hover:scale-[1.02]"
                       sizes="(max-width: 1024px) 95vw, 25vw"
                     />
                   </div>

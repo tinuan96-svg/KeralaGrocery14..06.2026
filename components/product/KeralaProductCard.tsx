@@ -74,16 +74,14 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
       <Link href={`/products/${slug}`} className="block flex-shrink-0">
         <div className="relative w-full overflow-hidden rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] opacity-30 pointer-events-none" />
-          <div className="relative w-full h-full">
-            <Image
-              src={image}
-              alt={product.display_title}
-              fill
-              priority={priority}
-              className="object-contain z-10"
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-            />
-          </div>
+          <Image
+            src={image}
+            alt={product.display_title}
+            fill
+            priority={priority}
+            className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05] z-10"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+          />
 
           {discount > 0 && (
             <span className="absolute top-2 left-2 badge-deal z-20 leading-none">

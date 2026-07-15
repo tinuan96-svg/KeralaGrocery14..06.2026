@@ -24,10 +24,13 @@ const PRODUCTS_SELECT = `
   is_hot_product,
   hot_product_expires_at,
   is_deal,
+  sold_count,
   created_at,
   category_id,
   brand_id,
-  stock
+  stock,
+  categories:category_id(id, name, slug),
+  brands:brand_id(id, name, slug, logo_url)
 `;
 
 function mapProduct(p: any): ProductWithDetails {
@@ -117,23 +120,6 @@ export async function fetchStoreProducts(
     }
 
     const products = (data || []).map(mapProduct);
-
-    // Manually map categories and brands
-    try {
-      const [catRes, brandRes] = await Promise.all([
-        supabase.from('categories').select('id, name, slug'),
-        supabase.from('brands').select('id, name, slug, logo_url'),
-      ]);
-      const catMap = new Map((catRes.data || []).map((c: any) => [c.id, c]));
-      const brandMap = new Map((brandRes.data || []).map((b: any) => [b.id, b]));
-
-      products.forEach((p: any) => {
-        if (p.category_id) p.category = catMap.get(p.category_id);
-        if (p.brand_id) p.brand = brandMap.get(p.brand_id);
-      });
-    } catch (mapErr) {
-      console.warn('[storeProductsService] mapping failed:', mapErr);
-    }
 
     return { products, error: null };
   } catch (err) {

@@ -89,12 +89,12 @@ export default function PersonalizedRecommendations() {
               href={`/products/${product.slug}`}
               className="group flex flex-col bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-green-200 transition-all duration-300"
             >
-              <div className="relative aspect-square bg-white">
+              <div className="relative aspect-square bg-white p-4">
                 <Image
                   src={product.image_url || '/placeholder.webp'}
                   alt={product.name}
                   fill
-                  className="object-contain"
+                  className="object-contain p-2 group-hover:scale-110 transition-transform duration-500"
                 />
                 {product.discount_percentage > 0 && (
                   <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg">

@@ -25,6 +25,8 @@ interface ProductRow {
   brand: string | null;
   source_brand: string | null;
   centralhub_product_id: string | null;
+  rating: number | null;
+  review_count: number | null;
   categories: { name: string } | null;
 }
 
@@ -36,7 +38,7 @@ async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id, categories:category_id(name)')
+      .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id, rating, review_count, categories:category_id(name)')
       .eq('approval_status', 'approved')
       .eq('visibility_status', true);
 
@@ -178,6 +180,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             brand={brand}
             availability="InStock"
             url={canonicalUrl}
+            ratingValue={p.rating || undefined}
+            reviewCount={p.review_count || undefined}
           />
           <BreadcrumbSchema items={breadcrumbs} />
         </>
