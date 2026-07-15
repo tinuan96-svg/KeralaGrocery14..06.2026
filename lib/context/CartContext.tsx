@@ -124,7 +124,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const supabase = getSupabase();
 
       if (state.cart.length === 0) {
-        await supabase.from('cart_items').delete().eq('user_id', user.id);
+        await supabase.from('cart').delete().eq('user_id', user.id);
         return;
       }
 
@@ -136,7 +136,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }));
 
       // 1. Upsert current items (preserves what we have if the next step fails)
-      const { error: upsertError } = await supabase.from('cart_items')
+      const { error: upsertError } = await supabase.from('cart')
         .upsert(itemsToSync, { onConflict: 'user_id, product_id' });
 
       if (upsertError) {
@@ -146,7 +146,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       // 2. Remove items that are no longer in the local cart
       const currentProductIds = state.cart.map(i => i.id);
-      const { error: deleteError } = await supabase.from('cart_items')
+      const { error: deleteError } = await supabase.from('cart')
         .delete()
         .eq('user_id', user.id)
         .filter('product_id', 'not.in', `(${currentProductIds.join(',')})`);
