@@ -80,7 +80,7 @@ function ProductCard({
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-contain transition-transform duration-500 scale-[1.18] group-hover:scale-[1.28]"
+                    className="w-full h-full object-contain transition-transform duration-500 scale-100 group-hover:scale-105"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = '/placeholder.webp';
                     }}
@@ -147,7 +147,7 @@ function ProductCard({
               alt={product.name}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-contain transition-transform duration-500 scale-[1.18] group-hover:scale-[1.28]"
+              className="w-full h-full object-contain transition-transform duration-500 scale-100 group-hover:scale-105"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src = '/placeholder.webp';
               }}
