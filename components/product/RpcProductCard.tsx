@@ -34,19 +34,20 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!product.in_stock) return;
-    addToCart(cartProduct);
+    if (!product.in_stock || product.stock <= 0) return;
+    addToCart(cartProduct, 1, product.stock);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(cartProduct);
+    if (qty >= product.stock) return;
+    addToCart(cartProduct, 1, product.stock);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (qty === 1) removeFromCart(product.id);
-    else addToCart(cartProduct, -1);
+    else addToCart(cartProduct, -1, product.stock);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();

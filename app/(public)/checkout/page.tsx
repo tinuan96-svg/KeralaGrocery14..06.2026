@@ -237,7 +237,7 @@ export default function CheckoutPage() {
             removeFromCart(p.id);
           } else {
             issues.push(`Only ${available} units of ${p.name} are available. We've updated your cart.`);
-            updateQuantity(p.id, available);
+            updateQuantity(p.id, available, available);
           }
         }
       });

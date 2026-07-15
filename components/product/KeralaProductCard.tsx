@@ -46,20 +46,20 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (stock === 0) return;
-    addToCart(cartItem);
+    if (stock <= 0) return;
+    addToCart(cartItem, 1, stock);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (stock === 0) return;
-    addToCart(cartItem);
+    if (qty >= stock) return;
+    addToCart(cartItem, 1, stock);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (qty === 1) removeFromCart(product.id);
-    else if (qty > 1) addToCart(cartItem, -1);
+    else if (qty > 1) addToCart(cartItem, -1, stock);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();

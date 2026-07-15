@@ -18,9 +18,14 @@ interface MiniCartProps {
 export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
   const { cart, cartTotal, updateQuantity, removeFromCart } = useCart();
 
-  const handleQtyChange = (id: string, delta: number) => {
+  const handleQtyChange = (item: any, delta: number) => {
+    const newQty = item.quantity + delta;
+    if (item.maxStock !== undefined && newQty > item.maxStock) {
+      haptics.notification('warning');
+      return;
+    }
     haptics.impact('light');
-    updateQuantity(id, delta);
+    updateQuantity(item.id, newQty, item.maxStock);
   };
 
   const handleRemove = (id: string) => {
@@ -108,7 +113,7 @@ export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
                         {/* Qty control */}
                         <div className="flex items-center bg-[#f4faf6] rounded-xl border border-green-100 p-1">
                           <button
-                            onClick={() => item.quantity > 1 ? handleQtyChange(item.id, -1) : handleRemove(item.id)}
+                            onClick={() => item.quantity > 1 ? handleQtyChange(item, -1) : handleRemove(item.id)}
                             className="w-7 h-7 flex items-center justify-center rounded-lg bg-white shadow-sm border border-green-50 text-[#0B5D3B] active:scale-90 transition-transform"
                           >
                             <Minus className="w-3 h-3" />
@@ -117,7 +122,7 @@ export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => handleQtyChange(item.id, 1)}
+                            onClick={() => handleQtyChange(item, 1)}
                             className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#0B5D3B] text-white shadow-lg shadow-green-900/20 active:scale-90 transition-transform"
                           >
                             <Plus className="w-3 h-3" />

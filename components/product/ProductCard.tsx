@@ -50,25 +50,25 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
   const handleAdd = (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
-    if (stock === 0) return;
+    if (stock <= 0) return;
     haptics.impact('medium'); // (Suggestion 2)
     setIsAdding(true);
     setTimeout(() => setIsAdding(false), 1000);
-    addToCart(cartItem);
+    addToCart(cartItem, 1, stock);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (stock === 0) return;
+    if (qty >= stock) return;
     haptics.impact('light'); // (Suggestion 2)
-    addToCart(cartItem);
+    addToCart(cartItem, 1, stock);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     haptics.impact('light'); // (Suggestion 2)
     if (qty === 1) removeFromCart(product.id);
-    else if (qty > 1) addToCart(cartItem, -1);
+    else if (qty > 1) addToCart(cartItem, -1, stock);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();

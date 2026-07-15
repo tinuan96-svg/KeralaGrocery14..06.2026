@@ -123,12 +123,20 @@ export default function CartPage() {
 
   const finalTotal = cartTotal + deliveryFee;
 
-  const handleUpdateQuantity = (id: string, newQty: number) => {
+  const handleUpdateQuantity = (item: any, newQty: number) => {
     if (newQty < 1) {
-      removeFromCart(id);
-    } else {
-      updateQuantity(id, newQty);
+      removeFromCart(item.id);
+      return;
     }
+    if (item.maxStock !== undefined && newQty > item.maxStock) {
+      toast({
+        title: 'Limit reached',
+        description: `Only ${item.maxStock} units of ${item.name} are in stock.`,
+        variant: 'destructive'
+      });
+      return;
+    }
+    updateQuantity(item.id, newQty, item.maxStock);
   };
 
   const handleRemoveItem = (id: string, name: string) => {
@@ -239,7 +247,7 @@ export default function CartPage() {
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
                         <button
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                          onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
                           className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 active:scale-90 transition-all text-gray-600"
                           aria-label="Decrease quantity"
                         >
@@ -249,7 +257,7 @@ export default function CartPage() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
                           className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 active:scale-90 transition-all text-gray-600"
                           aria-label="Increase quantity"
                         >

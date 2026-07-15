@@ -19,6 +19,7 @@ export interface CartItem {
   quantity: number;
   image_url?: string;
   slug: string;
+  maxStock?: number;
 }
 
 interface CartState {
@@ -28,15 +29,15 @@ interface CartState {
 
 type CartAction =
   | { type: 'HYDRATE'; cart: CartItem[] }
-  | { type: 'ADD'; item: Omit<CartItem, 'quantity'>; qty: number }
+  | { type: 'ADD'; item: Omit<CartItem, 'quantity'>; qty: number; maxStock?: number }
   | { type: 'REMOVE'; id: string }
-  | { type: 'UPDATE'; id: string; quantity: number }
+  | { type: 'UPDATE'; id: string; quantity: number; maxStock?: number }
   | { type: 'CLEAR' };
 
 interface CartActions {
-  addToCart: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void;
+  addToCart: (item: Omit<CartItem, 'quantity'>, quantity?: number, maxStock?: number) => void;
   removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  updateQuantity: (id: string, quantity: number, maxStock?: number) => void;
   clearCart: () => void;
   getQuantity: (id: string) => number;
 }
@@ -58,29 +59,46 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { cart: action.cart, isHydrated: true };
     case 'ADD': {
       const existing = state.cart.find((i) => i.id === action.item.id);
+      const effectiveMaxStock = action.maxStock ?? existing?.maxStock;
+
       if (existing) {
+        let newQty = existing.quantity + action.qty;
+        if (effectiveMaxStock !== undefined) {
+          newQty = Math.min(newQty, effectiveMaxStock);
+        }
         return {
           ...state,
           cart: state.cart.map((i) =>
             i.id === action.item.id
-              ? { ...i, quantity: Math.max(0, i.quantity + action.qty) }
+              ? { ...i, quantity: Math.max(0, newQty), maxStock: effectiveMaxStock }
               : i
           ).filter((i) => i.quantity > 0),
         };
       }
       if (action.qty <= 0) return state;
-      return { ...state, cart: [...state.cart, { ...action.item, quantity: action.qty }] };
+      let initialQty = action.qty;
+      if (effectiveMaxStock !== undefined) {
+        initialQty = Math.min(initialQty, effectiveMaxStock);
+      }
+      return { ...state, cart: [...state.cart, { ...action.item, quantity: initialQty, maxStock: effectiveMaxStock }] };
     }
     case 'REMOVE':
       return { ...state, cart: state.cart.filter((i) => i.id !== action.id) };
     case 'UPDATE': {
-      if (action.quantity <= 0) {
+      const existing = state.cart.find((i) => i.id === action.id);
+      const effectiveMaxStock = action.maxStock ?? existing?.maxStock;
+
+      let finalQty = action.quantity;
+      if (effectiveMaxStock !== undefined) {
+        finalQty = Math.min(finalQty, effectiveMaxStock);
+      }
+      if (finalQty <= 0) {
         return { ...state, cart: state.cart.filter((i) => i.id !== action.id) };
       }
       return {
         ...state,
         cart: state.cart.map((i) =>
-          i.id === action.id ? { ...i, quantity: action.quantity } : i
+          i.id === action.id ? { ...i, quantity: finalQty, maxStock: effectiveMaxStock } : i
         ),
       };
     }
@@ -170,14 +188,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // stable actions — never recreated
   const actions = useMemo<CartActions>(() => ({
-    addToCart(item, quantity = 1) {
-      dispatch({ type: 'ADD', item, qty: quantity });
+    addToCart(item, quantity = 1, maxStock) {
+      dispatch({ type: 'ADD', item, qty: quantity, maxStock });
     },
     removeFromCart(id) {
       dispatch({ type: 'REMOVE', id });
     },
-    updateQuantity(id, quantity) {
-      dispatch({ type: 'UPDATE', id, quantity });
+    updateQuantity(id, quantity, maxStock) {
+      dispatch({ type: 'UPDATE', id, quantity, maxStock });
     },
     clearCart() {
       dispatch({ type: 'CLEAR' });
