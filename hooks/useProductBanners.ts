@@ -96,10 +96,8 @@ type ProductRow = {
   price: number;
   original_price: number | null;
   discount_percentage: number | null;
-  image_url: string | null;
   image_main: string | null;
   enhanced_image_url: string | null;
-  image_medium: string | null;
   is_featured: boolean | null;
   is_bestseller: boolean | null;
   is_new_arrival: boolean | null;
@@ -116,7 +114,6 @@ function resolveImage(row: ProductRow): string | null {
     image_main: row.image_main,
     enhanced_image_url: row.enhanced_image_url,
     image_url: row.image_url,
-    image_medium: row.image_medium,
   });
 }
 
@@ -160,7 +157,7 @@ const BASE_FILTER = {
   is_active: true,
 } as const;
 
-const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,image_medium,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at';
+const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at';
 
 export function useProductBanners(): ProductBannersData {
   const [banners, setBanners] = useState<Record<BannerKey, BannerProduct[]>>({

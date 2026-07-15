@@ -138,7 +138,7 @@ export class CentralHubClient {
           `${this.apiUrl}/products` +
           `?select=id,name,slug,description,image_url,category_id,brand_id,price,original_price,` +
           `is_active,is_deleted,is_featured,is_deal,is_new_arrival,is_bestseller,` +
-          `discount_percentage,sold_count,rating,review_count,created_at,updated_at` +
+          `discount_percentage,created_at,updated_at` +
           `&is_deleted=eq.false&is_active=eq.true` +
           `&order=id.asc` +
           `&limit=${PAGE_SIZE}&offset=${offset}`;

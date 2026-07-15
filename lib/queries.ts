@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from './supabase/server';
 import type { Category, ProductWithDetails } from './types/database';
+import { resolveProductImage } from './utils/image';
 
 // Force Refresh: 2026-07-06 07:45
 const PRODUCTS_SELECT = `
@@ -28,12 +29,11 @@ const PRODUCTS_SELECT = `
 `;
 
 export function mapProduct(p: any): ProductWithDetails {
-  const imageUrl = (
-      (p.enhanced_image_url?.startsWith('http') ? p.enhanced_image_url : null) ??
-      (p.image_main?.startsWith('http') ? p.image_main : null) ??
-      (p.image_url?.startsWith('http') ? p.image_url : null) ??
-      null
-    );
+  const imageUrl = resolveProductImage({
+    image_main: p.image_main,
+    enhanced_image_url: p.enhanced_image_url,
+    image_url: p.image_url,
+  });
 
   return {
     id: p.id,
@@ -42,7 +42,7 @@ export function mapProduct(p: any): ProductWithDetails {
     description: p.description,
     price: p.price ?? 0,
     original_price: p.original_price,
-    image_main: p.image_main?.startsWith('http') ? p.image_main : null,
+    image_main: imageUrl,
     enhanced_image_url: p.enhanced_image_url?.startsWith('http') ? p.enhanced_image_url : null,
     image_url: imageUrl,
     image_path: p.image_path,
@@ -58,9 +58,6 @@ export function mapProduct(p: any): ProductWithDetails {
     is_new_arrival: p.is_new_arrival,
     is_hot_product: p.is_hot_product,
     hot_product_expires_at: p.hot_product_expires_at,
-    rating: p.rating,
-    review_count: p.review_count,
-    sold_count: p.sold_count,
     category: p.categories ?? undefined,
     brand: p.brands ?? undefined,
   };
