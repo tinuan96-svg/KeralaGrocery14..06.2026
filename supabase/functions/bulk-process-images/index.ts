@@ -62,7 +62,8 @@ Deno.serve(async (req: Request) => {
     if (body.product_ids?.length) {
       query = query.in("id", body.product_ids);
     } else if (!force) {
-      query = query.is("image_main", null);
+      // Process if never enhanced OR if standard processing failed
+      query = query.or("enhanced_image_url.is.null,image_processing_status.eq.failed");
     }
 
     const { data: products, error: fetchErr } = await query;
