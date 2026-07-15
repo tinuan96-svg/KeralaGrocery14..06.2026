@@ -141,7 +141,7 @@ export default function ProductGallery({
                 fetchPriority="high"
                 loading="eager"
                 decoding="async"
-                className="w-full h-full object-contain scale-[1.12] transition-transform duration-500 group-hover:scale-[1.20]"
+                className="w-full h-full object-contain"
                 style={
                   isZoomed
                     ? {
