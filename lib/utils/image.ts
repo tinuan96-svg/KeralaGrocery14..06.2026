@@ -60,12 +60,16 @@ export function resolveProductImage(
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   for (let url of candidates) {
-    if (!url || typeof url !== 'string' || url.trim() === '') continue;
+    if (!url || typeof url !== 'string' || url.trim() === '' || url === 'null' || url === 'undefined') continue;
 
     // Handle absolute URLs
     if (url.startsWith('http')) {
-      const ts = updatedAt ?? product.updated_at;
-      return ts ? `${url}?v=${new Date(ts).getTime()}` : url;
+      // Only add versioning if it's our own Supabase domain to avoid external CDN issues
+      if (supabaseUrl && url.includes(supabaseUrl.replace('https://', ''))) {
+        const ts = updatedAt ?? product.updated_at;
+        return ts ? `${url}?v=${new Date(ts).getTime()}` : url;
+      }
+      return url;
     }
 
     // Never use local browser blob URLs
@@ -108,11 +112,14 @@ export function resolveProductThumbnail(
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   for (let url of candidates) {
-    if (!url || typeof url !== 'string' || url.trim() === '') continue;
+    if (!url || typeof url !== 'string' || url.trim() === '' || url === 'null' || url === 'undefined') continue;
 
     if (url.startsWith('http')) {
-      const ts = updatedAt ?? product.updated_at;
-      return ts ? `${url}?v=${new Date(ts).getTime()}` : url;
+      if (supabaseUrl && url.includes(supabaseUrl.replace('https://', ''))) {
+        const ts = updatedAt ?? product.updated_at;
+        return ts ? `${url}?v=${new Date(ts).getTime()}` : url;
+      }
+      return url;
     }
 
     if (url.startsWith('blob:')) continue;

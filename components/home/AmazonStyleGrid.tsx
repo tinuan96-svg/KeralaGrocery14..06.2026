@@ -105,12 +105,12 @@ export default function AmazonStyleGrid() {
                 <div className="grid grid-cols-2 gap-2 sm:gap-3 h-full">
                   {card.items.slice(0, 4).map((item, idx) => (
                     <Link key={idx} href={item.link} className="flex flex-col group active:opacity-80 transition-opacity">
-                      <div className="relative aspect-square overflow-hidden bg-white mb-1.5 rounded-lg border border-gray-100/50">
+                      <div className="relative aspect-square overflow-hidden bg-white mb-1.5 rounded-lg border border-gray-100/50 p-1.5">
                         <Image
                           src={item.image_url}
                           alt={item.label || ''}
                           fill
-                          className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05]"
+                          className="object-contain transition-transform duration-500 scale-100 group-hover:scale-110"
                           sizes="(max-width: 768px) 45vw, 25vw"
                         />
                         {item.badge && (
@@ -129,12 +129,12 @@ export default function AmazonStyleGrid() {
                 </div>
               ) : (
                 <Link href={card.items[0]?.link || '#'} className="block h-full relative group active:opacity-90 transition-opacity">
-                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100 bg-white">
+                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100">
                     <Image
                       src={card.items[0]?.image_url || '/placeholder.webp'}
                       alt={card.title}
                       fill
-                      className="object-contain p-2 transition-transform duration-700 group-hover:scale-[1.02]"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
                       sizes="(max-width: 1024px) 95vw, 25vw"
                     />
                   </div>
