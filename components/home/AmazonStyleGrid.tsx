@@ -111,7 +111,7 @@ export default function AmazonStyleGrid() {
                             src={item.image_url}
                             alt={item.label || ''}
                             fill
-                            className="object-contain transition-transform duration-500 scale-100 group-hover:scale-110"
+                            className="object-contain"
                             sizes="(max-width: 768px) 45vw, 25vw"
                           />
                         </div>
@@ -136,7 +136,7 @@ export default function AmazonStyleGrid() {
                       src={card.items[0]?.image_url || '/placeholder.webp'}
                       alt={card.title}
                       fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="object-contain"
                       sizes="(max-width: 1024px) 95vw, 25vw"
                     />
                   </div>

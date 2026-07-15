@@ -82,7 +82,7 @@ export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
                         src={item.image_url || '/placeholder.webp'}
                         alt={item.name}
                         fill
-                        className="object-contain p-1"
+                        className="object-contain"
                         placeholder="blur"
                         blurDataURL={blurDataURL}
                       />

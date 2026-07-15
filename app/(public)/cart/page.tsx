@@ -227,7 +227,7 @@ export default function CartPage() {
                       alt={item.name}
                       fill
                       sizes="76px"
-                      className="object-contain p-1.5"
+                      className="object-contain"
                       loading="lazy"
                     />
                   </div>
