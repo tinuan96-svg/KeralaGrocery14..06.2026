@@ -63,7 +63,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- Re-create the Real-time Trigger to ensure it fires correctly
 DROP TRIGGER IF EXISTS tr_notify_centralhub_order ON orders;
