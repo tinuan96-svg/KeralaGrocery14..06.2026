@@ -78,7 +78,7 @@ export async function fetchProducts(): Promise<{
       .from('products')
       .select(`
         id, name, slug, description, price, original_price,
-        image_url, image_main, is_active, is_deleted, is_featured,
+        image_url, image_main, enhanced_image_url, is_active, is_deleted, is_featured,
         is_bestseller, is_deal, is_new_arrival,
         discount_percentage, created_at, category_id, brand_id,
         approval_status, visibility_status, stock
@@ -89,7 +89,7 @@ export async function fetchProducts(): Promise<{
       .order('created_at', { ascending: false }),
     supabase
       .from('categories')
-      .select('*')
+      .select('id, name, slug, icon, sort_order')
       .order('name', { ascending: true }),
   ]);
 
