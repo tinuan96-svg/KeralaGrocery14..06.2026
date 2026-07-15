@@ -72,14 +72,14 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
 
       {/* Image */}
       <Link href={`/products/${slug}`} className="block flex-shrink-0">
-        <div className="relative w-full overflow-hidden rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
+        <div className="relative w-full rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] opacity-30 pointer-events-none" />
           <Image
             src={image}
             alt={product.display_title}
             fill
             priority={priority}
-            className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05] z-10"
+            className="object-contain z-10"
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
           />
 

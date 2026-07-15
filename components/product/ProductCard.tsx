@@ -82,7 +82,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
 
       {/* Image */}
       <Link href={`/products/${product.slug}`} className="block flex-shrink-0">
-        <div className="relative w-full overflow-hidden rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
+        <div className="relative w-full rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
           {/* Enhanced radial highlight for a premium "floating" effect */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,_rgba(11,93,59,0.08)_0%,_transparent_70%)] pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] opacity-30 pointer-events-none" />
@@ -94,7 +94,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
               priority={priority}
-              className="object-contain transition-all duration-700 scale-[0.96] group-hover:scale-[1.08] group-hover:drop-shadow-[0_20px_30px_rgba(11,93,59,0.15)]"
+              className="object-contain"
               loading={priority ? undefined : 'lazy'}
             />
           </div>

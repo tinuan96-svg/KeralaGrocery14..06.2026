@@ -49,12 +49,12 @@ export function resolveProductImage(
   updatedAt?: string | null,
 ): string | null {
   const candidates = [
-    product.image_cdn_url,
+    product.image_url,         // Prefer raw upload "as uploaded"
+    product.image_main,        // Then primary image
     product.image_override,
-    product.enhanced_image_url, // Prefer transparent enhanced image
-    product.image_main,
+    product.image_cdn_url,
+    product.enhanced_image_url,
     product.image_medium,
-    product.image_url,
   ];
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -96,13 +96,13 @@ export function resolveProductThumbnail(
   updatedAt?: string | null,
 ): string | null {
   const candidates = [
-    product.image_thumbnail,
-    product.image_cdn_url,
-    product.image_override,
-    product.enhanced_image_url, // Prefer transparent enhanced thumbnail
+    product.image_url,         // Prefer raw upload for clarity
     product.image_main,
+    product.image_thumbnail,
+    product.image_override,
+    product.image_cdn_url,
+    product.enhanced_image_url,
     product.image_medium,
-    product.image_url,
   ];
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

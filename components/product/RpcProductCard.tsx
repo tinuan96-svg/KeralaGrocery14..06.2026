@@ -60,14 +60,14 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
 
       {/* ── Fixed-height image container ──────────────────────────── */}
       <Link href={`/products/${slug}`} className="block flex-shrink-0">
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
+        <div className="relative w-full" style={{ aspectRatio: '1 / 1' }}>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_55%_40%,_#f0f9f4_0%,_#ffffff_70%)] opacity-30 pointer-events-none" />
           <Image
             src={imgSrc}
             alt={product.display_title}
             fill
             priority={priority}
-            className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05]"
+            className="object-contain"
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
           />
 
