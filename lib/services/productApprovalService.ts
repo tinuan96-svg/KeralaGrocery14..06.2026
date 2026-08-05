@@ -26,7 +26,7 @@ export interface ApprovalProduct {
   is_new_arrival: boolean | null;
   is_bestseller: boolean | null;
   approval_status: ApprovalStatus;
-  visibility_status: boolean;
+  visibility_status: string;
   approved_at: string | null;
   last_sync_at: string | null;
   seo_title: string | null;
@@ -76,7 +76,7 @@ export interface ProductEditPayload {
   seo_description?: string | null;
   seo_keywords?: string | null;
   tags?: string[] | null;
-  visibility_status?: boolean;
+  visibility_status?: string;
 }
 
 export interface ApprovalError {
@@ -342,7 +342,7 @@ export async function approveProduct(
     .from('products')
     .update({
       approval_status: 'approved',
-      visibility_status: true,
+      visibility_status: 'visible',
       is_active: true,
       approved_at: now,
       approved_by: adminUserId,
@@ -411,7 +411,7 @@ export async function rejectProduct(
     .from('products')
     .update({
       approval_status: 'rejected',
-      visibility_status: false,
+      visibility_status: 'hidden',
       updated_at: new Date().toISOString(),
     })
     .eq('id', productId);
@@ -466,7 +466,7 @@ export async function moveToDraft(
     .from('products')
     .update({
       approval_status: 'draft',
-      visibility_status: false,
+      visibility_status: 'hidden',
       approved_at: null,
       updated_at: new Date().toISOString(),
     })
@@ -512,7 +512,7 @@ export async function toggleVisibility(
   const supabase = getSupabase();
   const { error } = await supabase
     .from('products')
-    .update({ visibility_status: visible, updated_at: new Date().toISOString() })
+    .update({ visibility_status: visible ? 'visible' : 'hidden', updated_at: new Date().toISOString() })
     .eq('id', productId)
     .eq('approval_status', 'approved');
   if (error) {
@@ -555,7 +555,7 @@ export async function bulkApproveDraftProducts(
     .from('products')
     .update({
       approval_status: 'approved',
-      visibility_status: true,
+      visibility_status: 'visible',
       is_active: true,
       approved_at: now,
       approved_by: adminUserId,

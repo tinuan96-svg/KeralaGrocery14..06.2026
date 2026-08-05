@@ -40,12 +40,12 @@ async function getBrands(): Promise<BrandEntry[]> {
       image_url: string | null;
       image_main: string | null;
       approval_status: string;
-      visibility_status: boolean;
+      visibility_status: string;
       is_active: boolean;
     }[];
 
     const visible = rows.filter(
-      (r) => r.approval_status === 'approved' && r.visibility_status && r.is_active
+      (r) => r.approval_status === 'approved' && r.visibility_status === 'visible' && r.is_active
     );
 
     const brandMap = new Map<string, { count: number; imageUrl: string | null; displayName: string }>();

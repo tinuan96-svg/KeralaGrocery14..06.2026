@@ -82,12 +82,12 @@ export async function fetchProducts(): Promise<{
         is_bestseller, is_deal, is_new_arrival, rating, review_count,
         sold_count, discount_percentage, created_at, category_id, brand_id,
         approval_status, visibility_status, stock, stock_quantity,
-        categories(id, name, slug),
-        brands(id, name, slug, logo_url)
+        brand,
+        categories(id, name, slug)
       `)
       .eq('is_deleted', false)
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true)
+      .eq('visibility_status', 'visible')
       .order('created_at', { ascending: false }),
     supabase
       .from('categories')

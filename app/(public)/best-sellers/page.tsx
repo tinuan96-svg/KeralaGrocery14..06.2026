@@ -67,7 +67,7 @@ export default async function BestSellersPage() {
     .eq('is_active', true)
     .eq('is_deleted', false)
     .eq('approval_status', 'approved')
-    .eq('visibility_status', true)
+    .eq('visibility_status', 'visible')
     .order('sold_count', { ascending: false })
     .limit(24);
 

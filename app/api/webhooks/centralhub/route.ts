@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
           .update({
             is_deleted: true,
             is_active: false,
-            visibility_status: false,
+            visibility_status: 'hidden',
             approval_status: 'rejected',
             updated_at: new Date().toISOString()
           })
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       if (!isUpdate) {
         // NEW products default to draft and auto-calculated price
         productUpsert.approval_status = 'draft';
-        productUpsert.visibility_status = false;
+        productUpsert.visibility_status = 'hidden';
         productUpsert.price = sellingPrice;
         productUpsert.selling_price = sellingPrice;
         productUpsert.markup_percentage = 5;

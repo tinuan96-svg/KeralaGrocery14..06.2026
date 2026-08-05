@@ -134,15 +134,17 @@ export default function AddProductForm({ categories: initialCategories, brands: 
     setIsCreatingBrand(true);
     try {
       const slug = newBrandData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      const supabase = getSupabase();
-      const { data, error } = await supabase
-        .from('brands')
-        .insert([{ name: newBrandData.name, slug, logo_url: newBrandData.logo_url || null }])
-        .select()
-        .single();
-      if (error) throw error;
-      setBrands((prev) => [...prev, data]);
-      setFormData((prev) => ({ ...prev, brand_id: data.id }));
+      const newBrand: Brand = {
+        id: slug,
+        name: newBrandData.name,
+        slug,
+        logo_url: newBrandData.logo_url || null,
+        description: null,
+        created_at: '',
+        updated_at: '',
+      };
+      setBrands((prev) => [...prev, newBrand]);
+      setFormData((prev) => ({ ...prev, brand_id: newBrand.id }));
       setNewBrandData({ name: '', logo_url: '' });
       setShowNewBrandDialog(false);
     } catch (error) {

@@ -179,13 +179,7 @@ export function useProductBanners(): ProductBannersData {
       const supabase = getSupabase();
 
       // Fetch lookup maps safely
-      const [catRes, brdRes] = await Promise.all([
-        supabase.from('categories').select('id,name,slug'),
-        (async () => {
-          try { return await supabase.from('brands').select('id,name,slug'); }
-          catch { return { data: null, error: { message: 'Table missing' } }; }
-        })(),
-      ]);
+      const catRes = await supabase.from('categories').select('id,name,slug');
 
       const catMap: Record<string, LookupRow> = {};
       for (const r of (catRes.data ?? []) as LookupRow[]) catMap[r.id] = r;
@@ -194,16 +188,13 @@ export function useProductBanners(): ProductBannersData {
         c.slug === 'ready-to-eat' || c.name.toLowerCase().includes('ready to eat')
       );
 
-      const brdMap: Record<string, LookupRow> = {};
-      for (const r of (brdRes.data ?? []) as LookupRow[]) brdMap[r.id] = r;
-
       // Fetch larger pools for rotation
       const [bestsellers, newArrivals, featured, readyFoods, recent] = await Promise.all([
         supabase
           .from('products')
           .select(SELECT)
           .match(BASE_FILTER)
-          .neq('visibility_status', false)
+          .eq('visibility_status', 'visible')
           .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
@@ -214,7 +205,7 @@ export function useProductBanners(): ProductBannersData {
           .from('products')
           .select(SELECT)
           .match(BASE_FILTER)
-          .neq('visibility_status', false)
+          .eq('visibility_status', 'visible')
           .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
@@ -225,7 +216,7 @@ export function useProductBanners(): ProductBannersData {
           .from('products')
           .select(SELECT)
           .match(BASE_FILTER)
-          .neq('visibility_status', false)
+          .eq('visibility_status', 'visible')
           .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
@@ -236,7 +227,7 @@ export function useProductBanners(): ProductBannersData {
               .from('products')
               .select(SELECT)
               .match(BASE_FILTER)
-              .neq('visibility_status', false)
+              .eq('visibility_status', 'visible')
               .neq('is_deleted', true)
               .not('centralhub_product_id', 'is', null)
               .not('brand', 'ilike', 'Brahmins')
@@ -247,7 +238,7 @@ export function useProductBanners(): ProductBannersData {
           .from('products')
           .select(SELECT)
           .match(BASE_FILTER)
-          .neq('visibility_status', false)
+          .eq('visibility_status', 'visible')
           .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
@@ -257,7 +248,7 @@ export function useProductBanners(): ProductBannersData {
 
       if (cancelled) return;
 
-      const mapRows = (rows: any[]) => (rows ?? []).map(r => toProduct(r, catMap, brdMap));
+      const mapRows = (rows: any[]) => (rows ?? []).map(r => toProduct(r, catMap, {}));
 
       // Shuffle and slice to rotate visibility
       const allBanners = {

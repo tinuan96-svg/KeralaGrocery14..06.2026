@@ -40,7 +40,7 @@ async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
       .from('products')
       .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id, rating, review_count, categories:category_id(name)')
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true);
+      .eq('visibility_status', 'visible');
 
     if (isUuid) {
       query = query.or(`id.eq.${slug},slug.eq.${slug}`);
@@ -71,7 +71,7 @@ export async function generateStaticParams() {
       .from('products')
       .select('slug')
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true);
+      .eq('visibility_status', 'visible');
 
     if (error) {
       console.error('[generateStaticParams] DB error:', error.message);

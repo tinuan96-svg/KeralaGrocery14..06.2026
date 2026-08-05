@@ -256,11 +256,12 @@ export default function ProductApprovalPage() {
 
   const handleToggleVisibility = async (product: ApprovalProduct) => {
     setActionLoading(product.id + '-vis');
-    const { error } = await toggleVisibility(product.id, !product.visibility_status);
+    const newVis = product.visibility_status === 'visible' ? 'hidden' : 'visible';
+    const { error } = await toggleVisibility(product.id, newVis === 'visible');
     if (error) showToast(error, 'err');
     else {
       setProducts(prev =>
-        prev.map(p => p.id === product.id ? { ...p, visibility_status: !p.visibility_status } : p)
+        prev.map(p => p.id === product.id ? { ...p, visibility_status: newVis } : p)
       );
     }
     setActionLoading(null);
@@ -573,9 +574,9 @@ export default function ProductApprovalPage() {
                           </span>
                           {product.approval_status === 'approved' && (
                             <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                              product.visibility_status ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'
+                              product.visibility_status === 'visible' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'
                             }`}>
-                              {product.visibility_status ? 'visible' : 'hidden'}
+                              {product.visibility_status === 'visible' ? 'visible' : 'hidden'}
                             </span>
                           )}
                           {/* Missing fields warning badge */}
@@ -686,16 +687,16 @@ export default function ProductApprovalPage() {
                             <button
                               onClick={() => handleToggleVisibility(product)}
                               disabled={actionLoading === product.id + '-vis'}
-                              title={product.visibility_status ? 'Hide from storefront' : 'Show on storefront'}
+                              title={product.visibility_status === 'visible' ? 'Hide from storefront' : 'Show on storefront'}
                               className={`p-1.5 rounded-lg transition-colors ${
-                                product.visibility_status
+                                product.visibility_status === 'visible'
                                   ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
                                   : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
                               }`}
                             >
                               {actionLoading === product.id + '-vis'
                                 ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                : product.visibility_status
+                                : product.visibility_status === 'visible'
                                   ? <Eye className="w-3.5 h-3.5" />
                                   : <EyeOff className="w-3.5 h-3.5" />}
                             </button>

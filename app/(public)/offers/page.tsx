@@ -66,7 +66,7 @@ export default async function OffersPage() {
     .eq('is_active', true)
     .eq('is_deleted', false)
     .eq('approval_status', 'approved')
-    .eq('visibility_status', true)
+    .eq('visibility_status', 'visible')
     .eq('is_deal', true)
     .limit(24);
 

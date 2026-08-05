@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
         .from("products")
         .select("id, name, slug, image_url, price, rating, review_count, discount_percentage")
         .eq("approval_status", "approved")
-        .eq("visibility_status", true)
+        .eq("visibility_status", "visible")
         .order("sold_count", { ascending: false })
         .limit(10);
 
@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
         .from("products")
         .select("id, name, slug, image_url, price, rating, review_count, discount_percentage")
         .eq("approval_status", "approved")
-        .eq("visibility_status", true)
+        .eq("visibility_status", "visible")
         .order("created_at", { ascending: false })
         .limit(10);
 
@@ -96,7 +96,7 @@ Deno.serve(async (req: Request) => {
       .in("category_id", topCategories)
       .not("id", "in", `(${Array.from(purchasedProductIds).join(',')})`)
       .eq("approval_status", "approved")
-      .eq("visibility_status", true)
+      .eq("visibility_status", "visible")
       .order("sold_count", { ascending: false })
       .limit(10);
 

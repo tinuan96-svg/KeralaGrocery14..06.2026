@@ -24,7 +24,8 @@ const PRODUCTS_SELECT = `
   discount_percentage,
   created_at,
   category_id,
-  brand_id
+  brand_id,
+  brand
 `;
 
 export function mapProduct(p: any): ProductWithDetails {
@@ -48,6 +49,7 @@ export function mapProduct(p: any): ProductWithDetails {
     image_path: p.image_path,
     category_id: p.category_id,
     brand_id: p.brand_id,
+    brand: p.brand ? { id: '', name: p.brand, slug: p.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), logo_url: null, description: null, created_at: '', updated_at: '' } : undefined,
     created_at: p.created_at,
     stock: 999,
     is_active: p.is_active ?? true,
@@ -62,7 +64,6 @@ export function mapProduct(p: any): ProductWithDetails {
     review_count: p.review_count,
     sold_count: p.sold_count,
     category: p.categories ?? undefined,
-    brand: p.brands ?? undefined,
   };
 }
 
@@ -87,7 +88,7 @@ export async function getAllProducts(): Promise<ProductWithDetails[]> {
     .eq('is_deleted', false)
     .eq('is_active', true)
     .eq('approval_status', 'approved')
-    .eq('visibility_status', true)
+    .eq('visibility_status', 'visible')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -99,16 +100,11 @@ export async function getAllProducts(): Promise<ProductWithDetails[]> {
 
   // Manually map categories and brands
   try {
-    const [catRes, brandRes] = await Promise.all([
-      supabase.from('categories').select('id, name, slug, icon, sort_order'),
-      supabase.from('brands').select('id, name, slug, logo_url, sort_order'),
-    ]);
+    const catRes = await supabase.from('categories').select('id, name, slug, icon, sort_order');
     const catMap = new Map((catRes.data || []).map((c: any) => [c.id, c]));
-    const brandMap = new Map((brandRes.data || []).map((b: any) => [b.id, b]));
 
     products.forEach((p: any) => {
       if (p.category_id) p.category = catMap.get(p.category_id);
-      if (p.brand_id) p.brand = brandMap.get(p.brand_id);
     });
   } catch (mapErr) {
     console.warn('[queries] mapping failed:', mapErr);
