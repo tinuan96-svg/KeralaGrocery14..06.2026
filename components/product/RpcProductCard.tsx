@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { ShoppingCart, Plus, Minus, Heart } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
@@ -62,7 +62,7 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
       <Link href={`/products/${slug}`} className="block flex-shrink-0">
         <div className="relative w-full" style={{ aspectRatio: '1 / 1' }}>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_55%_40%,_#f0f9f4_0%,_#ffffff_70%)] opacity-30 pointer-events-none" />
-          <Image
+          <FallbackImage
             src={imgSrc}
             alt={product.display_title}
             fill

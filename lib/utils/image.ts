@@ -28,8 +28,6 @@ export const getImageProps = (priority: boolean = false) => ({
 });
 
 type ProductImageFields = {
-  image_cdn_url?: string | null;
-  image_override?: string | null;
   image_main?: string | null;
   image_medium?: string | null;
   image_thumbnail?: string | null;
@@ -49,10 +47,8 @@ export function resolveProductImage(
   updatedAt?: string | null,
 ): string | null {
   const candidates = [
-    product.image_url,         // Prefer raw upload "as uploaded"
-    product.image_main,        // Then primary image
-    product.image_override,
-    product.image_cdn_url,
+    product.image_url,
+    product.image_main,
     product.enhanced_image_url,
     product.image_medium,
   ];
@@ -96,11 +92,9 @@ export function resolveProductThumbnail(
   updatedAt?: string | null,
 ): string | null {
   const candidates = [
-    product.image_url,         // Prefer raw upload for clarity
+    product.image_url,
     product.image_main,
     product.image_thumbnail,
-    product.image_override,
-    product.image_cdn_url,
     product.enhanced_image_url,
     product.image_medium,
   ];

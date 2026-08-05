@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { memo } from 'react';
 import { Heart, Plus, Minus, ShoppingCart, Wallet } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
@@ -74,7 +74,7 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
       <Link href={`/products/${slug}`} className="block flex-shrink-0">
         <div className="relative w-full rounded-t-[inherit]" style={{ aspectRatio: '1 / 1' }}>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] opacity-30 pointer-events-none" />
-          <Image
+          <FallbackImage
             src={image}
             alt={product.display_title}
             fill

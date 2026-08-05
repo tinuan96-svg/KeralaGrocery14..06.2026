@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
-import { Heart, Plus, Minus, ShoppingCart, CheckCircle } from 'lucide-react';
+import { FallbackImage } from '@/components/ui/FallbackImage';
+import { Heart, Plus, Minus, ShoppingCart, CircleCheck as CheckCircle } from 'lucide-react';
 import type { ProductWithDetails } from '@/lib/types/database';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
@@ -88,7 +88,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,_#edfaf3_0%,_#fff_70%)] opacity-30 pointer-events-none" />
 
           <div className="absolute inset-0 flex items-center justify-center z-10">
-            <Image
+            <FallbackImage
               src={displayImage}
               alt={`${displayName} - Kerala Grocery`}
               fill
