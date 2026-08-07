@@ -10,6 +10,30 @@ export const metadata: Metadata = {
 
 const blogPosts = [
   {
+    slug: 'kerala-festivals-foods',
+    title: 'Kerala Festivals and Traditional Foods - A Complete Guide',
+    excerpt: 'Explore the rich connection between Kerala festivals and traditional foods. From Onam Sadhya to Vishu kanji, discover the dishes that make Kerala celebrations special.',
+    date: '2026-08-07',
+    category: 'Culture & Food',
+    readTime: '8 min read',
+  },
+  {
+    slug: 'palakkadan-matta-rice',
+    title: 'Palakkadan Matta Rice: The King of Kerala Rice',
+    excerpt: 'Everything you need to know about Palakkadan Matta rice - the authentic Kerala red rice. Learn about its health benefits, how to cook it, and where to buy it in the UK.',
+    date: '2026-08-07',
+    category: 'Ingredient Guide',
+    readTime: '7 min read',
+  },
+  {
+    slug: 'kerala-snacks-uk',
+    title: 'Kerala Snacks UK - The Complete Guide to Authentic Indian Snacks',
+    excerpt: 'Discover the best Kerala snacks available in the UK. From crispy banana chips to murukku, mixture, and ribbon pakoda. Buy authentic Kerala snacks online.',
+    date: '2026-08-07',
+    category: 'Snacks Guide',
+    readTime: '6 min read',
+  },
+  {
     slug: 'top-10-kerala-foods-uk',
     title: 'Top 10 Kerala Foods You Can Buy in the UK',
     excerpt: 'Discover the most popular Kerala foods available online in the UK. From traditional snacks to essential cooking ingredients, we cover everything you need.',

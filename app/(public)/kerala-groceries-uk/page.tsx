@@ -127,6 +127,17 @@ export default async function KeralaGroceriesUKPage() {
           <p className="text-gray-700 mb-6">
             Operated by <strong>Tasty Kerala Ltd</strong>, we&apos;re committed to providing the Kerala community in the UK with authentic products at competitive prices. Our secure checkout ensures your payment information is always protected, and our customer service team is ready to help with any questions.
           </p>
+
+          <h3 className="text-2xl font-semibold text-gray-900 mb-4">Explore Our Kerala Food Guides</h3>
+          <ul className="space-y-2 mb-6">
+            <li><Link href="/onam-sadhya" className="text-green-600 hover:underline">Onam Sadhya - Traditional Kerala Feast Guide</Link></li>
+            <li><Link href="/matta-rice" className="text-green-600 hover:underline">Matta Rice - Buy Authentic Kerala Red Rice</Link></li>
+            <li><Link href="/kerala-sadhya" className="text-green-600 hover:underline">Kerala Sadhya - The Grand Vegetarian Feast</Link></li>
+            <li><Link href="/kerala-food" className="text-green-600 hover:underline">Kerala Food - The Complete UK Guide</Link></li>
+            <li><Link href="/buy-kerala-spices-uk" className="text-green-600 hover:underline">Buy Kerala Spices UK - Complete Guide</Link></li>
+            <li><Link href="/blog/kerala-snacks-uk" className="text-green-600 hover:underline">Kerala Snacks UK - The Complete Guide</Link></li>
+            <li><Link href="/blog/kerala-festivals-foods" className="text-green-600 hover:underline">Kerala Festivals and Traditional Foods</Link></li>
+          </ul>
         </div>
 
         {products.length > 0 && (

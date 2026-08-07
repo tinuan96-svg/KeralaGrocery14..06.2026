@@ -55,7 +55,7 @@ export default function Top10KeralaFoodsUKPage() {
             No list of Kerala foods is complete without mentioning <strong>banana chips</strong>. These crispy, savory snacks made from raw plantains are a Kerala staple. Perfect for tea time or as a crunchy snack any time of day.
           </p>
           <p>
-            You can <Link href="/products" className="text-green-600 hover:underline">buy authentic Kerala banana chips</Link> in various flavors including salted, spicy, and pepper varieties. They&apos;re delivered fresh and crispy, maintaining that authentic Kerala taste.
+            You can <Link href="/products?category=snacks-namkeens" className="text-green-600 hover:underline">buy authentic Kerala banana chips</Link> in various flavors including salted, spicy, and pepper varieties. They&apos;re delivered fresh and crispy, maintaining that authentic Kerala taste. For the full range of Kerala snacks, read our <Link href="/blog/kerala-snacks-uk" className="text-green-600 hover:underline">complete Kerala snacks guide</Link>.
           </p>
 
           <h2>2. Kerala Matta Rice (Red Rice)</h2>
@@ -63,7 +63,7 @@ export default function Top10KeralaFoodsUKPage() {
             <strong>Kerala Matta rice</strong>, also known as Palakkadan Matta or red rice, is an essential ingredient in Kerala cuisine. This parboiled rice has a distinct reddish-brown color and earthy flavor that pairs perfectly with Kerala curries.
           </p>
           <p>
-            Rich in fiber and nutrients, Matta rice is healthier than white rice and provides that authentic Kerala meal experience. <Link href="/products" className="text-green-600 hover:underline">Order Kerala Matta rice online</Link> and enjoy it with your favorite fish curry or beef fry.
+            Rich in fiber and nutrients, Matta rice is healthier than white rice and provides that authentic Kerala meal experience. <Link href="/matta-rice" className="text-green-600 hover:underline">Order Kerala Matta rice online</Link> and enjoy it with your favorite fish curry or beef fry. Learn more in our <Link href="/blog/palakkadan-matta-rice" className="text-green-600 hover:underline">complete Palakkadan Matta rice guide</Link>.
           </p>
 
           <h2>3. Coconut Oil (Velichenna)</h2>
@@ -111,7 +111,7 @@ export default function Top10KeralaFoodsUKPage() {
             <strong>Murukku</strong>, those spiral-shaped savory snacks, along with mixture, ribbon pakoda, and other traditional Kerala snacks are perfect for entertaining guests or enjoying during festivals.
           </p>
           <p>
-            These crunchy treats are made using traditional recipes and delivered fresh to maintain their crispiness.
+            These crunchy treats are made using traditional recipes and delivered fresh to maintain their crispiness. <Link href="/blog/kerala-snacks-uk" className="text-green-600 hover:underline">Discover more Kerala snacks in our complete guide</Link>.
           </p>
 
           <h2>9. Kerala-Style Fish Curry Masala</h2>
@@ -173,6 +173,11 @@ export default function Top10KeralaFoodsUKPage() {
           <h3>Related Articles</h3>
           <ul>
             <li><Link href="/blog/where-to-buy-curry-leaves-uk" className="text-green-600 hover:underline">Where to Buy Fresh Curry Leaves in the UK</Link></li>
+            <li><Link href="/blog/kerala-snacks-uk" className="text-green-600 hover:underline">Kerala Snacks UK - The Complete Guide</Link></li>
+            <li><Link href="/blog/palakkadan-matta-rice" className="text-green-600 hover:underline">Palakkadan Matta Rice: The King of Kerala Rice</Link></li>
+            <li><Link href="/blog/kerala-festivals-foods" className="text-green-600 hover:underline">Kerala Festivals and Traditional Foods</Link></li>
+            <li><Link href="/kerala-food" className="text-green-600 hover:underline">Kerala Food - The Complete UK Guide</Link></li>
+            <li><Link href="/onam-sadhya" className="text-green-600 hover:underline">Onam Sadhya - Traditional Kerala Feast Guide</Link></li>
             <li><Link href="/blog/best-indian-grocery-delivery-london" className="text-green-600 hover:underline">Best Indian Grocery Delivery in London</Link></li>
             <li><Link href="/buy-kerala-spices-uk" className="text-green-600 hover:underline">Buy Kerala Spices UK - Complete Guide</Link></li>
           </ul>

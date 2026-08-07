@@ -274,6 +274,10 @@ export default function BestIndianGroceryDeliveryLondonPage() {
           <h3>Related Articles</h3>
           <ul>
             <li><Link href="/blog/top-10-kerala-foods-uk" className="text-green-600 hover:underline">Top 10 Kerala Foods You Can Buy in the UK</Link></li>
+            <li><Link href="/blog/kerala-snacks-uk" className="text-green-600 hover:underline">Kerala Snacks UK - The Complete Guide</Link></li>
+            <li><Link href="/blog/palakkadan-matta-rice" className="text-green-600 hover:underline">Palakkadan Matta Rice: The King of Kerala Rice</Link></li>
+            <li><Link href="/blog/kerala-festivals-foods" className="text-green-600 hover:underline">Kerala Festivals and Traditional Foods</Link></li>
+            <li><Link href="/kerala-food" className="text-green-600 hover:underline">Kerala Food - The Complete UK Guide</Link></li>
             <li><Link href="/blog/where-to-buy-curry-leaves-uk" className="text-green-600 hover:underline">Where to Buy Fresh Curry Leaves in the UK</Link></li>
             <li><Link href="/kerala-groceries-uk" className="text-green-600 hover:underline">Kerala Groceries UK - Complete Guide</Link></li>
           </ul>
