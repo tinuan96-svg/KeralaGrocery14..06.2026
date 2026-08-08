@@ -380,6 +380,13 @@ export default function CheckoutPage() {
             amount: cardChargeFinal,
             orderNumber: orderNumber,
             customerEmail: formData.email,
+            customerName: formData.name,
+            customerPhone: formData.phone,
+            billingAddress: {
+              address: formData.address,
+              city: formData.city,
+              postcode: formData.postcode
+            }
           }),
         }
       );

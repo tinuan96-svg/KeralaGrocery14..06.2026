@@ -14,7 +14,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { amount, orderNumber, customerEmail } = await req.json();
+    const { amount, orderNumber, customerEmail, customerName, customerPhone, billingAddress } = await req.json();
 
     if (!amount || !orderNumber) {
       return new Response(JSON.stringify({ error: "Missing amount or orderNumber" }), {
@@ -38,6 +38,7 @@ Deno.serve(async (req: Request) => {
     const amountPence = Math.round(amount * 100).toString();
 
     // Trust Payments JWT Payload
+    // See: https://help.trustpayments.com/hc/en-us/articles/4402694206353-2-Configure-the-JSON-Web-Token-JWT
     const payload = {
       payload: {
         accounttypedescription: "ECOM",
@@ -47,9 +48,22 @@ Deno.serve(async (req: Request) => {
         orderreference: orderNumber,
         requesttypedescriptions: ["THREEDQUERY", "AUTH"],
         customeremail: customerEmail,
+        // Optional but recommended for SCA (3D Secure 2.0)
+        billingcontactdetails: {
+          firstname: customerName?.split(' ')[0] || '',
+          lastname: customerName?.split(' ').slice(1).join(' ') || '',
+          email: customerEmail,
+          telephone: customerPhone,
+          addressline1: billingAddress?.address || '',
+          town: billingAddress?.city || '',
+          postcode: billingAddress?.postcode || '',
+          countryiso2a: "GB"
+        }
       },
       iat: Math.floor(Date.now() / 1000),
       iss: JWT_USERNAME,
+      // Recommended: exp claim (valid for 1 hour)
+      exp: Math.floor(Date.now() / 1000) + 3600,
     };
 
     // Sign the JWT using HS256
