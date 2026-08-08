@@ -56,7 +56,7 @@ export default function Header() {
   };
 
   return (
-    <header className="kg-web-header sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#d1ead9] shadow-[0_2px_16px_rgba(11,93,59,0.07)]"
+    <header className="kg-web-header sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[#d1ead9]/50 shadow-[0_4px_30px_rgba(0,0,0,0.03)]"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
 

@@ -6,15 +6,15 @@ interface MajorCategoriesProps {
   categories: Category[];
 }
 
-const CATEGORY_STYLES: Record<string, { emoji: string; color: string; bg: string }> = {
-  'ari':                { emoji: '🍚', color: 'text-stone-700',  bg: 'bg-stone-50 border-stone-100'  },
-  'masala-kootu':       { emoji: '🍛', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-100' },
-  'podi-whole-spices':  { emoji: '🌶️', color: 'text-red-700',    bg: 'bg-red-50 border-red-100'      },
-  'achar-preserves':    { emoji: '🥒', color: 'text-green-700',  bg: 'bg-green-50 border-green-100'  },
-  'palaharam-sweets':   { emoji: '🍿', color: 'text-amber-700',  bg: 'bg-amber-50 border-amber-100'  },
-  'ready-foods':        { emoji: '🍱', color: 'text-rose-700',   bg: 'bg-rose-50 border-rose-100'    },
-  'enna-neyy':          { emoji: '🫙', color: 'text-yellow-700', bg: 'bg-yellow-50 border-yellow-100'},
-  'snacks-namkeens':    { emoji: '🥜', color: 'text-orange-600', bg: 'bg-orange-50 border-orange-100'},
+const CATEGORY_STYLES: Record<string, { emoji: string; color: string; bg: string; gradient: string }> = {
+  'ari':                { emoji: '🍚', color: 'text-stone-700',  bg: 'bg-stone-50 border-stone-100', gradient: 'from-stone-50 to-stone-100'  },
+  'masala-kootu':       { emoji: '🍛', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-100', gradient: 'from-orange-50 to-orange-100' },
+  'podi-whole-spices':  { emoji: '🌶️', color: 'text-red-700',    bg: 'bg-red-50 border-red-100', gradient: 'from-red-50 to-red-100'      },
+  'achar-preserves':    { emoji: '🥒', color: 'text-green-700',  bg: 'bg-green-50 border-green-100', gradient: 'from-green-50 to-green-100'  },
+  'palaharam-sweets':   { emoji: '🍿', color: 'text-amber-700',  bg: 'bg-amber-50 border-amber-100', gradient: 'from-amber-50 to-amber-100'  },
+  'ready-foods':        { emoji: '🍱', color: 'text-rose-700',   bg: 'bg-rose-50 border-rose-100', gradient: 'from-rose-50 to-rose-100'    },
+  'enna-neyy':          { emoji: '🫙', color: 'text-yellow-700', bg: 'bg-yellow-50 border-yellow-100', gradient: 'from-yellow-50 to-yellow-100'},
+  'snacks-namkeens':    { emoji: '🥜', color: 'text-orange-600', bg: 'bg-orange-50 border-orange-100', gradient: 'from-orange-50 to-orange-100'},
 };
 
 export default function MajorCategories({ categories }: MajorCategoriesProps) {
@@ -57,7 +57,7 @@ export default function MajorCategories({ categories }: MajorCategoriesProps) {
         {/* Category Grid - Matching Brands Style */}
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4">
           {displayCategories.map((category) => {
-            const style = CATEGORY_STYLES[category.slug] ?? { emoji: '🛒', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' };
+            const style = CATEGORY_STYLES[category.slug] ?? { emoji: '🛒', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100', gradient: 'from-emerald-50 to-emerald-100' };
 
             return (
               <Link
@@ -65,8 +65,8 @@ export default function MajorCategories({ categories }: MajorCategoriesProps) {
                 href={`/products?filter=${category.slug}`}
                 className="group relative flex flex-col items-center gap-3 p-4 rounded-[32px] bg-white border border-gray-100 shadow-sm hover:shadow-[0_15px_40px_rgba(11,93,59,0.08)] hover:-translate-y-1.5 transition-all duration-300"
               >
-                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[24px] flex items-center justify-center text-3xl shadow-inner border-2 border-white/20 transition-transform duration-500 group-hover:scale-110 ${style.bg}`}>
-                  <span className="drop-shadow-sm">{style.emoji}</span>
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[24px] flex items-center justify-center text-3xl shadow-inner border-2 border-white/20 transition-transform duration-500 group-hover:scale-110 bg-gradient-to-br ${style.gradient} ${style.bg}`}>
+                  <span className="drop-shadow-sm group-hover:rotate-12 transition-transform duration-300">{style.emoji}</span>
                 </div>
                 <div className="text-center">
                   <p className={`text-[12px] sm:text-[13px] font-black leading-tight transition-colors line-clamp-1 ${style.color} group-hover:text-[#0B5D3B]`}>

@@ -103,32 +103,32 @@ export default function AmazonStyleGrid({ initialCards }: AmazonStyleGridProps) 
 
   return (
     <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {cards.map((card) => (
-          <div key={card.id} className="bg-white p-3 sm:p-4 flex flex-col h-full shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-md border border-gray-200 hover:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23)] transition-shadow duration-300">
-            <h2 className="text-[17px] sm:text-lg font-bold text-gray-900 mb-3 tracking-tight leading-tight">{card.title}</h2>
+          <div key={card.id} className="bg-white p-4 sm:p-5 flex flex-col h-full rounded-[24px] border border-gray-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] transition-all duration-500 group/card">
+            <h2 className="text-[18px] sm:text-xl font-black text-gray-900 mb-4 tracking-tight leading-tight group-hover/card:text-[#0B5D3B] transition-colors">{card.title}</h2>
 
             <div className="flex-1">
               {card.layout_type === 'grid_2x2' ? (
-                <div className="grid grid-cols-2 gap-2 sm:gap-3 h-full">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 h-full">
                   {card.items.slice(0, 4).map((item, idx) => (
-                    <Link key={idx} href={item.link} className="flex flex-col group active:opacity-80 transition-opacity">
-                      <div className="relative aspect-square overflow-hidden bg-white mb-1.5 rounded-lg border border-gray-100/50">
+                    <Link key={idx} href={item.link} className="flex flex-col group/item active:opacity-80 transition-opacity">
+                      <div className="relative aspect-square overflow-hidden bg-gray-50 mb-2 rounded-2xl border border-gray-100/50">
                         <Image
                           src={item.image_url}
                           alt={item.label || ''}
                           fill
-                          className="object-contain transition-transform duration-500 scale-[0.98] group-hover:scale-[1.05]"
+                          className="object-contain transition-transform duration-700 scale-[0.92] group-hover/item:scale-105"
                           sizes="(max-width: 768px) 45vw, 25vw"
                         />
                         {item.badge && (
-                          <div className="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider">
+                          <div className="absolute top-2 left-2 bg-[#0B5D3B] text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wider">
                             {item.badge}
                           </div>
                         )}
                       </div>
                       {item.label && (
-                        <p className="text-[11px] sm:text-[13px] text-gray-800 font-bold group-hover:text-[#0B5D3B] truncate transition-colors">
+                        <p className="text-[11px] sm:text-[13px] text-gray-800 font-bold group-hover/item:text-[#0B5D3B] truncate transition-colors px-0.5">
                           {item.label}
                         </p>
                       )}
@@ -136,13 +136,13 @@ export default function AmazonStyleGrid({ initialCards }: AmazonStyleGridProps) 
                   ))}
                 </div>
               ) : (
-                <Link href={card.items[0]?.link || '#'} className="block h-full relative group active:opacity-90 transition-opacity">
-                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100 bg-white">
+                <Link href={card.items[0]?.link || '#'} className="block h-full relative group/item active:opacity-90 transition-opacity">
+                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-[20px] border border-gray-100 bg-gray-50">
                     <Image
                       src={card.items[0]?.image_url || '/placeholder.webp'}
                       alt={card.title}
                       fill
-                      className="object-contain p-2 transition-transform duration-700 group-hover:scale-[1.02]"
+                      className="object-contain p-4 transition-transform duration-700 scale-[0.95] group-hover/item:scale-100"
                       sizes="(max-width: 1024px) 95vw, 25vw"
                     />
                   </div>
@@ -150,14 +150,14 @@ export default function AmazonStyleGrid({ initialCards }: AmazonStyleGridProps) 
               )}
             </div>
 
-            <div className="mt-4 pt-2">
+            <div className="mt-5 pt-3 border-t border-gray-50">
               <Link
-                href={card.layout_type === 'grid_2x2' ? card.items[0]?.link || '#' : card.items[0]?.link || '#'}
-                className="text-[13px] sm:text-sm text-[#0B5D3B] hover:text-emerald-700 transition-colors font-extrabold flex items-center gap-1 group/link"
+                href={card.items[0]?.link || '#'}
+                className="text-[13px] sm:text-sm text-[#0B5D3B] hover:text-emerald-700 transition-colors font-black flex items-center gap-2 group/link"
               >
-                {card.layout_type === 'grid_2x2' ? 'See more' : 'Shop now'}
-                <div className="w-4 h-4 rounded-full bg-emerald-50 flex items-center justify-center group-hover/link:translate-x-0.5 transition-transform">
-                  <ChevronRight className="w-2.5 h-2.5" />
+                <span>{card.layout_type === 'grid_2x2' ? 'See all offers' : 'Shop the collection'}</span>
+                <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center group-hover/link:translate-x-1 transition-all">
+                  <ChevronRight className="w-3 h-3" />
                 </div>
               </Link>
             </div>
@@ -165,6 +165,7 @@ export default function AmazonStyleGrid({ initialCards }: AmazonStyleGridProps) 
         ))}
       </div>
     </div>
+  );
   );
 }
 

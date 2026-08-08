@@ -61,7 +61,7 @@ export default async function HomePage() {
 
   return (
     <PullToRefresh>
-      <div className="min-h-screen pb-20 md:pb-0 bg-[#f1f3f4]">
+      <div className="min-h-screen pb-20 md:pb-0 bg-pattern-kerala">
         <LocalBusinessSchema />
         <MerchantReturnPolicySchema />
         <ShippingPolicySchema />

@@ -189,6 +189,8 @@ function BannerSlide({
 
 // ── Main carousel ─────────────────────────────────────────────────────────────
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 export default function PromoBannerCarousel({ initialBanners }: { initialBanners?: PromoBanner[] }) {
   const [banners, setBanners] = useState<PromoBanner[]>(initialBanners || []);
   const [loading, setLoading] = useState(!initialBanners);
@@ -209,11 +211,9 @@ export default function PromoBannerCarousel({ initialBanners }: { initialBanners
     }
   }, [initialBanners]);
 
-  // Use DB banners or fallbacks
   const slides = useMemo(() => {
     const filtered = banners.filter(b => b.banner_type !== 'marketing_strip');
     if (filtered.length > 0) return filtered;
-    // Return fallbacks with synthetic ids
     return FALLBACK_BANNERS.map((b, i) => ({
       ...b,
       id:         `fallback-${i}`,
@@ -228,7 +228,6 @@ export default function PromoBannerCarousel({ initialBanners }: { initialBanners
 
   const clampedIdx = Math.min(idx, slides.length - 1);
 
-  // Track view for the visible slide
   useEffect(() => {
     const slide = slides[clampedIdx];
     if (!slide || slide.id.startsWith('fallback')) return;
@@ -237,7 +236,6 @@ export default function PromoBannerCarousel({ initialBanners }: { initialBanners
     trackBannerView(slide.id);
   }, [clampedIdx, slides]);
 
-  // Apply dynamic accent palette whenever the active slide changes
   useEffect(() => {
     const slide = slides[clampedIdx];
     applyAccent(slide?.banner_type ?? null);
@@ -251,17 +249,15 @@ export default function PromoBannerCarousel({ initialBanners }: { initialBanners
       ? (i + 1) % slides.length
       : (i - 1 + slides.length) % slides.length
     );
-    setTimeout(() => setTransitioning(false), 420);
+    setTimeout(() => setTransitioning(false), 500);
   }, [transitioning, slides.length]);
 
-  // Auto-rotate
   useEffect(() => {
     if (paused || slides.length <= 1) return;
     timerRef.current = setInterval(() => go('next'), ROTATE_MS);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [paused, slides.length, go]);
 
-  // Touch swipe
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     setPaused(true);
@@ -293,32 +289,31 @@ export default function PromoBannerCarousel({ initialBanners }: { initialBanners
 
   return (
     <section
-      className="relative overflow-hidden w-full sm:rounded-3xl sm:mx-4 sm:w-[calc(100%-2rem)] sm:my-4 shadow-sm"
-      style={{ height: 'clamp(180px, 32vw, 320px)' }}
+      className="relative overflow-hidden w-full sm:rounded-[32px] sm:mx-4 sm:w-[calc(100%-2rem)] sm:my-6 shadow-[0_20px_50px_rgba(0,0,0,0.1)] group"
+      style={{ height: 'clamp(200px, 35vw, 360px)' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       aria-label="Promotional banner carousel"
     >
-      {/* Slide track — CSS transition for smooth 60fps performance */}
-      <div
-        className="w-full h-full"
-        style={{
-          transition: transitioning ? 'opacity 0.38s ease, transform 0.38s cubic-bezier(0.25,0.1,0.25,1)' : 'none',
-          opacity:    transitioning ? 0.92 : 1,
-          transform:  transitioning
-            ? `translateX(${animDir === 'left' ? '-1.5%' : '1.5%'})`
-            : 'translateX(0)',
-        }}
-      >
-        <BannerSlide
+      <AnimatePresence mode="wait" custom={animDir}>
+        <motion.div
           key={current.id}
-          banner={current}
-          priority={clampedIdx === 0}
-          onCtaClick={handleCtaClick}
-        />
-      </div>
+          custom={animDir}
+          initial={{ opacity: 0, x: animDir === 'left' ? 50 : -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: animDir === 'left' ? -50 : 50 }}
+          transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+          className="w-full h-full"
+        >
+          <BannerSlide
+            banner={current}
+            priority={clampedIdx === 0}
+            onCtaClick={handleCtaClick}
+          />
+        </motion.div>
+      </AnimatePresence>
 
       {/* Navigation arrows (desktop only) */}
       {slides.length > 1 && (

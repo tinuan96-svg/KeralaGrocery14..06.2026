@@ -436,6 +436,13 @@
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
+
+  .bg-pattern-kerala {
+    background-color: #f1f3f4;
+    background-image: radial-gradient(#d1ead9 0.5px, transparent 0.5px), radial-gradient(#d1ead9 0.5px, #f1f3f4 0.5px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+  }
 }
 
 @keyframes fade-in-up {
