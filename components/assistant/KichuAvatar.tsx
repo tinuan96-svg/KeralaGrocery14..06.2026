@@ -82,6 +82,7 @@ export default function KichuAvatar({ emotion, isOpen, onClick }: Props) {
           fill
           className="object-contain drop-shadow-xl select-none pointer-events-none"
           priority
+          unoptimized
         />
 
         {/* Procedural Blink Effect */}

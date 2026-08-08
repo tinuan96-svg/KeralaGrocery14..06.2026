@@ -25,7 +25,8 @@ Deno.serve(async (req: Request) => {
 
     const SITE_REFERENCE = (Deno.env.get("TRUSTPAYMENTS_SITE_REFERENCE") || "tastykeral152232").trim();
     const JWT_SECRET = Deno.env.get("TRUSTPAYMENTS_JWT_SECRET")?.trim();
-    const JWT_USERNAME = (Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com").trim();
+    // Force lowercase to match portal behavior (P59 resolution)
+    const JWT_USERNAME = (Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com").trim().toLowerCase();
 
     if (!JWT_SECRET) {
       return new Response(JSON.stringify({ error: "Gateway configuration missing" }), {
@@ -38,14 +39,18 @@ Deno.serve(async (req: Request) => {
     const rawSiteUrl = (Deno.env.get("SITE_URL") || "keralagrocery.com").trim().replace(/\/$/, "");
     const BASE_URL = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`;
 
-    // Formatting for Trust Payments strict requirements
+    // Clean name fields
     const nameParts = (customerName || "Customer").trim().split(/\s+/);
     const firstName = nameParts[0] || "Customer";
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : "Guest";
-    const cleanPhone = (customerPhone || "07000000000").replace(/\D/g, '');
-    const cleanOrderRef = orderNumber.replace(/[^a-zA-Z0-9]/g, '');
 
-    // The JWT structure must match exactly: https://help.trustpayments.com/hc/en-us/articles/4402694206353-2-Configure-the-JSON-Web-Token-JWT
+    // Clean phone: digits only, ensure it's not empty
+    const cleanPhone = (customerPhone || "07000000000").replace(/\D/g, '') || "07000000000";
+
+    // Order ref: alphanumeric only, max 30 chars
+    const cleanOrderRef = orderNumber.replace(/[^a-zA-Z0-9]/g, '').substring(0, 30);
+
+    // Trust Payments JWT Payload
     const payload = {
       iss: JWT_USERNAME,
       iat: Math.floor(Date.now() / 1000),
@@ -58,21 +63,16 @@ Deno.serve(async (req: Request) => {
         orderreference: cleanOrderRef,
         requesttypedescriptions: ["THREEDQUERY", "AUTH"],
         customeremail: customerEmail,
-
-        // Use both forms of redirect URL for maximum compatibility
         successfulurl: `${BASE_URL}/payment-success?order=${orderNumber}`,
         declinedurl: `${BASE_URL}/cart?error=declined`,
         errorurl: `${BASE_URL}/cart?error=error`,
-
         callbackurl: `${BASE_URL}/api/trustpayments/webhook`,
-
-        // Optional but helps bypass 3DS challenges
         billingcontactdetails: {
-          firstname: firstName.substring(0, 50),
-          lastname: lastName.substring(0, 50),
+          firstname: firstName.substring(0, 20),
+          lastname: lastName.substring(0, 20),
           email: customerEmail,
-          telephone: cleanPhone,
-          addressline1: (billingAddress?.address || "Street").substring(0, 50),
+          telephone: cleanPhone.substring(0, 15),
+          addressline1: (billingAddress?.address || "Address").substring(0, 50),
           town: (billingAddress?.city || "London").substring(0, 50),
           postcode: (billingAddress?.postcode || "SW1A 1AA").replace(/\s+/g, '').substring(0, 10),
           countryiso2a: "GB"
@@ -82,12 +82,12 @@ Deno.serve(async (req: Request) => {
 
     const secret = new TextEncoder().encode(JWT_SECRET);
 
-    // We sign the JWT using jose
+    // Standard HS256 signature
     const jwt = await new jose.SignJWT(payload)
       .setProtectedHeader({ alg: "HS256" })
       .sign(secret);
 
-    // Store session info
+    // Store/Audit session
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
