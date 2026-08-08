@@ -28,7 +28,6 @@ Deno.serve(async (req: Request) => {
     const JWT_USERNAME = Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com";
 
     if (!JWT_SECRET) {
-      console.error("TRUSTPAYMENTS_JWT_SECRET not configured");
       return new Response(JSON.stringify({ error: "Gateway configuration missing" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -39,7 +38,12 @@ Deno.serve(async (req: Request) => {
     const rawSiteUrl = (Deno.env.get("SITE_URL") || "keralagrocery.com").trim().replace(/\/$/, "");
     const BASE_URL = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`;
 
-    // Trust Payments JWT Payload
+    // Clean up name fields
+    const nameParts = (customerName || "Customer").trim().split(/\s+/);
+    const firstName = nameParts[0];
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName;
+
+    // Trust Payments JWT Payload for HPP (Hosted Payment Pages)
     const payload = {
       payload: {
         accounttypedescription: "ECOM",
@@ -49,18 +53,24 @@ Deno.serve(async (req: Request) => {
         orderreference: orderNumber,
         requesttypedescriptions: ["THREEDQUERY", "AUTH"],
         customeremail: customerEmail,
-        // Redirect customer after payment
-        redirecturl: `${BASE_URL}/payment-success?order=${orderNumber}`,
+
+        // Success and Decline Redirects
+        successfulurl: `${BASE_URL}/payment-success?order=${orderNumber}`,
+        declinedurl: `${BASE_URL}/cart?error=declined`,
+        errorurl: `${BASE_URL}/cart?error=payment_error`,
+
         // Webhook for server-to-server notification
         callbackurl: `${BASE_URL}/api/trustpayments/webhook`,
+
+        // Billing details (Required for 3DS2 / SCA)
         billingcontactdetails: {
-          firstname: customerName?.split(' ')[0] || '',
-          lastname: customerName?.split(' ').slice(1).join(' ') || '',
+          firstname: firstName,
+          lastname: lastName,
           email: customerEmail,
-          telephone: customerPhone,
-          addressline1: billingAddress?.address || '',
-          town: billingAddress?.city || '',
-          postcode: billingAddress?.postcode || '',
+          telephone: customerPhone || "0000000000",
+          addressline1: billingAddress?.address || "Street Address",
+          town: billingAddress?.city || "London",
+          postcode: (billingAddress?.postcode || "SW1A 1AA").replace(/\s+/g, ''),
           countryiso2a: "GB"
         }
       },
