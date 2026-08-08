@@ -8,10 +8,11 @@ import { Card } from '@/components/ui/card';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { getSupabase } from '@/lib/supabase/client';
-import { User, MapPin, Mail, Phone } from 'lucide-react';
+import { User, MapPin, Mail, Phone, ShieldCheck } from 'lucide-react';
 import AddressAutocomplete, { type SelectedAddress } from '@/components/ui/AddressAutocomplete';
+import type { UserProfile as DBProfile } from '@/lib/types/database';
 
-interface UserProfile {
+interface LocalProfile {
   name: string;
   email: string;
   phone: string;
@@ -25,7 +26,7 @@ export default function UserProfileForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<UserProfile>({
+  const [profile, setProfile] = useState<LocalProfile>({
     name: '',
     email: '',
     phone: '',
@@ -204,34 +205,40 @@ export default function UserProfileForm() {
 
           <div>
             <Label htmlFor="email">Email</Label>
-            <div className="relative mt-1">
+            <div className="relative mt-1 group">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 id="email"
                 type="email"
                 placeholder="john@example.com"
                 value={profile.email}
-                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                className="pl-10"
+                className="pl-10 bg-gray-50 cursor-not-allowed"
                 readOnly
               />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-green-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                <ShieldCheck className="h-3 w-3" />
+                Verified
+              </div>
             </div>
           </div>
         </div>
 
         <div>
           <Label htmlFor="phone">Phone Number</Label>
-          <div className="relative mt-1">
+          <div className="relative mt-1 group">
             <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               id="phone"
               type="tel"
               placeholder="+44 7700 900000"
               value={profile.phone}
-              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-              className="pl-10"
+              className="pl-10 bg-gray-50 cursor-not-allowed"
               readOnly
             />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-green-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              <ShieldCheck className="h-3 w-3" />
+              Verified
+            </div>
           </div>
         </div>
 

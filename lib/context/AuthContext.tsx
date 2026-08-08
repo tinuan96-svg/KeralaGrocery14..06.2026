@@ -19,6 +19,8 @@ export interface UserProfile {
   address: string | null;
   city: string | null;
   postcode: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 // Profile has three states:
@@ -92,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const supabase = getSupabase();
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('id,name,email,phone,phone_verified,display_name,avatar_url,address,city,postcode')
+        .select('id,name,email,phone,phone_verified,display_name,avatar_url,address,city,postcode,created_at,updated_at')
         .eq('id', userId)
         .maybeSingle();
       if (error) {
@@ -389,10 +391,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return { error: { message: 'Not authenticated' } };
     try {
       const supabase = getSupabase();
+
+      // Sync display_name with name if name is provided
+      const finalUpdates = {
+        ...updates,
+        updated_at: new Date().toISOString()
+      };
+
+      if (updates.name && !updates.display_name) {
+        finalUpdates.display_name = updates.name;
+      }
+
       const { error } = await supabase
         .from('user_profiles')
         .upsert(
-          { id: user.id, ...updates, updated_at: new Date().toISOString() },
+          { id: user.id, ...finalUpdates },
           { onConflict: 'id' }
         );
       if (error) {
