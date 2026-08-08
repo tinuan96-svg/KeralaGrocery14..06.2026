@@ -146,28 +146,24 @@ export default function PaymentDiagnosticsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-      const res = await fetch(`${supabaseUrl}/functions/v1/stripe-webhook`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/trustpayments-webhook`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
           'Authorization': `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({
-          type: 'checkout.session.completed',
-          data: {
-            object: {
-              client_reference_id: orderNumber,
-              payment_intent: `manual-retry-${Date.now()}`,
-            }
-          }
+          errorcode: "0",
+          orderreference: orderNumber,
+          transactionreference: `manual-retry-${Date.now()}`,
         }),
       });
-      const json = await res.json();
-      if (res.ok && json.received) {
+      const text = await res.text();
+      if (res.ok && text === 'OK') {
         showToast(`Webhook replayed for ${orderNumber}`);
         await load();
       } else {
-        showToast(`Retry failed: ${json.error ?? 'Unknown error'}`);
+        showToast(`Retry failed: ${text || 'Unknown error'}`);
       }
     } catch (err) {
       showToast(`Retry error: ${err instanceof Error ? err.message : 'Unknown'}`);
@@ -183,7 +179,7 @@ export default function PaymentDiagnosticsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-      const res = await fetch(`${supabaseUrl}/functions/v1/stripe-payment`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/trustpayments-payment`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
@@ -197,11 +193,21 @@ export default function PaymentDiagnosticsPage() {
         }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.open(data.url, '_blank');
-        showToast(`Payment link opened for ${row.order_number}`);
+      if (data.jwt) {
+        // Create form and submit to Trust Payments HPP
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://payments.securetrading.net/process/payments/details';
+        const jwtInput = document.createElement('input');
+        jwtInput.type = 'hidden';
+        jwtInput.name = 'jwt';
+        jwtInput.value = data.jwt;
+        form.appendChild(jwtInput);
+        document.body.appendChild(form);
+        form.submit();
+        showToast(`Payment redirect initiated for ${row.order_number}`);
       } else {
-        showToast(`Failed to create payment link: ${data.error ?? 'Unknown'}`);
+        showToast(`Failed to create payment session: ${data.error ?? 'Unknown'}`);
       }
     } catch (err) {
       showToast(`Error: ${err instanceof Error ? err.message : 'Unknown'}`);

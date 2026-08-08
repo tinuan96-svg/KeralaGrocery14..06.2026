@@ -2,9 +2,9 @@
   # Extend payment_errors table with diagnostic columns
 
   1. Changes
-     - `http_status`     (integer)  — HTTP status code returned by Worldpay
+     - `http_status`     (integer)  — HTTP status code returned by Gateway
      - `amount_pence`    (integer)  — Order amount in pence at time of failure
-     - `merchant_entity` (text)     — Worldpay merchant entity used in the request
+     - `merchant_entity` (text)     — Merchant entity used in the request
 
   2. Notes
      - All new columns are nullable — existing rows are unaffected

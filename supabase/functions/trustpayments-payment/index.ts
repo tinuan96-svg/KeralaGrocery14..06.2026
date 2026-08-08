@@ -47,8 +47,8 @@ Deno.serve(async (req: Request) => {
     // Clean phone: digits only, ensure it's not empty
     const cleanPhone = (customerPhone || "07000000000").replace(/\D/g, '') || "07000000000";
 
-    // Order ref: alphanumeric only, max 30 chars
-    const cleanOrderRef = orderNumber.replace(/[^a-zA-Z0-9]/g, '').substring(0, 30);
+    // Order ref: alphanumeric and hyphens allowed, max 30 chars
+    const cleanOrderRef = orderNumber.replace(/[^a-zA-Z0-9-]/g, '').substring(0, 30);
 
     // Trust Payments JWT Payload
     const payload = {

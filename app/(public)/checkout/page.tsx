@@ -261,7 +261,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const buildOrderPayload = (status: 'pending' | 'paid', ref?: string) => ({
+  const buildOrderPayload = (status: 'pending' | 'paid', method: 'card' | 'wallet' | 'paypal', ref?: string) => ({
     idempotency_key:    idempotencyKey.current,
     user_id:            user?.id || null,
     customer_name:      formData.name,
@@ -272,7 +272,7 @@ export default function CheckoutPage() {
     delivery_postcode:  formData.postcode,
     delivery_fee:       deliveryFee,
     wallet_amount:      walletAmount,
-    payment_method:     'card',
+    payment_method:     method,
     payment_status:     status,
     payment_reference:  ref,
     notes:              formData.notes,
@@ -286,7 +286,7 @@ export default function CheckoutPage() {
     })),
   });
 
-  const createOrder = async (status: 'pending' | 'paid', ref?: string) => {
+  const createOrder = async (status: 'pending' | 'paid', method: 'card' | 'wallet' | 'paypal' = 'card', ref?: string) => {
     const supabase   = getSupabase();
     const { data: { session } } = await supabase.auth.getSession();
     const authToken  = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -298,7 +298,7 @@ export default function CheckoutPage() {
         'Content-Type': 'application/json',
         Authorization:  `Bearer ${authToken}`,
       },
-      body: JSON.stringify(buildOrderPayload(status, ref)),
+      body: JSON.stringify(buildOrderPayload(status, method, ref)),
     });
 
     const data = await res.json();
@@ -330,7 +330,7 @@ export default function CheckoutPage() {
 
       // If the entire total is covered by wallet credit, process as 'paid' immediately
       if (cardChargeFinal <= 0) {
-        const result = await createOrder('paid');
+        const result = await createOrder('paid', 'wallet');
         const orderId = result.order.id;
 
         if (walletAmount > 0 && user) {
@@ -364,7 +364,7 @@ export default function CheckoutPage() {
       }
 
       // Normal card payment flow
-      const result = await createOrder('pending');
+      const result = await createOrder('pending', 'card');
       const orderNumber = result.order.order_number;
 
       const supabase = getSupabase();

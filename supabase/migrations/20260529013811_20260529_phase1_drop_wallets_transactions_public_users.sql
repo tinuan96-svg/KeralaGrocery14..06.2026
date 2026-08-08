@@ -3,7 +3,7 @@
 
   ## Changes
   1. Drop `transactions` table — no FK children, no active code path; companion to wallets
-  2. Drop `wallets` table — wallet checkout UI removed; Worldpay is the only payment method
+  2. Drop `wallets` table — wallet checkout UI removed; Card is the only payment method
   3. Drop `users` (public schema) — exact duplicate of `user_profiles`; nothing writes to it;
      `handle_new_user` trigger populates `user_profiles` only
 

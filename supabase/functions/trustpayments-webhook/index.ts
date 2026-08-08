@@ -33,7 +33,7 @@ Deno.serve(async (req: Request) => {
     console.log("[trustpayments-webhook] Received notification:", JSON.stringify(payload));
 
     const errorCode = payload.errorcode?.toString();
-    const orderNumber = payload.orderreference;
+    const orderNumber = payload.orderreference || payload.order_reference;
     const transactionId = payload.transactionreference;
 
     if (!orderNumber) {
@@ -48,25 +48,26 @@ Deno.serve(async (req: Request) => {
       order_number: orderNumber,
     });
 
-    // 2. Process based on Error Code (0 = Success)
+    // 2. Fetch order to check current status
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("id, total, customer_phone, customer_name, wallet_amount, user_id, payment_status")
+      .eq("order_number", orderNumber)
+      .maybeSingle();
+
+    if (orderError) {
+      console.error("[trustpayments-webhook] DB Error fetching order:", orderError);
+      return new Response("Internal Error", { status: 500 });
+    }
+
+    if (!order) {
+      console.error("[trustpayments-webhook] Order not found for reference:", orderNumber);
+      return new Response("Order not found", { status: 404 });
+    }
+
+    // 3. Process based on Error Code (0 = Success)
     // See Scenarios: https://help.trustpayments.com/hc/en-us/articles/4402689992593-3-Configure-webhooks
     if (errorCode === "0") {
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .select("id, total, customer_phone, customer_name, wallet_amount, user_id, payment_status")
-        .eq("order_number", orderNumber)
-        .maybeSingle();
-
-      if (orderError) {
-        console.error("[trustpayments-webhook] DB Error fetching order:", orderError);
-        return new Response("Internal Error", { status: 500 });
-      }
-
-      if (!order) {
-        console.error("[trustpayments-webhook] Order not found for reference:", orderNumber);
-        return new Response("Order not found", { status: 404 });
-      }
-
       // Avoid double-processing if already paid
       if (order.payment_status === "paid") {
         console.log(`[trustpayments-webhook] Order ${orderNumber} already marked as paid.`);
@@ -132,14 +133,17 @@ Deno.serve(async (req: Request) => {
       // errorCode is not 0 (e.g. 70000 = Decline)
       console.warn(`[trustpayments-webhook] Payment not successful for ${orderNumber}. Code: ${errorCode}`);
 
-      await supabase
-        .from("orders")
-        .update({
-          payment_status: "failed",
-          payment_reference: transactionId || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("order_number", orderNumber);
+      // Only mark as failed if not already paid
+      if (order.payment_status !== "paid") {
+        await supabase
+          .from("orders")
+          .update({
+            payment_status: "failed",
+            payment_reference: transactionId || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", order.id);
+      }
     }
 
     // Always respond with 200 OK within 8 seconds as per Trust Payments documentation
