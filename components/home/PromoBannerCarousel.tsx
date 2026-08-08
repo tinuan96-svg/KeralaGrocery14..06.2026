@@ -168,7 +168,6 @@ function BannerSlide({
                 className="object-contain drop-shadow-xl"
                 sizes="(max-width: 640px) 130px, (max-width: 1024px) 180px, 240px"
                 priority={priority}
-                unoptimized
               />
             </div>
           </div>
@@ -190,9 +189,9 @@ function BannerSlide({
 
 // ── Main carousel ─────────────────────────────────────────────────────────────
 
-export default function PromoBannerCarousel() {
-  const [banners, setBanners] = useState<PromoBanner[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function PromoBannerCarousel({ initialBanners }: { initialBanners?: PromoBanner[] }) {
+  const [banners, setBanners] = useState<PromoBanner[]>(initialBanners || []);
+  const [loading, setLoading] = useState(!initialBanners);
   const [idx, setIdx]         = useState(0);
   const [paused, setPaused]   = useState(false);
   const [animDir, setAnimDir] = useState<'left' | 'right'>('left');
@@ -202,11 +201,13 @@ export default function PromoBannerCarousel() {
   const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    fetchActiveBanners().then(data => {
-      setBanners(data);
-      setLoading(false);
-    });
-  }, []);
+    if (!initialBanners) {
+      fetchActiveBanners().then(data => {
+        setBanners(data);
+        setLoading(false);
+      });
+    }
+  }, [initialBanners]);
 
   // Use DB banners or fallbacks
   const slides = useMemo(() => {

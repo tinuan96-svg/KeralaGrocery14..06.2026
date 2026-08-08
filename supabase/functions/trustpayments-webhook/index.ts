@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req: Request) => {
+  // Handle preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
@@ -18,11 +19,10 @@ Deno.serve(async (req: Request) => {
   );
 
   try {
-    // Trust Payments typically sends POST data.
-    // It might be URL-encoded or JSON.
     const contentType = req.headers.get("content-type") || "";
     let payload: any;
 
+    // Trust Payments can send JSON or Form Data depending on portal config
     if (contentType.includes("application/json")) {
       payload = await req.json();
     } else {
@@ -30,107 +30,126 @@ Deno.serve(async (req: Request) => {
       payload = Object.fromEntries(formData.entries());
     }
 
-    console.log("[trustpayments-webhook] Received payload:", JSON.stringify(payload));
-
-    // Common fields in Trust Payments notifications:
-    // errorcode: "0" means success
-    // orderreference: our order number
-    // transactionreference: their unique ID
-    // status: might be included
+    console.log("[trustpayments-webhook] Received notification:", JSON.stringify(payload));
 
     const errorCode = payload.errorcode?.toString();
     const orderNumber = payload.orderreference;
     const transactionId = payload.transactionreference;
 
     if (!orderNumber) {
+      console.error("[trustpayments-webhook] Missing orderreference in payload");
       return new Response("Missing orderreference", { status: 400 });
     }
 
-    // Log the webhook
+    // 1. Log the webhook immediately for debugging/audit
     await supabase.from("webhook_logs").insert({
       gateway: "trustpayments",
       payload,
       order_number: orderNumber,
     });
 
+    // 2. Process based on Error Code (0 = Success)
+    // See Scenarios: https://help.trustpayments.com/hc/en-us/articles/4402689992593-3-Configure-webhooks
     if (errorCode === "0") {
-      // Success! Update order status
       const { data: order, error: orderError } = await supabase
         .from("orders")
-        .select("id, total, customer_phone, customer_name, wallet_amount, user_id")
+        .select("id, total, customer_phone, customer_name, wallet_amount, user_id, payment_status")
         .eq("order_number", orderNumber)
         .maybeSingle();
 
-      if (orderError || !order) {
-        console.error("[trustpayments-webhook] Order not found:", orderNumber);
+      if (orderError) {
+        console.error("[trustpayments-webhook] DB Error fetching order:", orderError);
+        return new Response("Internal Error", { status: 500 });
+      }
+
+      if (!order) {
+        console.error("[trustpayments-webhook] Order not found for reference:", orderNumber);
         return new Response("Order not found", { status: 404 });
       }
 
-      // If already paid, don't re-process
+      // Avoid double-processing if already paid
       if (order.payment_status === "paid") {
+        console.log(`[trustpayments-webhook] Order ${orderNumber} already marked as paid.`);
         return new Response("OK", { status: 200 });
       }
 
-      // 1. Update Order status
-      await supabase
+      // Update Order to PAID
+      const { error: updateError } = await supabase
         .from("orders")
         .update({
           payment_status: "paid",
-          payment_reference: transactionId,
+          payment_reference: transactionId || null,
           order_status: "confirmed",
           updated_at: new Date().toISOString(),
         })
         .eq("id", order.id);
 
-      // 2. Process wallet if used
+      if (updateError) {
+        console.error("[trustpayments-webhook] Failed to update order status:", updateError);
+        return new Response("Update failed", { status: 500 });
+      }
+
+      // ── ASYNCHRONOUS TASKS (Don't block the response) ──
+
+      // Process wallet payment if applicable
       if (order.wallet_amount > 0 && order.user_id) {
-        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/wallet-payment`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`
-          },
-          body: JSON.stringify({
-            order_id: order.id,
-            wallet_amount: order.wallet_amount,
-            user_id: order.user_id
-          })
-        }).catch(err => console.error("[trustpayments-webhook] wallet-payment error:", err));
+        EdgeRuntime.waitUntil(
+          fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/wallet-payment`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`
+            },
+            body: JSON.stringify({
+              order_id: order.id,
+              wallet_amount: order.wallet_amount,
+              user_id: order.user_id
+            })
+          }).catch(err => console.error("[trustpayments-webhook] wallet-payment task error:", err))
+        );
       }
 
-      // 3. Send SMS confirmation
+      // Send SMS notification
       if (order.customer_phone) {
-        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-sms`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`
-          },
-          body: JSON.stringify({
-            phone: order.customer_phone,
-            orderNumber: orderNumber,
-          })
-        }).catch(err => console.error("[trustpayments-webhook] SMS error:", err));
+        EdgeRuntime.waitUntil(
+          fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-order-sms`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`
+            },
+            body: JSON.stringify({
+              phone: order.customer_phone,
+              orderNumber: orderNumber,
+            })
+          }).catch(err => console.error("[trustpayments-webhook] SMS task error:", err))
+        );
       }
 
-      console.log(`[trustpayments-webhook] Order ${orderNumber} marked as PAID`);
+      console.log(`[trustpayments-webhook] Order ${orderNumber} processed successfully.`);
+
     } else {
-      console.warn(`[trustpayments-webhook] Payment failed for ${orderNumber}. Error Code: ${errorCode}`);
+      // errorCode is not 0 (e.g. 70000 = Decline)
+      console.warn(`[trustpayments-webhook] Payment not successful for ${orderNumber}. Code: ${errorCode}`);
 
       await supabase
         .from("orders")
         .update({
           payment_status: "failed",
-          payment_reference: transactionId,
+          payment_reference: transactionId || null,
           updated_at: new Date().toISOString(),
         })
         .eq("order_number", orderNumber);
     }
 
-    return new Response("OK", { status: 200, headers: corsHeaders });
+    // Always respond with 200 OK within 8 seconds as per Trust Payments documentation
+    return new Response("OK", {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "text/plain" }
+    });
 
   } catch (error) {
-    console.error("[trustpayments-webhook] error:", error);
-    return new Response(error.message, { status: 500 });
+    console.error("[trustpayments-webhook] Fatal error:", error);
+    return new Response("Internal Server Error", { status: 500 });
   }
 });

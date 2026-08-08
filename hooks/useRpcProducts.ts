@@ -9,6 +9,7 @@ import {
   type RpcFilters,
   type GetRpcProductsParams,
   type RpcSortOption,
+  type GetRpcProductsResult,
 } from '@/lib/services/rpcApiClient';
 
 const DEFAULT_LIMIT = 40;
@@ -35,7 +36,7 @@ export interface UseRpcProductsReturn {
   retry: () => void;
 }
 
-export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string): UseRpcProductsReturn {
+export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string, initialData?: GetRpcProductsResult): UseRpcProductsReturn {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -47,12 +48,12 @@ export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string): UseRpcP
   const initialSort = (searchParams.get('sort') as RpcSortOption) || 'newest';
   const initialPage = parseInt(searchParams.get('page') || '1', 10);
 
-  const [products, setProducts] = useState<RpcProduct[]>([]);
-  const [total, setTotal] = useState(0);
+  const [products, setProducts] = useState<RpcProduct[]>(initialData?.products || []);
+  const [total, setTotal] = useState(initialData?.total || 0);
   const [page, setPage] = useState(initialPage);
-  const [totalPages, setTotalPages] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(initialData?.totalPages || 0);
+  const [isLoading, setIsLoading] = useState(!initialData);
+  const [error, setError] = useState<string | null>(initialData?.error || null);
 
   const [filters, setFilters] = useState<RpcFilters>({ categories: [], brands: [], price_min: 0, price_max: 9999 });
   const [filtersLoading, setFiltersLoading] = useState(true);

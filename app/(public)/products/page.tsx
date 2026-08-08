@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import ProductListingPage from '@/components/product/RpcProductListingPage';
+import { getProducts } from '@/lib/services/rpcApiClient';
 
 // In static export, we don't use force-dynamic
 // export const dynamic = 'force-dynamic';
@@ -21,14 +22,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  // Pre-fetch first page on server for better LCP/PageSpeed
+  const initialData = await getProducts({ page: 1, limit: 20 });
+
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
       </div>
     }>
-      <ProductListingPage />
+      <ProductListingPage initialData={initialData} />
     </Suspense>
   );
 }

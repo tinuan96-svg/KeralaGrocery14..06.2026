@@ -14,19 +14,25 @@ export interface HomepageData {
   isLoading: boolean;
 }
 
-export function useHomepageData(): HomepageData {
-  const [trending, setTrending]       = useState<ProductWithDetails[]>([]);
+export interface HomepageDataOptions {
+  initialCategories?: Category[];
+  initialTrending?: ProductWithDetails[];
+}
+
+export function useHomepageData(options: HomepageDataOptions = {}): HomepageData {
+  const [trending, setTrending]       = useState<ProductWithDetails[]>(options.initialTrending || []);
   const [deals, setDeals]             = useState<ProductWithDetails[]>([]);
   const [bestsellers, setBestsellers] = useState<ProductWithDetails[]>([]);
   const [newArrivals, setNewArrivals] = useState<ProductWithDetails[]>([]);
-  const [categories, setCategories]   = useState<Category[]>([]);
-  const [isLoading, setIsLoading]     = useState(true);
-  const [allProducts, setAllProducts] = useState<ProductWithDetails[]>([]);
+  const [categories, setCategories]   = useState<Category[]>(options.initialCategories || []);
+  const [isLoading, setIsLoading]     = useState(!options.initialCategories);
+  const [allProducts, setAllProducts] = useState<ProductWithDetails[]>(options.initialTrending || []);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadData() {
+      // If we have initial data, we can skip some initial loading or fetch in background
       const [
         { products: trendingItems },
         { products: dealItems },

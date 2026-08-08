@@ -1,5 +1,3 @@
-'use client';
-
 import { Truck, ShieldCheck, Award } from 'lucide-react';
 
 const BENEFITS = [

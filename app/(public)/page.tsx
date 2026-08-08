@@ -10,6 +10,8 @@ import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import PullToRefresh from '@/components/home/PullToRefresh';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
+import { fetchActiveBanners } from '@/lib/services/bannerService';
+import { fetchStoreProducts, fetchHomepageCategories } from '@/lib/services/storeProductsService';
 
 export const metadata: Metadata = {
   title: 'Kerala Grocery UK | Buy Authentic Kerala Groceries Online',
@@ -43,7 +45,14 @@ const homepageFAQs = [
   }
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Fetch primary data on server for better PageSpeed/LCP
+  const [banners, categories, trendingRes] = await Promise.all([
+    fetchActiveBanners(),
+    fetchHomepageCategories(),
+    fetchStoreProducts({ is_featured: true, limit: 10 }),
+  ]);
+
   return (
     <PullToRefresh>
       <div className="min-h-screen pb-20 md:pb-0 bg-[#f1f3f4]">
@@ -56,7 +65,8 @@ export default function HomePage() {
         {/* Sticky search appears below header once hero scrolls away */}
         <StickySearchBar sentinelId="hero-end" />
 
-        <PromoBannerCarousel />
+        {/* Pass initial banners to avoid LCP delay */}
+        <PromoBannerCarousel initialBanners={banners} />
 
         {/* Sentinel — StickySearchBar watches this element */}
         <div id="hero-end" />
@@ -70,7 +80,10 @@ export default function HomePage() {
         <LocalCityBanner />
 
         {/* All product sections in feed order */}
-        <HomepageSections />
+        <HomepageSections
+          initialCategories={categories}
+          initialTrending={trendingRes.products}
+        />
 
         <WhyChooseUs />
 

@@ -7,12 +7,27 @@ export default function PerformanceHead() {
       {/* Preconnect to critical origins */}
       <link rel="preconnect" href="https://keralagrocery.com" crossOrigin="anonymous" />
       <link rel="dns-prefetch" href="https://keralagrocery.com" />
+
       <link rel="preconnect" href="https://vnqjqopzoeunojomssmq.supabase.co" crossOrigin="anonymous" />
       <link rel="dns-prefetch" href="https://vnqjqopzoeunojomssmq.supabase.co" />
+
       <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+
       <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://images.unsplash.com" />
+
       <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+      <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+
+      {/* Preload critical assets */}
+      <link rel="preload" href="/logo_KG_Trans.png" as="image" />
 
       {/* Force rendering of basic styles even if globals.css takes a moment */}
       <style dangerouslySetInnerHTML={{ __html: `

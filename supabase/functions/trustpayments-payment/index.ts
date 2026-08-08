@@ -25,7 +25,7 @@ Deno.serve(async (req: Request) => {
 
     const SITE_REFERENCE = Deno.env.get("TRUSTPAYMENTS_SITE_REFERENCE") || "tastykeral152232";
     const JWT_SECRET = Deno.env.get("TRUSTPAYMENTS_JWT_SECRET");
-    const JWT_USERNAME = Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "admin@keralagrocery.com";
+    const JWT_USERNAME = Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com";
 
     if (!JWT_SECRET) {
       console.error("TRUSTPAYMENTS_JWT_SECRET not configured");
@@ -36,9 +36,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const amountPence = Math.round(amount * 100).toString();
+    const rawSiteUrl = (Deno.env.get("SITE_URL") || "keralagrocery.com").trim().replace(/\/$/, "");
+    const BASE_URL = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`;
 
     // Trust Payments JWT Payload
-    // See: https://help.trustpayments.com/hc/en-us/articles/4402694206353-2-Configure-the-JSON-Web-Token-JWT
     const payload = {
       payload: {
         accounttypedescription: "ECOM",
@@ -48,7 +49,10 @@ Deno.serve(async (req: Request) => {
         orderreference: orderNumber,
         requesttypedescriptions: ["THREEDQUERY", "AUTH"],
         customeremail: customerEmail,
-        // Optional but recommended for SCA (3D Secure 2.0)
+        // Redirect customer after payment
+        redirecturl: `${BASE_URL}/payment-success?order=${orderNumber}`,
+        // Webhook for server-to-server notification
+        callbackurl: `${BASE_URL}/api/trustpayments/webhook`,
         billingcontactdetails: {
           firstname: customerName?.split(' ')[0] || '',
           lastname: customerName?.split(' ').slice(1).join(' ') || '',
@@ -62,17 +66,14 @@ Deno.serve(async (req: Request) => {
       },
       iat: Math.floor(Date.now() / 1000),
       iss: JWT_USERNAME,
-      // Recommended: exp claim (valid for 1 hour)
       exp: Math.floor(Date.now() / 1000) + 3600,
     };
 
-    // Sign the JWT using HS256
     const secret = new TextEncoder().encode(JWT_SECRET);
     const jwt = await new jose.SignJWT(payload)
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .sign(secret);
 
-    // Store session info in DB for auditing / callback verification
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!

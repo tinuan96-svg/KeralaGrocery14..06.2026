@@ -5,6 +5,7 @@ import { Truck, MapPin, CheckCircle2, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import HomepageSections from '@/components/home/HomepageSections';
 import TrustStrip from '@/components/home/TrustStrip';
+import { fetchHomepageCategories, fetchStoreProducts } from '@/lib/services/storeProductsService';
 
 interface Props {
   params: { city: string };
@@ -34,11 +35,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function CityDeliveryPage({ params }: Props) {
+export default async function CityDeliveryPage({ params }: Props) {
   if (!VALID_CITIES.includes(params.city.toLowerCase())) {
-    // Optionally return 404 if city not in our SEO list,
-    // or just render a generic version.
+    // Optionally return 404
   }
+
+  // Fetch data on server for better PageSpeed
+  const [categories, trendingRes] = await Promise.all([
+    fetchHomepageCategories(),
+    fetchStoreProducts({ is_featured: true, limit: 10 }),
+  ]);
 
   const city = params.city.charAt(0).toUpperCase() + params.city.slice(1);
 
@@ -142,7 +148,10 @@ export default function CityDeliveryPage({ params }: Props) {
             View All <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
-        <HomepageSections />
+        <HomepageSections
+          initialCategories={categories}
+          initialTrending={trendingRes.products}
+        />
       </div>
     </div>
   );

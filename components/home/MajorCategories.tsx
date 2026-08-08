@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { ChevronRight, LayoutGrid } from 'lucide-react';
 import type { Category } from '@/lib/types/database';
