@@ -53,6 +53,9 @@ self.addEventListener('fetch', (event) => {
 
   if (request.method !== 'GET') return;
 
+  // Skip non-http/https schemes (like chrome-extension://)
+  if (!url.protocol.startsWith('http')) return;
+
   // Skip Supabase, analytics, payment providers
   if (
     url.hostname.includes('supabase.co') ||
@@ -112,12 +115,15 @@ self.addEventListener('fetch', (event) => {
 });
 
 async function staleWhileRevalidate(request, cacheName) {
+  const url = new URL(request.url);
   const cache  = await caches.open(cacheName);
   const cached = await cache.match(request);
 
   const fetchPromise = fetch(request)
     .then((response) => {
-      if (response.ok) cache.put(request, response.clone());
+      if (response.ok && url.protocol.startsWith('http')) {
+        cache.put(request, response.clone());
+      }
       return response;
     })
     .catch(() => null);

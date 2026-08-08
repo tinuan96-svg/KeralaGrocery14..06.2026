@@ -67,5 +67,15 @@ export function getSupabase(): SupabaseClient {
     },
   });
 
+  // Handle Back-Forward Cache (bfcache) reconnection for Realtime
+  if (typeof window !== 'undefined') {
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted && browserClient) {
+        console.log('[Supabase] Reconnecting realtime after bfcache restore');
+        browserClient.realtime.connect();
+      }
+    });
+  }
+
   return browserClient;
 }
