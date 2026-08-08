@@ -246,8 +246,10 @@ export async function getProducts(
     }
 
     if (brand) {
-      // Filter by brand column (canonical, from CentralHub); also match source_brand as fallback
-      query = query.or(`brand.ilike.${brand},source_brand.ilike.${brand}`);
+      // Find the brand case-insensitively in the filters to match the exact string in the DB
+      const { filters: currentFilters } = await getFilters();
+      const exactBrand = currentFilters.brands.find(b => b.toLowerCase() === brand.toLowerCase()) || brand;
+      query = query.eq('brand', exactBrand);
     }
 
     if (params.is_featured) query = query.eq('is_featured', true);
