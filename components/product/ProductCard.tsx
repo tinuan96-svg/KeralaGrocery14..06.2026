@@ -189,7 +189,6 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
       </div>
     </div>
   );
-  );
 }
 
 const ProductCard = memo(ProductCardComponent, (prev, next) =>
