@@ -25,7 +25,8 @@ Deno.serve(async (req: Request) => {
 
     const SITE_REFERENCE = Deno.env.get("TRUSTPAYMENTS_SITE_REFERENCE") || "tastykeral152232";
     const JWT_SECRET = Deno.env.get("TRUSTPAYMENTS_JWT_SECRET");
-    const JWT_USERNAME = (Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com").toLowerCase();
+    // Ensure username casing matches exactly what was created in the portal
+    const JWT_USERNAME = Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com";
 
     if (!JWT_SECRET) {
       return new Response(JSON.stringify({ error: "Gateway configuration missing" }), {
@@ -38,15 +39,15 @@ Deno.serve(async (req: Request) => {
     const rawSiteUrl = (Deno.env.get("SITE_URL") || "keralagrocery.com").trim().replace(/\/$/, "");
     const BASE_URL = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`;
 
-    // Clean up name fields - Trust Payments requires both firstname and lastname
+    // Clean up name fields
     const nameParts = (customerName || "Customer").trim().split(/\s+/);
     const firstName = nameParts[0] || "Customer";
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName;
 
-    // Clean phone: digits only, no + or spaces
+    // Clean phone: digits only
     const cleanPhone = (customerPhone || "0000000000").replace(/\D/g, '');
 
-    // Trust Payments JWT Payload for HPP (Hosted Payment Pages)
+    // Trust Payments JWT Payload
     const payload = {
       payload: {
         accounttypedescription: "ECOM",
@@ -56,16 +57,10 @@ Deno.serve(async (req: Request) => {
         orderreference: orderNumber,
         requesttypedescriptions: ["THREEDQUERY", "AUTH"],
         customeremail: customerEmail,
-
-        // Success and Decline Redirects
         successfulurl: `${BASE_URL}/payment-success?order=${orderNumber}`,
         declinedurl: `${BASE_URL}/cart?error=declined`,
         errorurl: `${BASE_URL}/cart?error=payment_error`,
-
-        // Webhook for server-to-server notification
         callbackurl: `${BASE_URL}/api/trustpayments/webhook`,
-
-        // Billing details (Required for 3DS2 / SCA compliance)
         billingcontactdetails: {
           firstname: firstName,
           lastname: lastName,
@@ -79,7 +74,7 @@ Deno.serve(async (req: Request) => {
       },
       iat: Math.floor(Date.now() / 1000),
       iss: JWT_USERNAME,
-      exp: Math.floor(Date.now() / 1000) + 3600, // Valid for 1 hour
+      exp: Math.floor(Date.now() / 1000) + 3600,
     };
 
     const secret = new TextEncoder().encode(JWT_SECRET);
@@ -87,7 +82,6 @@ Deno.serve(async (req: Request) => {
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .sign(secret);
 
-    // Store/Audit the session
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
