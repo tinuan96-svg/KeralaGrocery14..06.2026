@@ -33,10 +33,10 @@ Deno.serve(async (req: Request) => {
     console.log("[trustpayments-webhook] Received notification:", JSON.stringify(payload));
 
     const errorCode = payload.errorcode?.toString();
-    const orderNumber = payload.orderreference || payload.order_reference;
+    const incomingRef = payload.orderreference || payload.order_reference;
     const transactionId = payload.transactionreference;
 
-    if (!orderNumber) {
+    if (!incomingRef) {
       console.error("[trustpayments-webhook] Missing orderreference in payload");
       return new Response("Missing orderreference", { status: 400 });
     }
@@ -45,10 +45,23 @@ Deno.serve(async (req: Request) => {
     await supabase.from("webhook_logs").insert({
       gateway: "trustpayments",
       payload,
-      order_number: orderNumber,
+      order_number: incomingRef,
     });
 
-    // 2. Fetch order to check current status
+    // 2. Resolve the real order number (handling stripped hyphens)
+    let orderNumber = incomingRef;
+    const { data: session } = await supabase
+      .from("payment_sessions")
+      .select("order_number")
+      .eq("gateway_session_id", incomingRef)
+      .maybeSingle();
+
+    if (session?.order_number) {
+      orderNumber = session.order_number;
+      console.log(`[trustpayments-webhook] Resolved ${incomingRef} to ${orderNumber}`);
+    }
+
+    // 3. Fetch order to check current status
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .select("id, total, customer_phone, customer_name, wallet_amount, user_id, payment_status")

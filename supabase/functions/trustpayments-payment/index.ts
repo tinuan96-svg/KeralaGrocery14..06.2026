@@ -25,8 +25,8 @@ Deno.serve(async (req: Request) => {
 
     const SITE_REFERENCE = (Deno.env.get("TRUSTPAYMENTS_SITE_REFERENCE") || "tastykeral152232").trim();
     const JWT_SECRET = Deno.env.get("TRUSTPAYMENTS_JWT_SECRET")?.trim();
-    // Force lowercase to match portal behavior (P59 resolution)
-    const JWT_USERNAME = (Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com").trim().toLowerCase();
+    // Maintain original casing as provided in environment
+    const JWT_USERNAME = (Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com").trim();
 
     if (!JWT_SECRET) {
       return new Response(JSON.stringify({ error: "Gateway configuration missing" }), {
@@ -47,8 +47,8 @@ Deno.serve(async (req: Request) => {
     // Clean phone: digits only, ensure it's not empty
     const cleanPhone = (customerPhone || "07000000000").replace(/\D/g, '') || "07000000000";
 
-    // Order ref: alphanumeric and hyphens allowed, max 30 chars
-    const cleanOrderRef = orderNumber.replace(/[^a-zA-Z0-9-]/g, '').substring(0, 30);
+    // Order ref: strictly alphanumeric for Trust Payments HPP (Secure Trading legacy endpoint)
+    const cleanOrderRef = orderNumber.replace(/[^a-zA-Z0-9]/g, '').substring(0, 30);
 
     // Trust Payments JWT Payload
     const payload = {
@@ -65,7 +65,6 @@ Deno.serve(async (req: Request) => {
         customeremail: customerEmail,
         successfulurl: `${BASE_URL}/payment-success?order=${orderNumber}`,
         declinedurl: `${BASE_URL}/cart?error=declined`,
-        errorurl: `${BASE_URL}/cart?error=error`,
         callbackurl: `${BASE_URL}/api/trustpayments/webhook`,
         billingcontactdetails: {
           firstname: firstName.substring(0, 20),
@@ -93,13 +92,19 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    await supabase.from("payment_sessions").upsert({
+    const { error: sessionError } = await supabase.from("payment_sessions").upsert({
       order_number: orderNumber,
       amount_pence: parseInt(amountPence),
       status: "pending",
       gateway: "trustpayments",
+      gateway_session_id: cleanOrderRef,
+      payment_url: "HPP",
       created_at: new Date().toISOString(),
     }, { onConflict: "order_number" });
+
+    if (sessionError) {
+      console.warn("[trustpayments-payment] session upsert warning:", sessionError.message);
+    }
 
     return new Response(JSON.stringify({ jwt, siteReference: SITE_REFERENCE }), {
       status: 200,
