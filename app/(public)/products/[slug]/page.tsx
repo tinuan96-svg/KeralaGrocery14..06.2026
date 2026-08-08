@@ -105,7 +105,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const rawDesc = p.short_description?.trim()
     || (p.description && p.description !== 'No description' ? stripHtml(p.description).substring(0, 200) : null)
     || fallbackDesc;
-  const description = `${rawDesc.substring(0, 160)}... Order today for Next Day Delivery across London and the UK.`;
+
+  // Optimized for SEO: Keep total length under 160 characters
+  const suffix = " Order today for Next Day Delivery across London and the UK.";
+  const maxTotalLength = 158;
+  const availableLength = maxTotalLength - suffix.length;
+
+  const description = rawDesc.length > availableLength
+    ? `${rawDesc.substring(0, availableLength - 3)}...${suffix}`
+    : `${rawDesc}${suffix}`;
   const title = `${name}${brand ? ` | ${brand}` : ''} | Kerala Groceries UK`;
   const canonicalUrl = `https://keralagrocery.com/products/${params.slug}`;
 
