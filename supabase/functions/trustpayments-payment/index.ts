@@ -25,7 +25,7 @@ Deno.serve(async (req: Request) => {
 
     const SITE_REFERENCE = Deno.env.get("TRUSTPAYMENTS_SITE_REFERENCE") || "tastykeral152232";
     const JWT_SECRET = Deno.env.get("TRUSTPAYMENTS_JWT_SECRET");
-    const JWT_USERNAME = Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com";
+    const JWT_USERNAME = (Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || "Jwt@tastykeral.com").toLowerCase();
 
     if (!JWT_SECRET) {
       return new Response(JSON.stringify({ error: "Gateway configuration missing" }), {
@@ -38,10 +38,13 @@ Deno.serve(async (req: Request) => {
     const rawSiteUrl = (Deno.env.get("SITE_URL") || "keralagrocery.com").trim().replace(/\/$/, "");
     const BASE_URL = /^https?:\/\//i.test(rawSiteUrl) ? rawSiteUrl : `https://${rawSiteUrl}`;
 
-    // Clean up name fields
+    // Clean up name fields - Trust Payments requires both firstname and lastname
     const nameParts = (customerName || "Customer").trim().split(/\s+/);
-    const firstName = nameParts[0];
+    const firstName = nameParts[0] || "Customer";
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName;
+
+    // Clean phone: digits only, no + or spaces
+    const cleanPhone = (customerPhone || "0000000000").replace(/\D/g, '');
 
     // Trust Payments JWT Payload for HPP (Hosted Payment Pages)
     const payload = {
@@ -62,12 +65,12 @@ Deno.serve(async (req: Request) => {
         // Webhook for server-to-server notification
         callbackurl: `${BASE_URL}/api/trustpayments/webhook`,
 
-        // Billing details (Required for 3DS2 / SCA)
+        // Billing details (Required for 3DS2 / SCA compliance)
         billingcontactdetails: {
           firstname: firstName,
           lastname: lastName,
           email: customerEmail,
-          telephone: customerPhone || "0000000000",
+          telephone: cleanPhone,
           addressline1: billingAddress?.address || "Street Address",
           town: billingAddress?.city || "London",
           postcode: (billingAddress?.postcode || "SW1A 1AA").replace(/\s+/g, ''),
@@ -76,7 +79,7 @@ Deno.serve(async (req: Request) => {
       },
       iat: Math.floor(Date.now() / 1000),
       iss: JWT_USERNAME,
-      exp: Math.floor(Date.now() / 1000) + 3600,
+      exp: Math.floor(Date.now() / 1000) + 3600, // Valid for 1 hour
     };
 
     const secret = new TextEncoder().encode(JWT_SECRET);
@@ -84,6 +87,7 @@ Deno.serve(async (req: Request) => {
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .sign(secret);
 
+    // Store/Audit the session
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
