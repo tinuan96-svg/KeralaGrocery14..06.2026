@@ -12,7 +12,10 @@ import { useWishlistCount } from '@/hooks/useWishlistOptimized';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import LiveSearch from '@/components/home/LiveSearch';
-import MiniCart from './MiniCart';
+import dynamic from 'next/dynamic';
+
+const MiniCart = dynamic(() => import('./MiniCart'), { ssr: false });
+
 import {
   DropdownMenu,
   DropdownMenuContent,

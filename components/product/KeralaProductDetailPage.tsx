@@ -13,11 +13,16 @@ import ProductAccordions from '@/components/product/ProductAccordions';
 import ProfitGenerativeBanner from '@/components/product/ProfitGenerativeBanner';
 import KeralaProductCard from '@/components/product/KeralaProductCard';
 import RecentlyViewedTracker from '@/components/product/RecentlyViewedTracker';
-import RecentlyViewed from '@/components/product/RecentlyViewed';
+
+const RecentlyViewed = dynamic(() => import('@/components/product/RecentlyViewed'), { ssr: false });
+const FrequentlyBoughtTogether = dynamic(() => import('@/components/product/FrequentlyBoughtTogether'), { ssr: false });
+const RecipeMentions = dynamic(() => import('@/components/product/RecipeMentions'), { ssr: false });
+
 import DeliveryUrgencyTimer from '@/components/product/DeliveryUrgencyTimer';
-import FrequentlyBoughtTogether from '@/components/product/FrequentlyBoughtTogether';
-import ReviewSection from '@/components/product/ReviewSection';
-import RecipeMentions from '@/components/product/RecipeMentions';
+import dynamic from 'next/dynamic';
+
+const ReviewSection = dynamic(() => import('@/components/product/ReviewSection'), { ssr: false });
+
 import { getProductDetail, getProducts } from '@/lib/services/rpcApiClient';
 import { getPersonalizedRecommendations } from '@/lib/services/recommendationService';
 import { getSupabase } from '@/lib/supabase/client';
