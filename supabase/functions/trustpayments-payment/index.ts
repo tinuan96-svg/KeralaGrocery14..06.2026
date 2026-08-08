@@ -44,13 +44,17 @@ Deno.serve(async (req: Request) => {
     const firstName = nameParts[0] || "Customer";
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : "Guest";
 
-    // Clean phone: digits only, ensure it's not empty
+    // Clean phone: digits only, ensure it's not empty, max 15 chars for 3DS2 compatibility
     const cleanPhone = (customerPhone || "07000000000").replace(/\D/g, '') || "07000000000";
 
     // Order ref: strictly alphanumeric for Trust Payments HPP (Secure Trading legacy endpoint)
     const cleanOrderRef = orderNumber.replace(/[^a-zA-Z0-9]/g, '').substring(0, 30);
 
+    // Get client IP for 3DS2
+    const clientIp = req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for") || "127.0.0.1";
+
     // Trust Payments JWT Payload
+    // Documented fields for 3DS2: https://help.trustpayments.com/hc/en-us/articles/360021344493-Web-Payments-Standard-Security-JWT-
     const payload = {
       iss: JWT_USERNAME,
       iat: Math.floor(Date.now() / 1000),
@@ -63,19 +67,21 @@ Deno.serve(async (req: Request) => {
         orderreference: cleanOrderRef,
         requesttypedescriptions: ["THREEDQUERY", "AUTH"],
         customeremail: customerEmail,
+        customeripname: clientIp.split(',')[0].trim(),
         successfulurl: `${BASE_URL}/payment-success?order=${orderNumber}`,
         declinedurl: `${BASE_URL}/cart?error=declined`,
         callbackurl: `${BASE_URL}/api/trustpayments/webhook`,
-        billingcontactdetails: {
-          firstname: firstName.substring(0, 20),
-          lastname: lastName.substring(0, 20),
-          email: customerEmail,
-          telephone: cleanPhone.substring(0, 15),
-          addressline1: (billingAddress?.address || "Address").substring(0, 50),
-          town: (billingAddress?.city || "London").substring(0, 50),
-          postcode: (billingAddress?.postcode || "SW1A 1AA").replace(/\s+/g, '').substring(0, 10),
-          countryiso2a: "GB"
-        }
+
+        // Billing details - flat fields preferred by modern HPP/3DS2 implementations
+        billingfirstname: firstName.substring(0, 50),
+        billinglastname: lastName.substring(0, 50),
+        billingemail: customerEmail,
+        billingtelephone: cleanPhone.substring(0, 15),
+        billingaddressline1: (billingAddress?.address || "Address").substring(0, 100),
+        billingtown: (billingAddress?.city || "London").substring(0, 50),
+        billingcounty: (billingAddress?.county || "").substring(0, 50),
+        billingpostcode: (billingAddress?.postcode || "SW1A 1AA").substring(0, 10),
+        billingcountryiso2a: "GB"
       }
     };
 

@@ -61,6 +61,7 @@ export default function CheckoutPage() {
     phone: '',
     address: '',
     city: '',
+    county: '',
     postcode: '',
     notes: '',
   });
@@ -138,6 +139,7 @@ export default function CheckoutPage() {
         phone:    def.phone     || prev.phone,
         address:  def.address_line_1 + (def.address_line_2 ? `, ${def.address_line_2}` : ''),
         city:     def.city,
+        county:   def.county || '',
         postcode: def.postcode,
       }));
     }
@@ -188,6 +190,7 @@ export default function CheckoutPage() {
       phone:    addr.phone     || prev.phone,
       address:  addr.address_line_1 + (addr.address_line_2 ? `, ${addr.address_line_2}` : ''),
       city:     addr.city,
+      county:   addr.county || '',
       postcode: addr.postcode,
     }));
   };
@@ -197,6 +200,7 @@ export default function CheckoutPage() {
       ...prev,
       address:  selected.address,
       city:     selected.city     || prev.city,
+      county:   selected.county   || prev.county,
       postcode: selected.postcode || prev.postcode,
     }));
   };
@@ -385,6 +389,7 @@ export default function CheckoutPage() {
             billingAddress: {
               address: formData.address,
               city: formData.city,
+              county: formData.county,
               postcode: formData.postcode
             }
           }),
@@ -568,13 +573,21 @@ export default function CheckoutPage() {
                       className="h-10 border-gray-200 focus:border-green-500 focus:ring-green-500/20" />
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="city" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                         City <span className="text-red-500">*</span>
                       </Label>
                       <Input id="city" name="city" value={formData.city} onChange={handleInputChange}
                         placeholder="London"
+                        className="h-10 border-gray-200 focus:border-green-500 focus:ring-green-500/20" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="county" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                        County <span className="text-gray-400 font-normal normal-case">(optional)</span>
+                      </Label>
+                      <Input id="county" name="county" value={formData.county} onChange={handleInputChange}
+                        placeholder="Greater London"
                         className="h-10 border-gray-200 focus:border-green-500 focus:ring-green-500/20" />
                     </div>
                     <div className="space-y-1.5">
