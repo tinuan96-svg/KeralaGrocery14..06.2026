@@ -54,10 +54,13 @@ const STATIC_ENTRIES: MetadataRoute.Sitemap = [
   entry('/brands', 'weekly', 0.75, D.today),
 
   // Tier 6 – Blog
-  entry('/blog', 'weekly', 0.75, D.blog),
-  entry('/blog/top-10-kerala-foods-uk', 'monthly', 0.70, D.blog),
-  entry('/blog/where-to-buy-curry-leaves-uk', 'monthly', 0.70, D.blog),
-  entry('/blog/best-indian-grocery-delivery-london', 'monthly', 0.70, D.blog),
+  entry('/blog', 'weekly', 0.80, D.blog),
+  entry('/blog/top-10-kerala-foods-uk', 'monthly', 0.75, D.blog),
+  entry('/blog/where-to-buy-curry-leaves-uk', 'monthly', 0.75, D.blog),
+  entry('/blog/best-indian-grocery-delivery-london', 'monthly', 0.75, D.blog),
+  entry('/blog/kerala-snacks-uk', 'monthly', 0.75, D.blog),
+  entry('/blog/palakkadan-matta-rice', 'monthly', 0.75, D.blog),
+  entry('/blog/kerala-festivals-foods', 'monthly', 0.75, D.blog),
 
   // Tier 6.5 – Hyper-Local Delivery Pages
   entry('/delivery/london', 'weekly', 0.85, D.today),
@@ -120,11 +123,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return STATIC_ENTRIES;
   }
 
-  // ── Category pages (/products?filter=[slug]) ──────────────────────────────
-  const categoryEntries: MetadataRoute.Sitemap = categories.map((c) =>
-    entry(`/products?filter=${c.slug}`, 'weekly', 0.80)
-  );
-
   // ── Product pages (/products/[slug]) ──────────────────────────────────────
   // Query-string filter pages (?category=, ?brand=) are not canonical URLs
   // and must not appear in the sitemap — they share the /products canonical.
@@ -132,7 +130,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry(
       `/products/${p.slug}`,
       'weekly',
-      0.70,
+      0.80,
       p.created_at ? new Date(p.created_at) : undefined,
     )
   );
@@ -140,12 +138,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── Recipe pages (/recipes/[slug]) ──────────────────────────────────────
   const recipes = await getRecipes();
   const recipeEntries: MetadataRoute.Sitemap = recipes.map((r) =>
-    entry(`/recipes/${r.slug}`, 'monthly', 0.80, D.today)
+    entry(`/recipes/${r.slug}`, 'monthly', 0.85, D.today)
   );
 
   return [
     ...STATIC_ENTRIES,
-    ...categoryEntries,
     ...productEntries,
     ...recipeEntries,
   ];
