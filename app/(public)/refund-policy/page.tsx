@@ -166,7 +166,7 @@ export default function RefundPolicyPage() {
           <ul className="list-disc pl-5 space-y-2">
             <li>
               <strong>Original payment method</strong> — refunded back to the card or payment
-              method used at checkout (Worldpay)
+              method used at checkout (Trust Payments)
             </li>
             <li>
               <strong>KG Wallet credit</strong> — if you prefer, we can credit the refund amount
