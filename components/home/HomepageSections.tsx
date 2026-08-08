@@ -82,15 +82,24 @@ function SkeletonSection() {
 
 export default function HomepageSections({
   initialCategories,
-  initialTrending
+  initialTrending,
+  initialDeals,
+  initialBestsellers,
+  initialNewArrivals
 }: {
   initialCategories?: Category[];
   initialTrending?: ProductWithDetails[];
+  initialDeals?: ProductWithDetails[];
+  initialBestsellers?: ProductWithDetails[];
+  initialNewArrivals?: ProductWithDetails[];
 }) {
   const { trending, deals, bestsellers, newArrivals, allProducts, categories, isLoading } =
     useHomepageData({
       initialCategories,
-      initialTrending
+      initialTrending,
+      initialDeals,
+      initialBestsellers,
+      initialNewArrivals
     });
 
   const effectiveTrending = trending.length > 0 ? trending : (initialTrending || []);

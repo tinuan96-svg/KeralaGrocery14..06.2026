@@ -12,6 +12,7 @@ import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import { fetchActiveBanners } from '@/lib/services/bannerService';
 import { fetchStoreProducts, fetchHomepageCategories } from '@/lib/services/storeProductsService';
+import { fetchActiveGridCards } from '@/lib/services/homepageGridService';
 
 export const metadata: Metadata = {
   title: 'Kerala Grocery UK | Buy Authentic Kerala Groceries Online',
@@ -46,11 +47,15 @@ const homepageFAQs = [
 ];
 
 export default async function HomePage() {
-  // Fetch primary data on server for better PageSpeed/LCP
-  const [banners, categories, trendingRes] = await Promise.all([
+  // Fetch all critical storefront data on server to minimize waterfalls and LCP
+  const [banners, categories, trendingRes, dealsRes, bestsellersRes, newArrivalsRes, gridCards] = await Promise.all([
     fetchActiveBanners(),
     fetchHomepageCategories(),
-    fetchStoreProducts({ is_featured: true, limit: 10 }),
+    fetchStoreProducts({ is_featured: true, limit: 12 }),
+    fetchStoreProducts({ is_deal: true, limit: 12 }),
+    fetchStoreProducts({ is_bestseller: true, limit: 12 }),
+    fetchStoreProducts({ is_new_arrival: true, limit: 12 }),
+    fetchActiveGridCards(),
   ]);
 
   return (
@@ -72,7 +77,7 @@ export default async function HomePage() {
         <div id="hero-end" />
 
         {/* Amazon-style content grid */}
-        <AmazonStyleGrid />
+        <AmazonStyleGrid initialCards={gridCards} />
 
         <PersonalizedRecommendations />
 
@@ -83,6 +88,9 @@ export default async function HomePage() {
         <HomepageSections
           initialCategories={categories}
           initialTrending={trendingRes.products}
+          initialDeals={dealsRes.products}
+          initialBestsellers={bestsellersRes.products}
+          initialNewArrivals={newArrivalsRes.products}
         />
 
         <WhyChooseUs />

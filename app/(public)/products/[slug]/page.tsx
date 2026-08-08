@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import KeralaProductDetailPage from '@/components/product/KeralaProductDetailPage';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getProductDetail } from '@/lib/services/rpcApiClient';
 import {
   ProductSchema,
   BreadcrumbSchema,
@@ -166,13 +167,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const p = await fetchProductBySlug(params.slug);
+  const { product: p } = await getProductDetail(params.slug);
 
-  const name        = p?.name ?? params.slug.replace(/-/g, ' ');
-  const brand       = p?.brand ?? p?.source_brand ?? 'Kerala Groceries UK';
-  const category    = (p?.categories as { name: string } | null)?.name ?? null;
-  const price       = Number(p?.selling_price ?? p?.price ?? 0);
-  const image       = p?.image_main ?? p?.image_url ?? 'https://keralagrocery.com/image.png';
+  const name        = p?.product_title ?? params.slug.replace(/-/g, ' ');
+  const brand       = p?.brand ?? 'Kerala Groceries UK';
+  const category    = p?.category ?? null;
+  const price       = Number(p?.price ?? 0);
+  const image       = p?.image_url ?? 'https://keralagrocery.com/image.png';
   const description = (p?.description && p.description !== 'No description')
     ? p.description
     : `${name} — authentic Kerala grocery.`;
@@ -192,20 +193,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <MerchantReturnPolicySchema />
           <ShippingPolicySchema />
           <ProductSchema
-            name={name}
+            name={p.display_title}
             description={description}
             image={image}
             price={price}
             brand={brand}
             availability="InStock"
             url={canonicalUrl}
-            ratingValue={p.rating || undefined}
-            reviewCount={p.review_count || undefined}
+            // ratingValue={p.rating || undefined}
+            // reviewCount={p.review_count || undefined}
           />
           <BreadcrumbSchema items={breadcrumbs} />
         </>
       )}
-      <KeralaProductDetailPage slug={params.slug} />
+      <KeralaProductDetailPage slug={params.slug} initialProduct={p} />
     </>
   );
 }

@@ -66,11 +66,19 @@ const DEMO_CARDS: HomepageGridCard[] = [
   }
 ];
 
-export default function AmazonStyleGrid() {
-  const [cards, setCards] = useState<HomepageGridCard[]>([]);
-  const [loading, setLoading] = useState(true);
+interface AmazonStyleGridProps {
+  initialCards?: HomepageGridCard[];
+}
+
+export default function AmazonStyleGrid({ initialCards }: AmazonStyleGridProps) {
+  const [cards, setCards] = useState<HomepageGridCard[]>(initialCards || []);
+  const [loading, setLoading] = useState(!initialCards);
 
   useEffect(() => {
+    if (initialCards) {
+      setLoading(false);
+      return;
+    }
     fetchActiveGridCards().then(data => {
       if (data.length > 0) {
         setCards(data);
@@ -79,7 +87,7 @@ export default function AmazonStyleGrid() {
       }
       setLoading(false);
     });
-  }, []);
+  }, [initialCards]);
 
   if (loading) {
     return (

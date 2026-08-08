@@ -8,6 +8,8 @@ import { getSupabase } from '@/lib/supabase/client';
 import { resolveProductImage } from '@/lib/utils/image';
 import { roundUpToNearestTen } from '@/lib/utils/formatters';
 
+const getClient = (customClient?: any) => customClient || getSupabase();
+
 export type RpcSortBy = 'created_at' | 'price' | 'name';
 export type RpcSortOrder = 'asc' | 'desc';
 export type RpcSortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'name_asc';
@@ -324,9 +326,10 @@ export async function getProducts(
 
 export async function getProductDetail(
   idOrSlug: string,
+  customClient?: any
 ): Promise<{ product: RpcProduct | null; error: string | null }> {
   try {
-    const supabase = getSupabase();
+    const supabase = getClient(customClient);
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
 
     let query = supabase
@@ -334,7 +337,7 @@ export async function getProductDetail(
       .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, backorder_enabled')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
-      .neq('visibility_status', false)
+      .eq('visibility_status', 'visible')
       .not('centralhub_product_id', 'is', null);
 
     if (isUuid) {
