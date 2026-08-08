@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'About Us | Kerala Groceries UK – Authentic Kerala Food Delivered Across the UK',
   description:
     'Learn about Kerala Groceries UK (KG), a UK-based ecommerce platform delivering authentic Kerala groceries nationwide. Operated by Tasty Kerala Ltd.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/about-us',
+  },
   keywords: [
     'Kerala Groceries UK',
     'about Kerala Groceries',

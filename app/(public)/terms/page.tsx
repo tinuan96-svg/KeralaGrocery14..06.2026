@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Terms & Conditions | Kerala Groceries UK',
   description:
     'Terms and Conditions for shopping at Kerala Groceries UK, operated by Tasty Kerala Ltd. Covers orders, payments, delivery, refunds, wallet credits, and user responsibilities.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/terms',
+  },
   keywords: [
     'Kerala Groceries UK terms',
     'Tasty Kerala Ltd terms and conditions',

@@ -6,6 +6,9 @@ import { Calendar, ArrowRight } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Blog - Kerala Groceries UK | Indian Food & Cooking Tips',
   description: 'Read our blog for Kerala recipes, Indian cooking tips, product guides, and more. Learn about authentic Kerala groceries and how to use them.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/blog',
+  },
 };
 
 const blogPosts = [

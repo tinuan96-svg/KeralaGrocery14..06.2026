@@ -9,6 +9,9 @@ import type { ProductWithDetails } from '@/lib/types/database';
 export const metadata: Metadata = {
   title: 'Kerala Groceries UK - Authentic Kerala Products Delivered Nationwide',
   description: 'Buy authentic Kerala groceries online in the UK. Fresh spices, rice, snacks, and traditional ingredients delivered to your door. Fast UK-wide delivery from Tasty Kerala Ltd.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/kerala-groceries-uk',
+  },
   keywords: ['kerala groceries uk', 'kerala food uk', 'kerala products online', 'buy kerala groceries', 'kerala store uk', 'kerala spices uk'],
 };
 

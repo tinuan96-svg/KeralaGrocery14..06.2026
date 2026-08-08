@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Refund & Returns Policy | Kerala Groceries UK',
   description:
     'Refund and returns policy for Kerala Groceries UK (Tasty Kerala Ltd). Learn about eligibility, process, and timelines for refunds on grocery orders.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/refund-policy',
+  },
   keywords: ['Kerala Groceries UK refund policy', 'Indian grocery UK returns', 'Tasty Kerala Ltd refunds'],
   openGraph: {
     title: 'Refund & Returns Policy | Kerala Groceries UK',

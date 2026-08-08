@@ -9,6 +9,9 @@ import type { ProductWithDetails } from '@/lib/types/database';
 export const metadata: Metadata = {
   title: 'Buy Kerala Spices UK - Authentic Indian Spices Online | Kerala Groceries',
   description: 'Buy authentic Kerala spices online in the UK. Fresh curry powders, masalas, whole spices, and traditional Kerala seasonings. Fast UK delivery, quality guaranteed.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/buy-kerala-spices-uk',
+  },
   keywords: ['buy kerala spices uk', 'kerala masala uk', 'authentic kerala spices', 'indian spices online', 'kerala curry powder', 'buy spices online uk'],
 };
 

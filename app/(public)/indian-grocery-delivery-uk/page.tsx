@@ -6,6 +6,9 @@ import { Truck, Clock, MapPin, Package } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Indian Grocery Delivery UK - Fast Nationwide Shipping | Kerala Groceries',
   description: 'Fast Indian grocery delivery across the UK. Order authentic Kerala and Indian products online with next-day delivery. Free shipping over £45 to all UK addresses.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/indian-grocery-delivery-uk',
+  },
   keywords: ['indian grocery delivery uk', 'indian food delivery', 'online indian groceries', 'indian grocery home delivery', 'buy indian groceries online uk'],
 };
 

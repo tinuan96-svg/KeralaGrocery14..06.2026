@@ -6,6 +6,9 @@ import { ArrowLeft, MapPin, Clock, Star } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Best Indian Grocery Delivery in London (2026 Guide)',
   description: 'Comprehensive guide to Indian grocery delivery in London. Compare services, find the best Kerala groceries, and get authentic products delivered to your door.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/blog/best-indian-grocery-delivery-london',
+  },
   keywords: ['indian grocery delivery london', 'online indian groceries london', 'kerala groceries london', 'asian grocery delivery', 'indian food delivery'],
 };
 

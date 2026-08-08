@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Privacy Policy | Kerala Groceries UK',
   description:
     'Privacy Policy for Kerala Groceries UK (Tasty Kerala Ltd). Learn how we collect, use, and protect your personal data in compliance with UK GDPR.',
+  alternates: {
+    canonical: 'https://keralagrocery.com/privacy',
+  },
   keywords: ['Kerala Groceries UK privacy policy', 'Tasty Kerala Ltd GDPR', 'Indian grocery UK data protection'],
   openGraph: {
     title: 'Privacy Policy | Kerala Groceries UK',
