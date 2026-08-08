@@ -34,6 +34,7 @@ export interface RpcProduct {
   created_at: string | null;
   discount_pct: number;
   markup_percentage?: number | null;
+  backorder_enabled?: boolean;
   in_stock: boolean;
   display_title: string;
   variants?: ProductVariantOption[];

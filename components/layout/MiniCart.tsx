@@ -20,12 +20,12 @@ export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
 
   const handleQtyChange = (item: any, delta: number) => {
     const newQty = item.quantity + delta;
-    if (item.maxStock !== undefined && newQty > item.maxStock) {
+    if (!item.backorderEnabled && item.maxStock !== undefined && newQty > item.maxStock) {
       haptics.notification('warning');
       return;
     }
     haptics.impact('light');
-    updateQuantity(item.id, newQty, item.maxStock);
+    updateQuantity(item.id, newQty, item.maxStock, item.backorderEnabled);
   };
 
   const handleRemove = (id: string) => {

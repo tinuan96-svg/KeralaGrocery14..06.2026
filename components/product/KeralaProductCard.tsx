@@ -46,20 +46,20 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (stock <= 0) return;
-    addToCart(cartItem, 1, stock);
+    if (!product.backorder_enabled && stock <= 0) return;
+    addToCart(cartItem, 1, stock, product.backorder_enabled);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (qty >= stock) return;
-    addToCart(cartItem, 1, stock);
+    if (!product.backorder_enabled && qty >= stock) return;
+    addToCart(cartItem, 1, stock, product.backorder_enabled);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (qty === 1) removeFromCart(product.id);
-    else if (qty > 1) addToCart(cartItem, -1, stock);
+    else if (qty > 1) addToCart(cartItem, -1, stock, product.backorder_enabled);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -102,7 +102,7 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
             <Heart className={`h-3.5 w-3.5 transition-colors ${inWishlist ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
           </button>
 
-          {stock === 0 && (
+          {!product.backorder_enabled && stock === 0 && (
             <div className="absolute inset-0 bg-white/85 flex items-center justify-center z-20 backdrop-blur-[2px]">
               <span className="text-gray-600 font-semibold text-xs bg-white border border-[#d1ead9] px-3 py-1.5 rounded-full shadow-sm">
                 Out of Stock
@@ -154,11 +154,11 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
         <div className="mt-auto">
           {qty === 0 ? (
             <button
-              disabled={stock === 0}
+              disabled={!product.backorder_enabled && stock === 0}
               onClick={handleAdd}
               className="w-full flex items-center justify-center gap-1.5 btn-brand disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none text-[11px] h-8 rounded-xl font-bold"
             >
-              {stock === 0 ? (
+              {!product.backorder_enabled && stock === 0 ? (
                 'Out of Stock'
               ) : (
                 <><ShoppingCart className="h-3 w-3" /> Add to Cart</>
@@ -175,7 +175,8 @@ function KeralaProductCardComponent({ product, priority = false }: KeralaProduct
               <span className="font-extrabold text-[#0B5D3B] text-[13px]">{qty}</span>
               <button
                 onClick={handleIncrease}
-                className="w-6 h-6 rounded-lg bg-[#0B5D3B] flex items-center justify-center hover:bg-[#0d6b44] transition-all active:scale-90 text-white"
+                disabled={!product.backorder_enabled && qty >= stock}
+                className="w-6 h-6 rounded-lg bg-[#0B5D3B] flex items-center justify-center hover:bg-[#0d6b44] transition-all active:scale-90 text-white disabled:opacity-50"
               >
                 <Plus className="h-3 w-3" />
               </button>

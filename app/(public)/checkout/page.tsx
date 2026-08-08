@@ -221,7 +221,7 @@ export default function CheckoutPage() {
 
       const { data: products, error } = await supabase
         .from('products')
-        .select('id, name, stock, stock_quantity')
+        .select('id, name, stock, stock_quantity, backorder_enabled')
         .in('id', productIds);
 
       if (error) throw error;
@@ -231,6 +231,9 @@ export default function CheckoutPage() {
 
       products?.forEach(p => {
         const cartItem = cart.find(i => i.id === p.id);
+        // Skip stock check if backorder is enabled
+        if (p.backorder_enabled) return;
+
         // Robust check: use the maximum of both stock columns to avoid sync issues
         const available = Math.max(Number(p.stock || 0), Number(p.stock_quantity || 0));
 
@@ -241,7 +244,7 @@ export default function CheckoutPage() {
             removeFromCart(p.id);
           } else {
             issues.push(`Only ${available} units of ${p.name} are available. We've updated your cart.`);
-            updateQuantity(p.id, available, available);
+            updateQuantity(p.id, available, available, false);
           }
         }
       });

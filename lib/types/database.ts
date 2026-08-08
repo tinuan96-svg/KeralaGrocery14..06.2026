@@ -53,6 +53,7 @@ export interface Product {
   is_deal?: boolean;
   is_new_arrival?: boolean;
   sold_count?: number;
+  backorder_enabled?: boolean;
   tags?: string[];
   custom_attributes?: Record<string, any>;
   warehouse_location?: string | null;
@@ -124,6 +125,7 @@ export interface ProductWithDetails {
   is_deal?: boolean;
   is_new_arrival?: boolean;
   sold_count?: number;
+  backorder_enabled?: boolean;
   gallery_images?: GalleryImage[];
   variants?: ProductVariant[];
   tags?: string[];

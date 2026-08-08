@@ -36,9 +36,11 @@ export default function MobileStickyBar({ product, triggerRef }: MobileStickyBar
     return () => { if (el) observer.unobserve(el); };
   }, [triggerRef]);
 
-  const handleAdd = () => addToCart(cartPayload, 1, product.stock);
+  const handleAdd = () => addToCart(cartPayload, 1, product.stock, product.backorder_enabled);
   const handleIncrease = () => {
-    if (currentQuantity < product.stock) updateQuantity(product.id, currentQuantity + 1, product.stock);
+    if (product.backorder_enabled || currentQuantity < product.stock) {
+      updateQuantity(product.id, currentQuantity + 1, product.stock, product.backorder_enabled);
+    }
   };
   const handleDecrease = () => {
     if (currentQuantity > 1) updateQuantity(product.id, currentQuantity - 1);
@@ -83,7 +85,7 @@ export default function MobileStickyBar({ product, triggerRef }: MobileStickyBar
                 </span>
                 <button
                   onClick={handleIncrease}
-                  disabled={currentQuantity >= product.stock}
+                  disabled={!product.backorder_enabled && currentQuantity >= product.stock}
                   className="w-11 h-11 flex items-center justify-center bg-[#0B5D3B] text-white hover:bg-[#094d31] disabled:opacity-40 transition-colors"
                 >
                   <Plus className="w-4 h-4" />

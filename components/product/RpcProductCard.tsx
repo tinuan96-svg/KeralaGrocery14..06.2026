@@ -34,20 +34,20 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!product.in_stock || product.stock <= 0) return;
-    addToCart(cartProduct, 1, product.stock);
+    if (!product.backorder_enabled && (!product.in_stock || product.stock <= 0)) return;
+    addToCart(cartProduct, 1, product.stock, product.backorder_enabled);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (qty >= product.stock) return;
-    addToCart(cartProduct, 1, product.stock);
+    if (!product.backorder_enabled && qty >= product.stock) return;
+    addToCart(cartProduct, 1, product.stock, product.backorder_enabled);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (qty === 1) removeFromCart(product.id);
-    else addToCart(cartProduct, -1, product.stock);
+    else addToCart(cartProduct, -1, product.stock, product.backorder_enabled);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -81,7 +81,7 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
               Only {product.stock} left!
             </span>
           )}
-          {!product.in_stock && (
+          {!product.backorder_enabled && !product.in_stock && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20 backdrop-blur-[2px]">
               <span className="text-gray-600 font-semibold text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow">
                 Out of Stock
@@ -135,11 +135,11 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
         <div className="mt-auto">
           {qty === 0 ? (
             <button
-              disabled={!product.in_stock}
+              disabled={!product.backorder_enabled && !product.in_stock}
               onClick={handleAdd}
               className="w-full flex items-center justify-center gap-1 bg-[#0B5D3B] hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 text-white font-black rounded-lg text-[10px] h-7 transition-all active:scale-95 shadow-sm"
             >
-              {product.in_stock ? 'ADD' : 'Out of Stock'}
+              {product.backorder_enabled || product.in_stock ? 'ADD' : 'Out of Stock'}
             </button>
           ) : (
             <div
@@ -155,7 +155,8 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
               <span className="font-black text-[#0B5D3B] text-[11px]">{qty}</span>
               <button
                 onClick={handleIncrease}
-                className="w-5 h-5 rounded-md bg-[#0B5D3B] flex items-center justify-center hover:bg-green-700 transition-all active:scale-90 text-white"
+                disabled={!product.backorder_enabled && qty >= product.stock}
+                className="w-5 h-5 rounded-md bg-[#0B5D3B] flex items-center justify-center hover:bg-green-700 transition-all active:scale-90 text-white disabled:opacity-50"
               >
                 <Plus className="h-2 w-2" />
               </button>

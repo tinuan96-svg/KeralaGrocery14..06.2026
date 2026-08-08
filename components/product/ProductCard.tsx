@@ -50,25 +50,25 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
   const handleAdd = (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
-    if (stock <= 0) return;
+    if (!product.backorder_enabled && stock <= 0) return;
     haptics.impact('medium'); // (Suggestion 2)
     setIsAdding(true);
     setTimeout(() => setIsAdding(false), 1000);
-    addToCart(cartItem, 1, stock);
+    addToCart(cartItem, 1, stock, product.backorder_enabled);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (qty >= stock) return;
+    if (!product.backorder_enabled && qty >= stock) return;
     haptics.impact('light'); // (Suggestion 2)
-    addToCart(cartItem, 1, stock);
+    addToCart(cartItem, 1, stock, product.backorder_enabled);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     haptics.impact('light'); // (Suggestion 2)
     if (qty === 1) removeFromCart(product.id);
-    else if (qty > 1) addToCart(cartItem, -1, stock);
+    else if (qty > 1) addToCart(cartItem, -1, stock, product.backorder_enabled);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -135,7 +135,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
           </button>
 
           {/* Out of stock overlay */}
-          {stock === 0 && (
+          {!product.backorder_enabled && stock === 0 && (
             <div className="absolute inset-0 bg-white/85 flex items-center justify-center z-20 backdrop-blur-[2px]">
               <span className="text-gray-600 font-semibold text-xs bg-white border border-[#d1ead9] px-3 py-1.5 rounded-full shadow-sm">
                 Out of Stock
@@ -200,12 +200,12 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
         <div className="mt-auto">
           {qty === 0 ? (
             <button
-              disabled={stock === 0}
+              disabled={!product.backorder_enabled && stock === 0}
               onClick={handleAdd}
               aria-label={`Add ${product.name} to cart`}
               className="w-full flex items-center justify-center gap-1 bg-[#0B5D3B] hover:bg-[#0d6b44] disabled:bg-gray-100 disabled:text-gray-400 text-white font-black text-[10px] h-7 rounded-lg transition-all active:scale-95 shadow-sm"
             >
-              {stock === 0 ? (
+              {!product.backorder_enabled && stock === 0 ? (
                 'Out of Stock'
               ) : (
                 <>ADD</>
@@ -225,7 +225,8 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
               <span className="font-black text-[#0B5D3B] text-[11px]">{qty}</span>
               <button
                 onClick={handleIncrease}
-                className="w-5 h-5 rounded-md bg-[#0B5D3B] flex items-center justify-center hover:bg-[#0d6b44] transition-all active:scale-90 text-white"
+                disabled={!product.backorder_enabled && qty >= stock}
+                className="w-5 h-5 rounded-md bg-[#0B5D3B] flex items-center justify-center hover:bg-[#0d6b44] transition-all active:scale-90 text-white disabled:opacity-50"
               >
                 <Plus className="h-2 w-2" />
               </button>

@@ -304,7 +304,7 @@ export default function AssistantChat() {
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-black text-green-700">£{Number(p.price).toFixed(2)}</span>
                       <button
-                        onClick={() => addToCart({ id: p.id, name: p.name, price: p.price, slug: p.slug, image_url: p.image_main || p.image_url }, 1, p.stock)}
+                        onClick={() => addToCart({ id: p.id, name: p.name, price: p.price, slug: p.slug, image_url: p.image_main || p.image_url }, 1, p.stock, p.backorder_enabled)}
                         className="w-7 h-7 bg-[#0B5D3B] text-white rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-md"
                       >
                         <ShoppingCart className="w-3.5 h-3.5" />
