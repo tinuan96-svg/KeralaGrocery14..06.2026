@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { getSupabase } from '@/lib/supabase/client';
@@ -19,6 +20,7 @@ interface LocalProfile {
   address: string;
   city: string;
   postcode: string;
+  accepts_marketing: boolean;
 }
 
 export default function UserProfileForm() {
@@ -33,6 +35,7 @@ export default function UserProfileForm() {
     address: '',
     city: '',
     postcode: '',
+    accepts_marketing: false,
   });
 
   const loadUserProfile = useCallback(async () => {
@@ -57,6 +60,7 @@ export default function UserProfileForm() {
           address: data.address || '',
           city: data.city || '',
           postcode: data.postcode || '',
+          accepts_marketing: data.accepts_marketing || false,
         });
       } else {
         setProfile({
@@ -66,6 +70,7 @@ export default function UserProfileForm() {
           address: '',
           city: '',
           postcode: '',
+          accepts_marketing: false,
         });
       }
     } catch (error) {
@@ -153,6 +158,7 @@ export default function UserProfileForm() {
         address: profile.address,
         city: profile.city,
         postcode: profile.postcode.toUpperCase(),
+        accepts_marketing: profile.accepts_marketing,
       });
 
       if (error) throw error;
@@ -290,6 +296,30 @@ export default function UserProfileForm() {
                 />
                 <p className="text-xs text-gray-500 mt-1">UK postcode format (e.g., SW1A 1AA)</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-gray-100">
+          <div className="flex items-start space-x-3">
+            <Checkbox
+              id="marketing"
+              checked={profile.accepts_marketing}
+              onCheckedChange={(checked) =>
+                setProfile({ ...profile, accepts_marketing: checked === true })
+              }
+              className="mt-1 border-gray-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+            />
+            <div className="grid gap-1.5 leading-none">
+              <Label
+                htmlFor="marketing"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              >
+                Marketing Preferences
+              </Label>
+              <p className="text-xs text-gray-500">
+                I would like to receive updates about new products, authentic Kerala recipes, and special offers via WhatsApp or Email.
+              </p>
             </div>
           </div>
         </div>

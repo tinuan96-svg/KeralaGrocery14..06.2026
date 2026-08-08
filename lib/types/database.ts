@@ -161,6 +161,8 @@ export interface UserProfile {
   address: string | null;
   city: string | null;
   postcode: string | null;
+  accepts_marketing: boolean;
+  marketing_consent_date: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
