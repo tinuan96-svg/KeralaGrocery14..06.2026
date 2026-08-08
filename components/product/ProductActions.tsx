@@ -34,13 +34,13 @@ export default function ProductActions({ product, onAddToCart }: ProductActionsP
   };
 
   const handleAddToCart = () => {
-    addToCart(cartPayload);
+    addToCart(cartPayload, 1, product.stock);
     onAddToCart?.();
   };
 
   const handleIncrease = () => {
     if (currentQuantity < product.stock) {
-      updateQuantity(product.id, currentQuantity + 1);
+      updateQuantity(product.id, currentQuantity + 1, product.stock);
     }
   };
 
@@ -54,7 +54,7 @@ export default function ProductActions({ product, onAddToCart }: ProductActionsP
 
   const handleBuyNow = () => {
     if (currentQuantity === 0) {
-      addToCart(cartPayload);
+      addToCart(cartPayload, 1, product.stock);
     }
     router.push('/checkout');
   };

@@ -36,9 +36,9 @@ export default function MobileStickyBar({ product, triggerRef }: MobileStickyBar
     return () => { if (el) observer.unobserve(el); };
   }, [triggerRef]);
 
-  const handleAdd = () => addToCart(cartPayload);
+  const handleAdd = () => addToCart(cartPayload, 1, product.stock);
   const handleIncrease = () => {
-    if (currentQuantity < product.stock) updateQuantity(product.id, currentQuantity + 1);
+    if (currentQuantity < product.stock) updateQuantity(product.id, currentQuantity + 1, product.stock);
   };
   const handleDecrease = () => {
     if (currentQuantity > 1) updateQuantity(product.id, currentQuantity - 1);

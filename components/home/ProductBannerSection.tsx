@@ -113,7 +113,7 @@ function ProductCard({
                   </button>
                   <span className="text-[11px] font-bold w-3 text-center">{qty}</span>
                   <button
-                    onClick={() => addToCart(cartProduct)}
+                    onClick={() => addToCart(cartProduct, 1, product.stock)}
                     className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition-colors"
                   >
                     <Plus className="w-2.5 h-2.5" />
@@ -121,7 +121,7 @@ function ProductCard({
                 </div>
               ) : (
                 <button
-                  onClick={() => addToCart(cartProduct)}
+                  onClick={() => addToCart(cartProduct, 1, product.stock)}
                   disabled={product.stock === 0}
                   className="bg-green-600 hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 text-white text-[9px] font-black px-2 py-1.5 rounded-lg transition-colors shadow-sm"
                 >
@@ -187,7 +187,7 @@ function ProductCard({
               </button>
               <span className="text-[11px] font-bold w-3 text-center text-gray-900">{qty}</span>
               <button
-                onClick={() => addToCart(cartProduct)}
+                onClick={() => addToCart(cartProduct, 1, product.stock)}
                 className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center"
                 aria-label="Increase"
               >
@@ -196,7 +196,7 @@ function ProductCard({
             </div>
           ) : (
             <button
-              onClick={() => addToCart(cartProduct)}
+              onClick={() => addToCart(cartProduct, 1, product.stock)}
               disabled={product.stock === 0}
               className="bg-green-600 hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 text-white text-[9px] font-black px-2 py-1.5 rounded-lg shadow-sm"
               aria-label={`Add ${product.name} to cart`}

@@ -104,6 +104,7 @@ type ProductRow = {
   is_bestseller: boolean | null;
   is_new_arrival: boolean | null;
   sold_count: number | null;
+  stock: number;
   category_id: string | null;
   brand_id: string | null;
   created_at: string | null;
@@ -144,7 +145,7 @@ function toProduct(row: ProductRow, catMap: Record<string, LookupRow>, brdMap: R
     price,
     original_price: orig,
     image_url: resolveImage(row),
-    stock: 100,
+    stock: row.stock ?? 0,
     discount,
     cat_id: cat?.id ?? null,
     cat_name: cat?.name ?? null,
@@ -160,7 +161,7 @@ const BASE_FILTER = {
   is_active: true,
 } as const;
 
-const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,image_medium,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at';
+const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,image_medium,is_featured,is_bestseller,is_new_arrival,sold_count,stock,category_id,brand_id,created_at';
 
 export function useProductBanners(): ProductBannersData {
   const [banners, setBanners] = useState<Record<BannerKey, BannerProduct[]>>({

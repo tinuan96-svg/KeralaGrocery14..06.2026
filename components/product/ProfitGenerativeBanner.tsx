@@ -29,7 +29,7 @@ export default function ProfitGenerativeBanner() {
       price: p.price,
       image_url: p.image_url ?? undefined,
       slug: p.slug ?? p.id,
-    });
+    }, 1, p.stock);
     toast({
       title: 'Added to cart',
       description: `${p.display_title} has been added.`,
