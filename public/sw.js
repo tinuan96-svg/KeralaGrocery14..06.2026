@@ -15,7 +15,6 @@ const IMAGE_CACHE   = `${CACHE_VERSION}-images`;
 const PRECACHE_ASSETS = [
   '/offline',
   '/manifest.json',
-  '/image.png',
   '/placeholder.webp',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',

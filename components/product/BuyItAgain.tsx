@@ -26,7 +26,13 @@ export default function BuyItAgain() {
           .eq('user_id', user.id)
           .limit(8);
 
-        if (error) throw error;
+        if (error) {
+          if (error.code === 'PGRST116' || error.message?.includes('not found')) {
+            setProducts([]);
+            return;
+          }
+          throw error;
+        }
         setProducts(data || []);
       } catch (err) {
         console.error('[BuyItAgain] Error:', err);
