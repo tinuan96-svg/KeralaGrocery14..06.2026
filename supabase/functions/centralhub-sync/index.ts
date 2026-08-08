@@ -46,6 +46,7 @@ interface CentralHubProduct {
   sku: string | null;
   department: string | null;
   subcategory: string | null;
+  backorder_enabled: boolean | null;
 }
 
 interface LocalProduct {
@@ -58,7 +59,7 @@ interface LocalProduct {
   approval_status: string;
 }
 
-const CENTRALHUB_SELECT = "id,name,price,stock,product_type,brand,warehouse_location,weight,weight_kg,weight_grams,gtin,unit,slug,sku,department,subcategory";
+const CENTRALHUB_SELECT = "id,name,price,stock,product_type,brand,warehouse_location,weight,weight_kg,weight_grams,gtin,unit,slug,sku,department,subcategory,backorder_enabled";
 const PAGE_SIZE = 500;
 
 // Admin-managed fields — NEVER overwritten by sync
@@ -771,6 +772,7 @@ Deno.serve(async (req: Request) => {
                 selling_price: sellingPrice,
                 price: sellingPrice,
                 markup_percentage: 5,
+                backorder_enabled: hp.backorder_enabled ?? false,
 
                 last_sync_at: now,
                 updated_at: now,

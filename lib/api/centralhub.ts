@@ -32,6 +32,7 @@ export interface CentralHubProduct {
   sold_count?: number | null;
   rating?: number | null;
   review_count?: number | null;
+  backorder_enabled?: boolean | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -138,7 +139,7 @@ export class CentralHubClient {
           `${this.apiUrl}/products` +
           `?select=id,name,slug,description,image_url,category_id,brand_id,price,original_price,` +
           `is_active,is_deleted,is_featured,is_deal,is_new_arrival,is_bestseller,` +
-          `discount_percentage,sold_count,rating,review_count,created_at,updated_at` +
+          `discount_percentage,sold_count,rating,review_count,backorder_enabled,created_at,updated_at` +
           `&is_deleted=eq.false&is_active=eq.true` +
           `&order=id.asc` +
           `&limit=${PAGE_SIZE}&offset=${offset}`;
