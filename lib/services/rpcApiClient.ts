@@ -140,7 +140,8 @@ function mapRow(
     created_at:      (row.created_at as string | null) ?? null,
     discount_pct:    discountPct,
     markup_percentage: row.markup_percentage != null ? Number(row.markup_percentage) : null,
-    in_stock:        Number(row.stock ?? row.stock_quantity ?? 0) > 0,
+    backorder_enabled: !!row.backorder_enabled,
+    in_stock:        !!row.backorder_enabled || Number(row.stock ?? row.stock_quantity ?? 0) > 0,
     display_title:   displayTitle,
   };
 }
@@ -228,7 +229,7 @@ export async function getProducts(
     let query = supabase
       .from('products')
       .select(
-        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock',
+        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, backorder_enabled',
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
@@ -328,7 +329,7 @@ export async function getProductDetail(
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock')
+      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, backorder_enabled')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .neq('visibility_status', false)
