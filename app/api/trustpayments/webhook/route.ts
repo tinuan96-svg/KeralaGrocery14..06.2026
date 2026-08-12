@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// This route relays Trust Payments URL notifications to the Supabase edge function.
-// Configure this URL in your Trust Payments Portal notification rules:
+// Relays Trust Payments URL notifications to the Supabase edge function.
+// Notification URL configured in Trust Payments Portal:
 //   https://keralagrocery.com/api/trustpayments/webhook
 export async function POST(req: NextRequest) {
   try {
@@ -10,23 +10,15 @@ export async function POST(req: NextRequest) {
     const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!serviceKey) {
-      console.error(
-        '[trustpayments-webhook-relay] SUPABASE_SERVICE_ROLE_KEY is not set.',
-        'Add it as a server-side environment variable on your hosting provider.'
-      );
-      return NextResponse.json({ error: 'Relay misconfigured' }, { status: 500 });
-    }
-
-    if (!supabaseUrl) {
-      console.error('[trustpayments-webhook-relay] Supabase URL not set');
+    if (!serviceKey || !supabaseUrl) {
+      console.error('[trustpayments-webhook-relay] Missing Supabase configuration');
       return NextResponse.json({ error: 'Relay misconfigured' }, { status: 500 });
     }
 
     const response = await fetch(`${supabaseUrl}/functions/v1/trustpayments-webhook`, {
       method: 'POST',
       headers: {
-        'Content-Type': req.headers.get('content-type') || 'application/json',
+        'Content-Type': req.headers.get('content-type') || 'application/x-www-form-urlencoded',
         Authorization: `Bearer ${serviceKey}`,
       },
       body,
@@ -45,7 +37,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Trust Payments also sends GET requests for notification verification
-export async function GET(req: NextRequest) {
+export async function GET() {
   return NextResponse.json({ status: 'ok' }, { status: 200 });
 }
