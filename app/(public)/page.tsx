@@ -1,19 +1,19 @@
-import HomeHero from '@/components/home/HomeHero';
-import CategoryGrid from '@/components/home/CategoryGrid';
-import ShopByNeed from '@/components/home/ShopByNeed';
-import TrustSection from '@/components/home/TrustSection';
-import HomepageSections from '@/components/home/HomepageSections';
 import SEOContent from '@/components/home/SEOContent';
-import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
-import CategoryProductSection from '@/components/home/CategoryProductSection';
-import PullToRefresh from '@/components/home/PullToRefresh';
 import { LocalBusinessSchema, MerchantReturnPolicySchema, ShippingPolicySchema, GroceryStoreSchema, FAQSchema } from '@/components/seo/StructuredData';
+import PromoBannerCarousel from '@/components/home/PromoBannerCarousel';
+import HomepageSections from '@/components/home/HomepageSections';
+import AmazonStyleGrid from '@/components/home/AmazonStyleGrid';
+import LocalCityBanner from '@/components/home/LocalCityBanner';
+import WhyChooseUs from '@/components/home/WhyChooseUs';
+import PersonalizedRecommendations from '@/components/product/PersonalizedRecommendations';
+import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
+import PullToRefresh from '@/components/home/PullToRefresh';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Kerala Grocery UK | Buy Authentic Kerala Groceries Online',
-  description: 'Shop authentic Kerala and South Indian groceries online. Rice, spices, snacks, frozen foods, pickles and more with UK-wide delivery.',
+  description: 'The UK\'s #1 Kerala Grocery store for authentic South Indian products. Fast delivery of spices, Matta rice, snacks, and pickles nationwide.',
   alternates: {
     canonical: 'https://keralagrocery.com',
   },
@@ -27,15 +27,19 @@ const StickySearchBar = dynamic(
 const homepageFAQs = [
   {
     question: "Where do you deliver Kerala grocery in the UK?",
-    answer: "We deliver authentic Kerala grocery products across the United Kingdom. Delivery is available for most postcodes."
+    answer: "We deliver authentic Kerala grocery products across the entire United Kingdom, including England, Scotland, Wales, and Northern Ireland. Next-day delivery is available for most postcodes."
   },
   {
     question: "Do you offer free delivery on Kerala grocery orders?",
-    answer: "We offer free standard delivery on qualifying orders. Delivery fees are calculated at checkout based on your location and order size."
+    answer: "Yes, we offer free standard delivery on all Kerala grocery orders over £45. For orders below this amount, a small delivery fee applies which is calculated at checkout."
+  },
+  {
+    question: "Is your Kerala grocery store authentically sourced?",
+    answer: "Absolutely. We work directly with trusted suppliers in Kerala to ensure our Kerala grocery store stocks only 100% authentic spices, rice, snacks, and oils."
   },
   {
     question: "Can I buy Matta rice from your Kerala grocery online?",
-    answer: "Yes, our store stocks a range of Matta rice (Palakkadan), banana chips, and traditional Kerala products for UK delivery."
+    answer: "Yes, our Kerala grocery online store stocks a wide range of Matta rice (Palakkadan), Banana chips, and traditional Kerala sweets for fast UK delivery."
   }
 ];
 
@@ -49,53 +53,27 @@ export default function HomePage() {
         <GroceryStoreSchema />
         <FAQSchema items={homepageFAQs} />
 
+        {/* Sticky search appears below header once hero scrolls away */}
         <StickySearchBar sentinelId="hero-end" />
 
-        {/* Hero */}
-        <HomeHero />
+        <PromoBannerCarousel />
 
-        {/* Sentinel for sticky search */}
+        {/* Sentinel — StickySearchBar watches this element */}
         <div id="hero-end" />
 
-        {/* Shop by Category */}
-        <CategoryGrid />
+        {/* Amazon-style content grid */}
+        <AmazonStyleGrid />
 
-        {/* Shop by Need */}
-        <ShopByNeed />
+        <PersonalizedRecommendations />
 
-        {/* Best Sellers, Deals, Brands, New Arrivals, Wallet, Discover More */}
+        {/* Dynamic Local City Marketing Banner */}
+        <LocalCityBanner />
+
+        {/* All product sections in feed order */}
         <HomepageSections />
 
-        {/* Category product sections — lazy loaded */}
-        <CategoryProductSection
-          title="Kerala Snacks"
-          emoji="🍌"
-          categorySlugs={['snacks-namkeens']}
-          viewAllHref="/products?filter=snacks-namkeens"
-        />
-        <CategoryProductSection
-          title="Rice & Daily Essentials"
-          emoji="🍚"
-          categorySlugs={['rice-grains', 'rice-powders-flour']}
-          viewAllHref="/products?filter=rice-grains"
-        />
-        <CategoryProductSection
-          title="Spices & Masalas"
-          emoji="🌶️"
-          categorySlugs={['spices']}
-          viewAllHref="/products?filter=spices"
-        />
-        <CategoryProductSection
-          title="Pickles & Chutneys"
-          emoji="🥭"
-          categorySlugs={['pickles-chutneys', 'condiments']}
-          viewAllHref="/products?filter=pickles-chutneys"
-        />
+        <WhyChooseUs />
 
-        {/* Trust */}
-        <TrustSection />
-
-        {/* SEO content near bottom */}
         <SEOContent />
         <LocalSEOFooter />
       </div>

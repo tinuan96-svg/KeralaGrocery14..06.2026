@@ -5,33 +5,26 @@ import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, ShieldCheck, Truck, 
 import { usePlatform } from '@/hooks/useNative';
 
 const SHOP_LINKS = [
-  ['/products', 'Shop All'],
+  ['/products', 'All Products'],
   ['/categories', 'Categories'],
-  ['/products?filter=deals', 'Best Sellers'],
-  ['/products?filter=deals', 'Deals'],
+  ['/brands', 'Brands'],
+  ['/products?filter=deals', 'Deals & Offers'],
   ['/products?sort=new', 'New Arrivals'],
 ];
 
-const SERVICE_LINKS = [
+const HELP_LINKS = [
+  ['/delivery-policy', 'Delivery Policy'],
+  ['/refund-policy', 'Refund & Returns'],
   ['/contact', 'Contact Us'],
-  ['/delivery-policy', 'Delivery Information'],
-  ['/refund-policy', 'Returns & Refunds'],
   ['/about-us', 'About Us'],
   ['/blog', 'Blog & Guides'],
 ];
 
-const ACCOUNT_LINKS = [
-  ['/account', 'My Account'],
-  ['/orders', 'My Orders'],
-  ['/account/wallet', 'Wallet / Loyalty'],
-  ['/account/addresses', 'Saved Addresses'],
-];
-
-const COMPANY_LINKS = [
-  ['/about-us', 'About Us'],
+const LEGAL_LINKS = [
   ['/privacy', 'Privacy Policy'],
   ['/terms', 'Terms & Conditions'],
   ['/delivery-policy', 'Delivery Policy'],
+  ['/refund-policy', 'Refund Policy'],
 ];
 
 const TRUST_ITEMS = [
@@ -72,7 +65,7 @@ export default function Footer() {
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
@@ -133,23 +126,6 @@ export default function Footer() {
             <h4 className="text-white font-bold text-sm mb-4">Shop</h4>
             <ul className="space-y-2.5">
               {SHOP_LINKS.map(([href, label]) => (
-                <li key={href + label}>
-                  <Link
-                    href={href}
-                    className="text-xs text-gray-400 hover:text-white hover:translate-x-0.5 transition-all duration-150 inline-block"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Customer Service */}
-          <div>
-            <h4 className="text-white font-bold text-sm mb-4">Customer Service</h4>
-            <ul className="space-y-2.5">
-              {SERVICE_LINKS.map(([href, label]) => (
                 <li key={href}>
                   <Link
                     href={href}
@@ -162,11 +138,11 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Account */}
+          {/* Help */}
           <div>
-            <h4 className="text-white font-bold text-sm mb-4">Account</h4>
+            <h4 className="text-white font-bold text-sm mb-4">Help</h4>
             <ul className="space-y-2.5">
-              {ACCOUNT_LINKS.map(([href, label]) => (
+              {HELP_LINKS.map(([href, label]) => (
                 <li key={href}>
                   <Link
                     href={href}
@@ -179,27 +155,15 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* App + payment */}
           <div>
-            <h4 className="text-white font-bold text-sm mb-4">Company</h4>
-            <ul className="space-y-2.5">
-              {COMPANY_LINKS.map(([href, label]) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className="text-xs text-gray-400 hover:text-white hover:translate-x-0.5 transition-all duration-150 inline-block"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
             {mounted && platform === 'android' && showAndroidLink && (
-              <div className="mt-4 kg-app-links-section hidden-on-ios">
+              <div className="kg-app-links-section hidden-on-ios">
+                <h4 className="text-white font-bold text-sm mb-4">Get The App</h4>
+                <p className="text-xs text-gray-400 mb-3">Shop on the go with our mobile app.</p>
                 <a
                   href="#"
-                  className="inline-flex items-center gap-2.5 bg-white/8 hover:bg-[#0B5D3B]/60 border border-white/15 hover:border-[#6FDB2F]/30 rounded-2xl px-4 py-2.5 transition-all duration-200 group"
+                  className="inline-flex items-center gap-2.5 bg-white/8 hover:bg-[#0B5D3B]/60 border border-white/15 hover:border-[#6FDB2F]/30 rounded-2xl px-4 py-2.5 transition-all duration-200 mb-5 group"
                 >
                   <span className="text-xl leading-none">🛒</span>
                   <div>
@@ -209,23 +173,18 @@ export default function Footer() {
                 </a>
               </div>
             )}
-          </div>
-        </div>
-      </div>
 
-      {/* Payment methods */}
-      <div className="border-t border-white/8">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h4 className="text-white font-bold text-xs mb-2">We Accept</h4>
-          <div className="flex flex-wrap gap-1.5">
-            {['VISA', 'Mastercard', 'Maestro', 'KG Wallet'].map((method) => (
-              <span
-                key={method}
-                className="text-[10px] font-semibold text-gray-400 bg-white/8 border border-white/12 px-2 py-1 rounded-lg"
-              >
-                {method}
-              </span>
-            ))}
+            <h4 className="text-white font-bold text-xs mb-2">We Accept</h4>
+            <div className="flex flex-wrap gap-1.5">
+              {['VISA', 'Mastercard', 'Maestro', 'KG Wallet'].map((method) => (
+                <span
+                  key={method}
+                  className="text-[10px] font-semibold text-gray-400 bg-white/8 border border-white/12 px-2 py-1 rounded-lg"
+                >
+                  {method}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -237,12 +196,7 @@ export default function Footer() {
             &copy; 2026 Tasty Kerala Ltd. All rights reserved.
           </p>
           <div className="flex flex-wrap justify-center gap-5">
-            {[
-              ['/privacy', 'Privacy Policy'],
-              ['/terms', 'Terms & Conditions'],
-              ['/delivery-policy', 'Delivery Policy'],
-              ['/refund-policy', 'Refund Policy'],
-            ].map(([href, label]) => (
+            {LEGAL_LINKS.map(([href, label]) => (
               <Link
                 key={href}
                 href={href}

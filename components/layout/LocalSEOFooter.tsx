@@ -16,7 +16,7 @@ export default function LocalSEOFooter() {
         </h3>
         <p className="text-xs text-gray-500 mb-6 leading-relaxed">
           Kerala Grocery UK is your trusted partner for premium, authentic South Indian products.
-          We provide reliable <strong>Kerala grocery</strong> delivery to all major UK cities including:
+          We provide the fastest <strong>Kerala grocery</strong> delivery service to all major UK cities including:
         </p>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {CITIES.map(city => (
@@ -32,7 +32,7 @@ export default function LocalSEOFooter() {
         <div className="mt-8 pt-8 border-t border-gray-50 text-[10px] text-gray-400 leading-relaxed">
           <p>
             Operating from our UK hub, we ensure every order of Matta rice, coconut oil, and traditional snacks reaches your doorstep
-            in good condition. Sourced from Kerala. Delivery available across the UK.
+            in perfect condition. 100% Sourced from Kerala. Next Day Delivery available.
           </p>
         </div>
       </div>

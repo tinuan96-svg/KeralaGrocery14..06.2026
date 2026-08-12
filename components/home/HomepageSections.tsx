@@ -2,19 +2,86 @@
 
 import dynamic from 'next/dynamic';
 import { useHomepageData } from '@/hooks/useHomepageData';
+import TrendingNow from '@/components/home/TrendingNow';
+import MajorCategories from '@/components/home/MajorCategories';
+import LoyaltyBanner from '@/components/home/LoyaltyBanner';
+import KitchenEssentials from '@/components/home/KitchenEssentials';
+import MarketingBannerStrip from '@/components/home/MarketingBannerStrip';
+import QuickNavigation from '@/components/home/QuickNavigation';
+import TrustStrip from '@/components/home/TrustStrip';
 import { ProductGridSkeleton } from '@/components/product/ProductCardSkeleton';
 import { PersonalisedGreeting } from '@/components/layout/CartEnhancements';
 import type { Brand } from '@/lib/types/database';
 
-const BestSellers = dynamic(() => import('@/components/home/BestSellers'), { ssr: false });
-const DealsSection = dynamic(() => import('@/components/home/DealsSection'), { ssr: false });
-const NewArrivals = dynamic(() => import('@/components/home/NewArrivals'), { ssr: false });
-const LoyaltyBanner = dynamic(() => import('@/components/home/LoyaltyBanner'), { ssr: false });
-const BrandShowcase = dynamic(() => import('@/components/home/BrandShowcase'), { ssr: false });
-const DiscoverMoreFeed = dynamic(() => import('@/components/home/DiscoverMoreFeed'), { ssr: false });
+const DealsSection = dynamic(() => import('@/components/home/DealsSection'), {
+  loading: () => (
+    <section className="py-3 px-4">
+      <div className="h-5 w-28 bg-gray-200 animate-pulse rounded mb-3" />
+      <div className="flex gap-3 overflow-hidden">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex-shrink-0 w-[160px] h-48 bg-gray-100 animate-pulse rounded-xl" />
+        ))}
+      </div>
+    </section>
+  ),
+  ssr: false,
+});
+
+const BestSellers = dynamic(() => import('@/components/home/BestSellers'), {
+  loading: () => (
+    <section className="py-3 px-4 max-w-7xl mx-auto">
+      <div className="h-5 w-28 bg-gray-200 animate-pulse rounded mb-3" />
+      <ProductGridSkeleton count={6} />
+    </section>
+  ),
+  ssr: false,
+});
+
+const NewArrivals = dynamic(() => import('@/components/home/NewArrivals'), {
+  loading: () => (
+    <section className="py-3 px-4 max-w-7xl mx-auto">
+      <div className="h-5 w-28 bg-gray-200 animate-pulse rounded mb-3" />
+      <ProductGridSkeleton count={6} />
+    </section>
+  ),
+  ssr: false,
+});
+
+const BrandShowcase = dynamic(() => import('@/components/home/BrandShowcase'), {
+  loading: () => <div className="h-24 bg-gray-50 animate-pulse rounded-xl mx-4 my-4" />,
+  ssr: false,
+});
+
+const CategoryDiscoveryCarousel = dynamic(
+  () => import('@/components/home/CategoryDiscoveryCarousel'),
+  { ssr: false }
+);
+
+const DynamicProductBanners = dynamic(
+  () => import('@/components/home/DynamicProductBanners'),
+  { ssr: false }
+);
+
+const DiscoverMoreFeed = dynamic(
+  () => import('@/components/home/DiscoverMoreFeed'),
+  { ssr: false }
+);
+
+function SkeletonSection() {
+  return (
+    <section className="py-3 px-4">
+      <div className="h-5 w-28 bg-gray-200 animate-pulse rounded mb-3" />
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="w-full aspect-[3/4] bg-gray-100 animate-pulse rounded-xl" />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default function HomepageSections() {
-  const { trending, deals, bestsellers, newArrivals, allProducts, isLoading } =
+  const { trending, deals, bestsellers, newArrivals, allProducts, categories, isLoading } =
     useHomepageData();
 
   const brands: Brand[] = isLoading
@@ -32,41 +99,61 @@ export default function HomepageSections() {
   if (isLoading) {
     return (
       <>
-        <ProductGridSkeleton count={8} />
-        <ProductGridSkeleton count={8} />
+        <SkeletonSection />
+        <SkeletonSection />
+        <SkeletonSection />
       </>
     );
   }
 
   return (
     <>
+      {/* Personalised greeting for logged-in users */}
       <PersonalisedGreeting />
 
-      {/* Best Sellers */}
-      {bestsellers.length > 0 && <BestSellers products={bestsellers} />}
-      {bestsellers.length === 0 && allProducts.length > 0 && (
-        <BestSellers products={allProducts.slice(0, 8)} />
-      )}
+      {/* Quick Navigation for Mobile — instant access to top paths */}
+      <QuickNavigation />
 
-      {/* Deals & Offers */}
+      {/* Trust signals & benefits */}
+      <TrustStrip />
+
+      {/* 1. Major Categories — easy navigation as like brands */}
+      <MajorCategories categories={categories} />
+
+      {/* 2. Flash Deals — highest urgency, first thing after categories */}
       {deals.length > 0 && <DealsSection products={deals} />}
-      {deals.length === 0 && allProducts.length > 8 && (
-        <DealsSection products={allProducts.slice(8, 16)} />
-      )}
 
-      {/* Popular Brands */}
+      {/* 3. Discover Carousel — sliding category chips */}
+      <CategoryDiscoveryCarousel />
+
+      {/* 4. Popular Brands */}
       <BrandShowcase brands={brands} />
 
-      {/* New Arrivals */}
-      {newArrivals.length > 0 && <NewArrivals products={newArrivals} />}
-      {newArrivals.length === 0 && allProducts.length > 0 && (
-        <NewArrivals products={allProducts.slice(0, 8)} />
-      )}
+      {/* 4. Kitchen Essentials — High visibility dense grid */}
+      {allProducts.length > 0 && <KitchenEssentials products={allProducts} />}
 
-      {/* Loyalty / Wallet — kept lower on page */}
+      {/* 5. Trending Now */}
+      {trending.length > 0 && <TrendingNow products={trending} />}
+
+      {/* Static Marketing Banners (Strip Type) */}
+      <MarketingBannerStrip />
+
+      {/* 6. Top Sellers */}
+      {bestsellers.length > 0 && <BestSellers products={bestsellers} />}
+
+      {/* 7. Wallet Rewards Banner */}
       <LoyaltyBanner />
 
-      {/* Discover More — infinite scroll feed */}
+      {/* 8. Product Banners (promoted) */}
+      <DynamicProductBanners />
+
+      {/* 9. New Arrivals */}
+      {newArrivals.length > 0 && <NewArrivals products={newArrivals} />}
+
+      {/* Second set of marketing banners (if any remain) */}
+      <MarketingBannerStrip offset={1} />
+
+      {/* 10. Discover More — infinite scroll feed */}
       <DiscoverMoreFeed />
     </>
   );

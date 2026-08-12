@@ -5,10 +5,10 @@ import { Truck, Leaf, Lock, Package, Clock, ThumbsUp } from 'lucide-react';
 const FEATURES = [
   { icon: Truck,    title: 'Fast UK Delivery',   desc: 'Dispatched in 24 hrs. Free over £45.',        color: '#1d4ed8', bg: '#eff6ff' },
   { icon: Leaf,     title: 'Authentic Products', desc: 'Sourced from trusted Kerala manufacturers.',   color: '#0B5D3B', bg: '#f4faf6' },
-  { icon: Lock,     title: 'Secure Payments',    desc: 'SSL-encrypted checkout.',                     color: '#b45309', bg: '#fffbeb' },
+  { icon: Lock,     title: 'Secure Payments',    desc: 'SSL-encrypted via Worldpay.',                  color: '#b45309', bg: '#fffbeb' },
   { icon: Package,  title: 'Fresh Stock',        desc: 'Quality-checked, in-date products only.',      color: '#dc2626', bg: '#fef2f2' },
-  { icon: Clock,    title: 'Reliable Delivery',  desc: 'Order by Wed, receive by the weekend.',        color: '#0d9488', bg: '#f0fdfa' },
-  { icon: ThumbsUp, title: 'Trusted Service',    desc: 'Trusted across the UK Kerala community.',     color: '#7c3aed', bg: '#f5f3ff' },
+  { icon: Clock,    title: 'Same-Week Delivery', desc: 'Order by Wed, receive by the weekend.',        color: '#0d9488', bg: '#f0fdfa' },
+  { icon: ThumbsUp, title: '1,000+ Customers',   desc: 'Trusted across the UK Kerala community.',     color: '#7c3aed', bg: '#f5f3ff' },
 ];
 
 export default function WhyChooseUs() {
@@ -17,7 +17,7 @@ export default function WhyChooseUs() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[14px] font-extrabold text-[#0a3d22] tracking-tight">
-            Why Customers Choose Kerala Grocery
+            Why 1,000+ UK Customers Choose KG
           </h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
