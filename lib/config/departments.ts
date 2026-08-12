@@ -14,19 +14,21 @@ export interface DepartmentConfig {
 
 export const DEPARTMENTS: DepartmentConfig[] = [
   {
-    label: 'Rice & Grains',
-    slug: 'rice-grains',
+    label: 'Rice, Flour & Grains',
+    slug: 'rice-flour-grains',
     emoji: '🍚',
     description: 'Matta rice, basmati, flour & more',
     categorySlugs: ['rice-grains', 'rice-powders-flour'],
     subcategories: [
       { label: 'Matta Rice', slug: 'matta-rice' },
+      { label: 'Palakkadan Rice', slug: 'palakkadan-rice' },
       { label: 'Basmati Rice', slug: 'basmati-rice' },
       { label: 'Other Rice', slug: 'other-rice' },
       { label: 'Rice Flour', slug: 'rice-flour' },
       { label: 'Puttu Podi', slug: 'puttu-podi' },
-      { label: 'Appam / Idiyappam Flour', slug: 'appam-idiyappam-flour' },
-      { label: 'Wheat & Flours', slug: 'wheat-flours' },
+      { label: 'Appam Flour', slug: 'appam-flour' },
+      { label: 'Idiyappam Flour', slug: 'idiyappam-flour' },
+      { label: 'Wheat Flour', slug: 'wheat-flour' },
       { label: 'Rava & Grains', slug: 'rava-grains' },
     ],
   },
@@ -66,7 +68,7 @@ export const DEPARTMENTS: DepartmentConfig[] = [
       { label: 'Kuzhalappam', slug: 'kuzhalappam' },
       { label: 'Achappam', slug: 'achappam' },
       { label: 'Murukku', slug: 'murukku' },
-      { label: 'Sweet Snacks', slug: 'sweet-snacks' },
+      { label: 'Traditional Sweets', slug: 'traditional-sweets' },
     ],
   },
   {
@@ -100,8 +102,8 @@ export const DEPARTMENTS: DepartmentConfig[] = [
     ],
   },
   {
-    label: 'Pickles & Chutneys',
-    slug: 'pickles-chutneys',
+    label: 'Pickles, Chutneys & Condiments',
+    slug: 'pickles-chutneys-condiments',
     emoji: '🥭',
     description: 'Mango, lime, fish pickles & more',
     categorySlugs: ['pickles-chutneys', 'condiments'],
@@ -117,8 +119,8 @@ export const DEPARTMENTS: DepartmentConfig[] = [
     ],
   },
   {
-    label: 'Pulses & Lentils',
-    slug: 'pulses-lentils',
+    label: 'Pulses, Lentils & Beans',
+    slug: 'pulses-lentils-beans',
     emoji: '🫘',
     description: 'Toor dal, urad dal, chickpeas & more',
     categorySlugs: [],
@@ -149,6 +151,14 @@ export const DEPARTMENTS: DepartmentConfig[] = [
     ],
   },
   {
+    label: 'Fresh & Chilled',
+    slug: 'fresh-chilled',
+    emoji: '🥬',
+    description: 'Fresh and chilled products',
+    categorySlugs: [],
+    subcategories: [],
+  },
+  {
     label: 'Tea, Coffee & Drinks',
     slug: 'tea-coffee-drinks',
     emoji: '☕',
@@ -176,8 +186,8 @@ export const DEPARTMENTS: DepartmentConfig[] = [
     ],
   },
   {
-    label: 'Personal Care',
-    slug: 'personal-care',
+    label: 'Personal Care & Ayurvedic',
+    slug: 'personal-care-ayurvedic',
     emoji: '🧴',
     description: 'Hair oil, soap, shampoo & ayurvedic',
     categorySlugs: ['personal-care'],
@@ -190,8 +200,8 @@ export const DEPARTMENTS: DepartmentConfig[] = [
     ],
   },
   {
-    label: 'Household',
-    slug: 'household',
+    label: 'Household Essentials',
+    slug: 'household-essentials',
     emoji: '🧹',
     description: 'Cleaning, kitchen & pooja essentials',
     categorySlugs: ['cleaning'],

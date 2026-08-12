@@ -40,7 +40,7 @@ export default function StickySearchBar({ sentinelId }: { sentinelId: string }) 
     >
       <div className="max-w-2xl mx-auto px-3 py-2">
         <LiveSearch
-          placeholder="Search Kerala groceries — rice, spices, pickles…"
+          placeholder="Search rice, spices, snacks, brands..."
         />
       </div>
     </div>

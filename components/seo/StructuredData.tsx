@@ -72,7 +72,7 @@ export function WebSiteSchema() {
     url: 'https://keralagrocery.com',
     name: 'Kerala Grocery UK',
     description:
-      'The UK\'s #1 Kerala Grocery online store. Buy authentic Kerala groceries for fast UK delivery.',
+      'Kerala Grocery online store. Buy authentic Kerala groceries for UK delivery.',
     publisher: {
       '@id': 'https://keralagrocery.com/#organization',
     },
@@ -102,7 +102,7 @@ export function GroceryStoreSchema() {
     telephone: '+447902205199',
     email: 'admin@keralagrocery.com',
     description:
-      'UK-based online grocery store specialising in authentic Kerala and South Indian products. Fast delivery across England, Scotland, and Wales.',
+      'UK-based online grocery store specialising in authentic Kerala and South Indian products. Delivery across England, Scotland, and Wales.',
     image: 'https://keralagrocery.com/logo_KG_Trans.png',
     priceRange: '£',
     currenciesAccepted: 'GBP',

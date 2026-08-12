@@ -8,7 +8,6 @@ import { DEPARTMENTS } from '@/lib/config/departments';
 export default function MegaMenu() {
   const [openDept, setOpenDept] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const navRef = useRef<HTMLDivElement>(null);
 
   const handleEnter = (slug: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -16,7 +15,7 @@ export default function MegaMenu() {
   };
 
   const handleLeave = () => {
-    closeTimer.current = setTimeout(() => setOpenDept(null), 150);
+    closeTimer.current = setTimeout(() => setOpenDept(null), 200);
   };
 
   useEffect(() => {
@@ -27,7 +26,6 @@ export default function MegaMenu() {
 
   return (
     <nav
-      ref={navRef}
       className="hidden lg:flex items-center gap-1 relative z-50"
       onMouseLeave={handleLeave}
       aria-label="Category navigation"
@@ -55,23 +53,31 @@ export default function MegaMenu() {
           <div
             onMouseEnter={() => handleEnter('categories')}
             onMouseLeave={handleLeave}
-            className="absolute top-full left-0 mt-1 w-[680px] bg-white border border-[#d1ead9] rounded-2xl shadow-[0_8px_30px_rgba(11,93,59,0.12)] p-4 grid grid-cols-3 gap-x-4 gap-y-1"
+            className="absolute top-full left-0 mt-1 w-[720px] bg-white border border-[#d1ead9] rounded-2xl shadow-[0_8px_30px_rgba(11,93,59,0.12)] p-5 grid grid-cols-3 gap-x-5 gap-y-3"
             role="menu"
           >
-            {DEPARTMENTS.map((dept) => (
+            {DEPARTMENTS.filter((d) => d.subcategories.length > 0).map((dept) => (
               <div key={dept.slug} className="group/dept">
                 <Link
                   href={`/products?filter=${dept.categorySlugs[0] || dept.slug}`}
-                  className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-[#f4faf6] transition-colors"
+                  className="flex items-center gap-2 mb-1.5"
                 >
-                  <span className="text-lg">{dept.emoji}</span>
-                  <div>
-                    <p className="text-[13px] font-bold text-gray-900 group-hover/dept:text-[#0B5D3B] transition-colors">
-                      {dept.label}
-                    </p>
-                    <p className="text-[10px] text-gray-400 leading-tight">{dept.description}</p>
-                  </div>
+                  <span className="text-base">{dept.emoji}</span>
+                  <p className="text-[13px] font-bold text-gray-900 group-hover/dept:text-[#0B5D3B] transition-colors">
+                    {dept.label}
+                  </p>
                 </Link>
+                <div className="pl-7 space-y-0.5">
+                  {dept.subcategories.slice(0, 6).map((sub) => (
+                    <Link
+                      key={sub.slug}
+                      href={`/products?search=${encodeURIComponent(sub.label)}`}
+                      className="block text-[11px] text-gray-500 hover:text-[#0B5D3B] hover:underline transition-colors leading-relaxed"
+                    >
+                      {sub.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

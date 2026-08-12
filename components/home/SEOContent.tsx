@@ -8,7 +8,7 @@ export default function SEOContent() {
           Kerala Grocery UK | Authentic Kerala Groceries Online
         </h1>
         <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-          The UK&apos;s #1 <strong>Kerala Grocery</strong> store for authentic South Indian products. Bringing the true taste of Gods Own Country directly to your doorstep with fast, reliable <strong>Kerala grocery delivery</strong> nationwide.
+          Your trusted <strong>Kerala Grocery</strong> store for authentic South Indian products. Bringing the true taste of Gods Own Country directly to your doorstep with reliable <strong>Kerala grocery delivery</strong> nationwide.
         </p>
       </div>
 
@@ -19,7 +19,7 @@ export default function SEOContent() {
           </div>
           <h2 className="text-2xl font-bold mb-4 text-gray-900">Authentic Kerala Grocery</h2>
           <p className="text-gray-600 leading-relaxed">
-            From <strong>Palakkadan Matta Rice</strong> to <strong>Organic Coconut Oil</strong>, our <strong>Kerala grocery</strong> range is sourced directly from Kerala&apos;s finest producers to ensure 100% authenticity.
+            From <strong>Palakkadan Matta Rice</strong> to <strong>Coconut Oil</strong>, our <strong>Kerala grocery</strong> range is sourced from Kerala&apos;s producers to ensure authenticity.
           </p>
         </div>
 
@@ -39,7 +39,7 @@ export default function SEOContent() {
           </div>
           <h2 className="text-2xl font-bold mb-4 text-gray-900">5-Star Quality</h2>
           <p className="text-gray-600 leading-relaxed">
-            Operated by <strong>Tasty Kerala Ltd</strong>. We pride ourselves on exceptional customer service and premium quality control. Join thousands of happy Malayali families in the UK.
+            Operated by <strong>Tasty Kerala Ltd</strong>. We pride ourselves on customer service and quality control, serving Malayali families across the UK.
           </p>
         </div>
       </div>
@@ -54,7 +54,7 @@ export default function SEOContent() {
             The Ultimate Online Kerala Store in the United Kingdom
           </h3>
           <p className="text-gray-600 text-lg leading-relaxed">
-            Welcome to <strong>Kerala Groceries UK</strong>, your premier destination for high-quality Indian and South Indian essentials. We specialize in bringing rare and traditional ingredients from Kerala to your kitchen.
+            Welcome to <strong>Kerala Groceries UK</strong>, your destination for Indian and South Indian essentials. We bring traditional ingredients from Kerala to your kitchen.
           </p>
           <div className="grid grid-cols-2 gap-4">
             {[

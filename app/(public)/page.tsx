@@ -13,7 +13,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Kerala Grocery UK | Buy Authentic Kerala Groceries Online',
-  description: 'The UK\'s #1 Kerala Grocery store for authentic South Indian products. Fast delivery of spices, Matta rice, snacks, and pickles nationwide.',
+  description: 'Shop authentic Kerala and South Indian groceries online. Rice, spices, snacks, frozen foods, pickles and more with UK-wide delivery.',
   alternates: {
     canonical: 'https://keralagrocery.com',
   },
@@ -27,19 +27,15 @@ const StickySearchBar = dynamic(
 const homepageFAQs = [
   {
     question: "Where do you deliver Kerala grocery in the UK?",
-    answer: "We deliver authentic Kerala grocery products across the entire United Kingdom, including England, Scotland, Wales, and Northern Ireland. Next-day delivery is available for most postcodes."
+    answer: "We deliver authentic Kerala grocery products across the United Kingdom. Delivery is available for most postcodes."
   },
   {
     question: "Do you offer free delivery on Kerala grocery orders?",
-    answer: "Yes, we offer free standard delivery on all Kerala grocery orders over £45. For orders below this amount, a small delivery fee applies which is calculated at checkout."
-  },
-  {
-    question: "Is your Kerala grocery store authentically sourced?",
-    answer: "Absolutely. We work directly with trusted suppliers in Kerala to ensure our Kerala grocery store stocks only 100% authentic spices, rice, snacks, and oils."
+    answer: "We offer free standard delivery on qualifying orders. Delivery fees are calculated at checkout based on your location and order size."
   },
   {
     question: "Can I buy Matta rice from your Kerala grocery online?",
-    answer: "Yes, our Kerala grocery online store stocks a wide range of Matta rice (Palakkadan), Banana chips, and traditional Kerala sweets for fast UK delivery."
+    answer: "Yes, our store stocks a range of Matta rice (Palakkadan), banana chips, and traditional Kerala products for UK delivery."
   }
 ];
 
@@ -67,7 +63,7 @@ export default function HomePage() {
         {/* Shop by Need */}
         <ShopByNeed />
 
-        {/* Existing homepage sections (deals, bestsellers, new arrivals, etc.) */}
+        {/* Best Sellers, Deals, Brands, New Arrivals, Wallet, Discover More */}
         <HomepageSections />
 
         {/* Category product sections — lazy loaded */}
@@ -90,10 +86,10 @@ export default function HomePage() {
           viewAllHref="/products?filter=spices"
         />
         <CategoryProductSection
-          title="Frozen Foods"
-          emoji="❄️"
-          categorySlugs={['frozen-foods']}
-          viewAllHref="/products?filter=frozen-foods"
+          title="Pickles & Chutneys"
+          emoji="🥭"
+          categorySlugs={['pickles-chutneys', 'condiments']}
+          viewAllHref="/products?filter=pickles-chutneys"
         />
 
         {/* Trust */}
