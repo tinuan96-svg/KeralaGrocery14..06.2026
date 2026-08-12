@@ -38,7 +38,11 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID")!;
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN")!;
-    const twilioFrom = Deno.env.get("TWILIO_WHATSAPP_NUMBER")!;
+    const twilioFrom = Deno.env.get("TWILIO_WHATSAPP_NUMBER") ?? Deno.env.get("TWILIO_SMS_NUMBER") ?? "";
+
+    if (!twilioAccountSid || !twilioAuthToken || !twilioFrom) {
+      throw new Error("Twilio credentials not configured (need TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_WHATSAPP_NUMBER or TWILIO_SMS_NUMBER)");
+    }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 

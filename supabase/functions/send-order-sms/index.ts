@@ -114,10 +114,10 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID")!;
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN")!;
-    const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER")!;
+    const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER") ?? Deno.env.get("TWILIO_SMS_NUMBER") ?? "";
 
     if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-      throw new Error("Twilio credentials not configured in environment secrets");
+      throw new Error("Twilio credentials not configured (need TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER or TWILIO_SMS_NUMBER)");
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
