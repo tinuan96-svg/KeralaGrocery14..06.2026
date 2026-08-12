@@ -5,9 +5,6 @@ export const metadata: Metadata = {
   title: 'Refund & Returns Policy | Kerala Groceries UK',
   description:
     'Refund and returns policy for Kerala Groceries UK (Tasty Kerala Ltd). Learn about eligibility, process, and timelines for refunds on grocery orders.',
-  alternates: {
-    canonical: 'https://keralagrocery.com/refund-policy',
-  },
   keywords: ['Kerala Groceries UK refund policy', 'Indian grocery UK returns', 'Tasty Kerala Ltd refunds'],
   openGraph: {
     title: 'Refund & Returns Policy | Kerala Groceries UK',
@@ -166,7 +163,7 @@ export default function RefundPolicyPage() {
           <ul className="list-disc pl-5 space-y-2">
             <li>
               <strong>Original payment method</strong> — refunded back to the card or payment
-              method used at checkout (Trust Payments)
+              method used at checkout (Worldpay)
             </li>
             <li>
               <strong>KG Wallet credit</strong> — if you prefer, we can credit the refund amount

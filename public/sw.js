@@ -1,8 +1,13 @@
 /**
  * Kerala Groceries — Service Worker
+ * Strategy:
+ *   - App shell (HTML pages): Network-first, fall back to /offline
+ *   - Static assets (JS/CSS/fonts/images): Stale-while-revalidate
+ *   - API / Supabase calls: Network-only (never cache)
+ *   - Notification support wired for future FCM web push
  */
 
-const CACHE_VERSION = 'kg-v2'; // Bumped version
+const CACHE_VERSION = 'kg-v1';
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const IMAGE_CACHE   = `${CACHE_VERSION}-images`;
 
@@ -10,6 +15,7 @@ const IMAGE_CACHE   = `${CACHE_VERSION}-images`;
 const PRECACHE_ASSETS = [
   '/offline',
   '/manifest.json',
+  '/image.png',
   '/placeholder.webp',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
@@ -20,14 +26,13 @@ const PRECACHE_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
-      // Use individual add for each to prevent one failure blocking all
-      return Promise.allSettled(
-        PRECACHE_ASSETS.map(url =>
-          cache.add(url).catch(err => console.warn(`[SW] Failed to cache: ${url}`, err))
-        )
-      );
+      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+        // Non-fatal: some assets may not exist yet
+        console.warn('[SW] Pre-cache failed for some assets:', err);
+      });
     })
   );
+  // Activate immediately without waiting for old SW to finish
   self.skipWaiting();
 });
 
@@ -51,33 +56,32 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // ── 1. Never intercept non-GET or cross-origin API calls ──────────────────
   if (request.method !== 'GET') return;
-
-  // Skip non-http/https schemes (like chrome-extension://)
-  if (!url.protocol.startsWith('http')) return;
 
   // Skip Supabase, analytics, payment providers
   if (
     url.hostname.includes('supabase.co') ||
     url.hostname.includes('supabase.in') ||
-    url.hostname.includes('securetrading.net') ||
-    url.hostname.includes('trustpayments.com') ||
+    url.hostname.includes('stripe.com') ||
     url.hostname.includes('google-analytics.com') ||
     url.hostname.includes('googletagmanager.com')
   ) {
     return;
   }
 
-  // ── API Cache for Products (Offline Browsing) ────────────────────
+  // ── 1.5 API Cache for Products (New: Offline Browsing) ────────────────────
+  // We cache product list/detail RPC calls to ensure the shop is browsable offline
   if (url.pathname.startsWith('/api/') || url.hostname.includes('supabase.co')) {
+     // We only cache the read-only product queries
      if (url.search.includes('select=') || url.pathname.includes('rpc/get_products') || url.pathname.includes('rpc/search_products')) {
         event.respondWith(staleWhileRevalidate(request, 'kg-api-cache'));
         return;
      }
-     return;
+     return; // Post requests (orders, etc) should never be cached
   }
 
-  // ── Images → cache-first ────────────
+  // ── 2. Images → cache-first (serve stale, update in background) ────────────
   if (
     request.destination === 'image' ||
     url.pathname.match(/\.(png|jpg|jpeg|gif|webp|avif|svg|ico)$/)
@@ -86,7 +90,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ── Static assets (JS, CSS, fonts) → stale-while-revalidate ────────────
+  // ── 3. Static assets (JS, CSS, fonts) → stale-while-revalidate ────────────
   if (
     url.pathname.match(/\.(js|css|woff2?|ttf|otf|eot)$/) ||
     url.pathname.startsWith('/_next/static/')
@@ -95,11 +99,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ── HTML navigation → network-first ──────────────────
+  // ── 4. HTML navigation → network-first, offline fallback ──────────────────
   if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith(
       fetch(request)
         .then((response) => {
+          // Cache a fresh copy of successful HTML responses
           if (response.ok) {
             const clone = response.clone();
             caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
@@ -114,16 +119,15 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
+// ── Stale-while-revalidate helper ─────────────────────────────────────────────
+
 async function staleWhileRevalidate(request, cacheName) {
-  const url = new URL(request.url);
   const cache  = await caches.open(cacheName);
   const cached = await cache.match(request);
 
   const fetchPromise = fetch(request)
     .then((response) => {
-      if (response.ok && url.protocol.startsWith('http')) {
-        cache.put(request, response.clone());
-      }
+      if (response.ok) cache.put(request, response.clone());
       return response;
     })
     .catch(() => null);
@@ -167,6 +171,8 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
+// ── Background sync (order retry) ────────────────────────────────────────────
+
 self.addEventListener('sync', (event) => {
   if (event.tag === 'order-sync') {
     event.waitUntil(syncPendingOrders());
@@ -174,5 +180,6 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncPendingOrders() {
+  // Placeholder — wire to IndexedDB queue when offline order queuing is added
   console.log('[SW] Background sync: order-sync');
 }

@@ -7,9 +7,9 @@
   ## New Tables
   1. `payment_errors` — persists every payment failure for admin diagnostics
      - order_number, source, error_message, raw_payload, created_at
-  2. `webhook_logs` — persists every incoming Trust Payments webhook event
+  2. `webhook_logs` — persists every incoming Worldpay webhook event
      - order_number, event_type, status, error_message, raw_payload, processed_at
-  3. `payment_sessions` — idempotency store for Trust Payments payment page sessions
+  3. `payment_sessions` — idempotency store for Worldpay payment page sessions
      - order_number (unique), payment_url, amount_pence, status, created_at
   4. `order_idempotency` — deduplicates create-order requests
      - idempotency_key (unique), order_id, order_number, created_at

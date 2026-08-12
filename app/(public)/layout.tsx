@@ -2,15 +2,13 @@
 
 import { ReactNode } from 'react';
 import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import MobileNav from '@/components/layout/MobileNav';
 import FloatingCartButton from '@/components/layout/FloatingCartButton';
+import CookieBanner from '@/components/layout/CookieBanner';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
+import KichuAssistant from '@/components/assistant/KichuAssistant';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import dynamic from 'next/dynamic';
-
-const KichuAssistant = dynamic(() => import('@/components/assistant/KichuAssistant'), { ssr: false });
-const MobileNav = dynamic(() => import('@/components/layout/MobileNav'), { ssr: false });
-const CookieBanner = dynamic(() => import('@/components/layout/CookieBanner'), { ssr: false });
-const Footer = dynamic(() => import('@/components/layout/Footer'), { ssr: false });
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (

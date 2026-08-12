@@ -1,3 +1,5 @@
+'use client';
+
 import { Truck, ShieldCheck, Award } from 'lucide-react';
 
 const BENEFITS = [
@@ -8,16 +10,16 @@ const BENEFITS = [
 
 export default function TrustStrip() {
   return (
-    <section className="bg-white py-4 border-b border-gray-100 overflow-x-auto scrollbar-hide shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)]">
-      <div className="max-w-7xl mx-auto flex items-center justify-between min-w-max md:min-w-0 md:justify-around px-6">
+    <section className="bg-white py-3 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+      <div className="flex items-center justify-between min-w-max md:min-w-0 md:justify-center md:gap-12 px-4">
         {BENEFITS.map((b, i) => (
-          <div key={i} className="flex items-center gap-3 pr-8 last:pr-0 md:pr-0 group">
-            <div className={`w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:shadow-md group-hover:rotate-3`}>
-              <b.icon className={`w-5 h-5 ${b.color} transition-transform duration-300 group-hover:scale-110`} />
+          <div key={i} className="flex items-center gap-2.5 pr-6 last:pr-0 md:pr-0">
+            <div className={`w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center`}>
+              <b.icon className={`w-4 h-4 ${b.color}`} />
             </div>
             <div>
-              <p className="text-[12px] font-black text-gray-900 leading-tight uppercase tracking-tight group-hover:text-[#0B5D3B] transition-colors">{b.text}</p>
-              <p className="text-[10px] font-bold text-gray-400 leading-tight uppercase tracking-widest mt-0.5">{b.sub}</p>
+              <p className="text-[11px] font-black text-gray-900 leading-tight uppercase tracking-tight">{b.text}</p>
+              <p className="text-[9px] font-bold text-gray-400 leading-tight uppercase tracking-widest mt-0.5">{b.sub}</p>
             </div>
           </div>
         ))}

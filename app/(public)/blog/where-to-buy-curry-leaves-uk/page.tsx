@@ -6,9 +6,6 @@ import { ArrowLeft, Leaf } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Where to Buy Fresh Curry Leaves in the UK (2026 Guide)',
   description: 'Find out where to buy fresh curry leaves in the UK. Tips on storage, usage, and the best online sources for authentic curry leaves delivered to your door.',
-  alternates: {
-    canonical: 'https://keralagrocery.com/blog/where-to-buy-curry-leaves-uk',
-  },
   keywords: ['buy curry leaves uk', 'fresh curry leaves online', 'where to find curry leaves', 'indian grocery uk', 'curry leaves delivery'],
 };
 

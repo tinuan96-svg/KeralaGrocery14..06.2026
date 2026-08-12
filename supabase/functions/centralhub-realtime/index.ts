@@ -63,7 +63,6 @@ interface CentralHubProduct {
   custom_attributes?: Record<string, any> | null;
   is_archived?: boolean;
   is_active?: boolean;
-  backorder_enabled?: boolean;
   variants?: CentralHubVariant[];
 }
 
@@ -157,7 +156,6 @@ async function applyProductUpdate(
     price: newSellingPrice,
     markup_percentage: 5,
     stock: totalStock,
-    backorder_enabled: hp.backorder_enabled ?? false,
     weight: hp.weight ?? null,
     unit: hp.unit ?? null,
     product_type: hp.product_type ?? null,
@@ -375,7 +373,7 @@ Deno.serve(async (req: Request) => {
         .from("products")
         .select(`
           id, name, price, stock, product_type, brand, weight, unit, slug, gtin, warehouse_location,
-          brand_id, tags, custom_attributes, is_archived, is_active, backorder_enabled,
+          brand_id, tags, custom_attributes, is_archived, is_active,
           variants:product_variants(*)
         `)
         .or(`updated_at.gte.${since},created_at.gte.${since}`)

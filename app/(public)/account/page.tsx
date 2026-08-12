@@ -27,7 +27,7 @@ import { getSupabase } from '@/lib/supabase/client';
 import BuyItAgain from '@/components/product/BuyItAgain';
 
 export default function AccountPage() {
-  const { user, profile, loading, signOut, needsPhoneVerification } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
@@ -36,13 +36,15 @@ export default function AccountPage() {
   // Admin users bypass phone-verification onboarding
   const isAdmin = !!(user?.app_metadata?.is_admin);
 
-  // Suggestion 5: Proactively redirect users with missing contact info
+  // First-time Google OAuth users have a valid session but no profile row yet.
+  // Send them to complete-profile so they set up their phone number before
+  // reaching the account dashboard. Admins are exempt.
   useEffect(() => {
-    if (!loading && user && !isAdmin && needsPhoneVerification) {
-      console.log('[Auth] AccountPage: missing verified phone — redirecting to /complete-profile');
+    if (!loading && user && !isAdmin && profile === null) {
+      console.log('[Auth] AccountPage: authenticated user has no profile — redirecting to /complete-profile');
       router.replace('/complete-profile?returnTo=/account');
     }
-  }, [loading, user, isAdmin, needsPhoneVerification, router]);
+  }, [loading, user, isAdmin, profile, router]);
 
   const fetchRecentOrders = useCallback(async () => {
     try {
@@ -223,23 +225,16 @@ export default function AccountPage() {
               </div>
             )}
 
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  const profileForm = document.querySelector('#name');
-                  profileForm?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-              >
-                {profile?.address ? 'Edit Primary Address' : 'Add Address'}
-              </Button>
-              <Button variant="ghost" size="sm" className="w-full text-xs text-green-700 hover:text-green-800 hover:bg-green-50" asChild>
-                <Link href="/account/addresses">
-                  Manage Address Book
-                </Link>
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                const profileForm = document.querySelector('#name');
+                profileForm?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
+            >
+              {profile?.address ? 'Edit Address' : 'Add Address'}
+            </Button>
           </Card>
 
           {user?.app_metadata?.is_admin && (

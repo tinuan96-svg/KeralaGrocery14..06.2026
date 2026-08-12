@@ -6,9 +6,6 @@ import { ArrowLeft, ShoppingBag } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Top 10 Kerala Foods You Can Buy in the UK (2026 Guide)',
   description: 'Discover the best Kerala foods available online in the UK. From banana chips to Kerala rice, find out which authentic products you can order for delivery.',
-  alternates: {
-    canonical: 'https://keralagrocery.com/blog/top-10-kerala-foods-uk',
-  },
   keywords: ['kerala foods uk', 'buy kerala food online', 'kerala snacks uk', 'kerala groceries', 'indian food uk'],
 };
 

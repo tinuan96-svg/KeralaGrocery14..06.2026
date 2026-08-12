@@ -13,16 +13,11 @@ import ProductAccordions from '@/components/product/ProductAccordions';
 import ProfitGenerativeBanner from '@/components/product/ProfitGenerativeBanner';
 import KeralaProductCard from '@/components/product/KeralaProductCard';
 import RecentlyViewedTracker from '@/components/product/RecentlyViewedTracker';
-
-const RecentlyViewed = dynamic(() => import('@/components/product/RecentlyViewed'), { ssr: false });
-const FrequentlyBoughtTogether = dynamic(() => import('@/components/product/FrequentlyBoughtTogether'), { ssr: false });
-const RecipeMentions = dynamic(() => import('@/components/product/RecipeMentions'), { ssr: false });
-
+import RecentlyViewed from '@/components/product/RecentlyViewed';
 import DeliveryUrgencyTimer from '@/components/product/DeliveryUrgencyTimer';
-import dynamic from 'next/dynamic';
-
-const ReviewSection = dynamic(() => import('@/components/product/ReviewSection'), { ssr: false });
-
+import FrequentlyBoughtTogether from '@/components/product/FrequentlyBoughtTogether';
+import ReviewSection from '@/components/product/ReviewSection';
+import RecipeMentions from '@/components/product/RecipeMentions';
 import { getProductDetail, getProducts } from '@/lib/services/rpcApiClient';
 import { getPersonalizedRecommendations } from '@/lib/services/recommendationService';
 import { getSupabase } from '@/lib/supabase/client';
@@ -77,18 +72,17 @@ function toProductWithDetails(p: RpcProduct): ProductWithDetails {
 
 interface Props {
   slug: string;
-  initialProduct?: RpcProduct | null;
 }
 
-export default function KeralaProductDetailPage({ slug, initialProduct }: Props) {
+export default function KeralaProductDetailPage({ slug }: Props) {
   useProductSync();
   const { user } = useAuth();
   const { settings, activeCycle } = useWallet();
   const actionsRef = useRef<HTMLDivElement>(null);
-  const [product, setProduct] = useState<RpcProduct | null>(initialProduct || null);
+  const [product, setProduct] = useState<RpcProduct | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariantOption | null>(null);
   const [related, setRelated] = useState<RpcProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(!initialProduct);
+  const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
 
@@ -98,83 +92,61 @@ export default function KeralaProductDetailPage({ slug, initialProduct }: Props)
 
   useEffect(() => {
     let cancelled = false;
+    setIsLoading(true);
+    setNotFound(false);
 
-    // If we have an initial product, we don't need to fetch it again immediately.
-    // However, we still want to fetch gallery and related products.
-    if (initialProduct && !product) {
-      setProduct(initialProduct);
-      if (initialProduct.variants && initialProduct.variants.length > 0) {
-        setSelectedVariant(initialProduct.variants[0]);
+    getProductDetail(slug).then(async ({ product: p, error }) => {
+      if (cancelled) return;
+
+      if (!p) {
+        // Diagnostics for debugging "product not found"
+        const supabase = getSupabase();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+        let diagQuery = supabase
+          .from('products')
+          .select('id, slug, centralhub_product_id, approval_status, visibility_status');
+
+        if (isUuid) {
+          diagQuery = diagQuery.or(`id.eq.${slug},slug.eq.${slug}`);
+        } else {
+          diagQuery = diagQuery.eq('slug', slug);
+        }
+
+        const { data: diag } = await diagQuery.maybeSingle();
+
+        console.warn('[ProductDetail] not found:', {
+          requestedSlug: slug,
+          matchedProduct: diag ?? null,
+          fetchError: error,
+        });
+        setNotFound(true);
+        setIsLoading(false);
+        return;
+      }
+
+      setProduct(p);
+      if (p.variants && p.variants.length > 0) {
+        setSelectedVariant(p.variants[0]);
       }
       setIsLoading(false);
-      fetchRelated(initialProduct, cancelled);
-      fetchGallery(initialProduct.id, cancelled);
-      return;
-    }
+      fetchRelated(p, cancelled);
 
-    if (!initialProduct) {
-      setIsLoading(true);
-      setNotFound(false);
-
-      getProductDetail(slug).then(async ({ product: p, error }) => {
-        if (cancelled) return;
-
-        if (!p) {
-          // Diagnostics for debugging "product not found"
-          const supabase = getSupabase();
-          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
-
-          let diagQuery = supabase
-            .from('products')
-            .select('id, slug, centralhub_product_id, approval_status, visibility_status');
-
-          if (isUuid) {
-            diagQuery = diagQuery.or(`id.eq.${slug},slug.eq.${slug}`);
-          } else {
-            diagQuery = diagQuery.eq('slug', slug);
-          }
-
-          const { data: diag } = await diagQuery.maybeSingle();
-
-          console.warn('[ProductDetail] not found:', {
-            requestedSlug: slug,
-            matchedProduct: diag ?? null,
-            fetchError: error,
-          });
-          setNotFound(true);
-          setIsLoading(false);
-          return;
-        }
-
-        setProduct(p);
-        if (p.variants && p.variants.length > 0) {
-          setSelectedVariant(p.variants[0]);
-        }
-        setIsLoading(false);
-        fetchRelated(p, cancelled);
-        fetchGallery(p.id, cancelled);
-      });
-    } else if (product) {
-       // We have product from initialProduct or previous fetch
-       fetchRelated(product, cancelled);
-       fetchGallery(product.id, cancelled);
-    }
-
-    async function fetchGallery(productId: string, isCancelled: boolean) {
+      // Load gallery images
       const supabase = getSupabase();
-      const { data } = await supabase
+      supabase
         .from('product_gallery_images')
         .select('image_url, enhanced_image_url, position')
-        .eq('product_id', productId)
-        .order('position');
-
-      if (!isCancelled && data?.length) {
-        const urls = data.map((r: { image_url: string; enhanced_image_url: string | null }) =>
-          r.enhanced_image_url ?? r.image_url
-        ).filter(Boolean);
-        setGalleryUrls(urls);
-      }
-    }
+        .eq('product_id', p.id)
+        .order('position')
+        .then(({ data }) => {
+          if (cancelled || !data?.length) return;
+          const urls = data.map((r: { image_url: string; enhanced_image_url: string | null }) =>
+            r.enhanced_image_url ?? r.image_url
+          ).filter(Boolean);
+          if (!cancelled) setGalleryUrls(urls);
+        });
+    });
 
     async function fetchRelated(p: RpcProduct, isCancelled: boolean) {
       const rel = await getPersonalizedRecommendations(
@@ -188,7 +160,7 @@ export default function KeralaProductDetailPage({ slug, initialProduct }: Props)
     }
 
     return () => { cancelled = true; };
-  }, [slug, user?.id, initialProduct]);
+  }, [slug, user?.id]);
 
   if (isLoading) {
     return (

@@ -106,7 +106,6 @@ Deno.serve(async (req: Request) => {
       selling_price: sellingPrice,
       price: sellingPrice,
       markup_percentage: 5,
-      backorder_enabled: hp.backorder_enabled ?? false,
       last_sync_at: now,
       updated_at: now,
       is_deleted: false,

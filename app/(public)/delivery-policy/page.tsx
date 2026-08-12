@@ -3,9 +3,6 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Delivery Policy | Kerala Groceries UK',
   description: 'Delivery policy for Kerala Groceries UK. Learn about delivery areas, timing, and charges.',
-  alternates: {
-    canonical: 'https://keralagrocery.com/delivery-policy',
-  },
 };
 
 export default function DeliveryPolicyPage() {

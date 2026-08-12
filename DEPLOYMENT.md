@@ -13,9 +13,8 @@ All required environment variables are set in `.env`:
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase public API key
 - `NEXT_PUBLIC_BASE_URL` - Site URL (keralagrocery.com)
-- `TRUSTPAYMENTS_SITE_REFERENCE` - Trust Payments site reference
-- `TRUSTPAYMENTS_JWT_SECRET` - Trust Payments JWT secret
-- `TRUSTPAYMENTS_JWT_USERNAME` - Trust Payments JWT username
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
+- `STRIPE_SECRET_KEY` - Stripe secret key
 
 ### Database Status
 
@@ -27,7 +26,7 @@ Your Supabase database is fully configured with:
 - Order management system
 - User authentication and profiles
 - Shopping cart and wishlist
-- Payment processing via Trust Payments
+- Payment processing via Stripe
 
 ## Bolt Hosting
 
@@ -39,7 +38,7 @@ The application is ready to run on Bolt. The dev server starts automatically.
 2. **User Authentication** - Secure login/signup with Supabase Auth
 3. **Shopping Cart** - Persistent cart with optimistic updates
 4. **Wishlist** - Save favorite products
-5. **Checkout** - Trust Payments integration
+5. **Checkout** - Stripe payment integration
 6. **Order Tracking** - View order history
 7. **SEO Optimized** - Meta tags, structured data, sitemaps
 8. **Mobile Responsive** - Works on all devices
@@ -71,14 +70,14 @@ Visit `/health` to verify all environment variables are configured correctly.
 
 1. **Blank page** - Check `/health` to ensure environment variables are set
 2. **No products showing** - Verify Supabase connection in browser console
-3. **Payment errors** - Check Trust Payments credentials in Supabase
+3. **Payment errors** - Check Stripe keys are configured correctly
 
 ## Tech Stack
 
 - **Framework**: Next.js 13 (App Router)
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **Payments**: Trust Payments
+- **Payments**: Stripe
 - **Styling**: Tailwind CSS
 - **UI Components**: Radix UI + shadcn/ui
 - **Icons**: Lucide React

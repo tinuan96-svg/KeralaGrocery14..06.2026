@@ -6,7 +6,7 @@ export default function HealthCheck() {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ? '✓ Set' : '✗ Missing',
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✓ Set' : '✗ Missing',
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL ? '✓ Set' : '✗ Missing',
-    TRUSTPAYMENTS_SITE_REFERENCE: process.env.TRUSTPAYMENTS_SITE_REFERENCE ? '✓ Set' : '✗ Missing',
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? '✓ Set' : '✗ Missing',
     NODE_ENV: process.env.NODE_ENV || 'unknown',
   };
 

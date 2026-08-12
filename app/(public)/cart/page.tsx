@@ -128,7 +128,7 @@ export default function CartPage() {
       removeFromCart(item.id);
       return;
     }
-    if (!item.backorderEnabled && item.maxStock !== undefined && newQty > item.maxStock) {
+    if (item.maxStock !== undefined && newQty > item.maxStock) {
       toast({
         title: 'Limit reached',
         description: `Only ${item.maxStock} units of ${item.name} are in stock.`,
@@ -136,7 +136,7 @@ export default function CartPage() {
       });
       return;
     }
-    updateQuantity(item.id, newQty, item.maxStock, item.backorderEnabled);
+    updateQuantity(item.id, newQty, item.maxStock);
   };
 
   const handleRemoveItem = (id: string, name: string) => {

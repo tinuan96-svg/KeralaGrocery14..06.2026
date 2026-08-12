@@ -35,7 +35,7 @@ export default function FrequentlyBoughtTogether({ mainProduct }: Props) {
       price: mainProduct.price,
       image_url: mainProduct.image_url ?? undefined,
       slug: mainProduct.slug ?? mainProduct.id,
-    }, 1, mainProduct.stock, mainProduct.backorder_enabled);
+    });
 
     // Add bundle products
     bundle.forEach(p => {
@@ -45,7 +45,7 @@ export default function FrequentlyBoughtTogether({ mainProduct }: Props) {
         price: p.price,
         image_url: p.image_url ?? undefined,
         slug: p.slug ?? p.id,
-      }, 1, p.stock, p.backorder_enabled);
+      });
     });
 
     setAdded(true);

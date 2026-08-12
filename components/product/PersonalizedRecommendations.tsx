@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { Sparkles, ChevronRight, Star } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/context/AuthContext';
-import { Separator } from '@/components/ui/separator';
 
 interface Product {
   id: string;
@@ -61,65 +60,59 @@ export default function PersonalizedRecommendations() {
   };
 
   return (
-    <section className="py-12 bg-transparent relative overflow-hidden">
-      {/* Decorative background element */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-amber-100/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+    <section className="py-12 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-[18px] bg-white shadow-sm border border-amber-100 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-amber-500" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight tracking-tight">
+              <h2 className="text-2xl font-black text-gray-900 leading-tight">
                 {titles[type]}
               </h2>
-              <p className="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Based on your preferences</p>
+              <p className="text-sm text-gray-500 font-medium">Based on your preferences</p>
             </div>
           </div>
           <Link
             href="/products"
-            className="hidden sm:flex items-center gap-1.5 text-xs font-black uppercase tracking-wider bg-white border border-gray-100 px-4 py-2 rounded-full shadow-sm hover:shadow-md transition-all active:scale-95"
+            className="text-sm font-bold text-[#0B5D3B] hover:underline flex items-center gap-1"
           >
-            Explore More <ChevronRight className="w-3.5 h-3.5" />
+            View all <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {products.map((product) => (
             <Link
               key={product.id}
               href={`/products/${product.slug}`}
-              className="group flex flex-col bg-white rounded-[28px] border border-gray-100 overflow-hidden hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:border-[#0B5D3B]/20 transition-all duration-500"
+              className="group flex flex-col bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-green-200 transition-all duration-300"
             >
-              <div className="relative aspect-square p-3">
-                <div className="relative w-full h-full rounded-[22px] overflow-hidden bg-gray-50/50">
-                  <Image
-                    src={product.image_url || '/placeholder.webp'}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-4 transition-transform duration-700 group-hover:scale-110"
-                    sizes="(max-width: 768px) 45vw, 20vw"
-                  />
-                  {product.discount_percentage > 0 && (
-                    <div className="absolute top-2.5 left-2.5 bg-red-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg">
-                      -{Math.round(product.discount_percentage)}%
-                    </div>
-                  )}
-                </div>
+              <div className="relative aspect-square bg-white">
+                <Image
+                  src={product.image_url || '/placeholder.webp'}
+                  alt={product.name}
+                  fill
+                  className="object-contain"
+                />
+                {product.discount_percentage > 0 && (
+                  <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg">
+                    -{Math.round(product.discount_percentage)}%
+                  </div>
+                )}
               </div>
-              <div className="p-4 pt-1 flex-1 flex flex-col gap-2">
-                <h3 className="text-[13px] font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-[#0B5D3B] transition-colors">
+              <div className="p-4 flex-1 flex flex-col gap-1.5">
+                <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight group-hover:text-[#0B5D3B] transition-colors">
                   {product.name}
                 </h3>
-                <div className="flex items-center gap-1.5 mt-auto">
-                  <div className="flex items-center gap-0.5">
-                    <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                    <span className="text-[10px] font-black text-gray-700">{product.rating}</span>
-                  </div>
-                  <Separator orientation="vertical" className="h-2 bg-gray-200" />
-                  <p className="text-[15px] font-black text-[#0B5D3B]">£{product.price.toFixed(2)}</p>
+                <div className="flex items-center gap-1">
+                  <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                  <span className="text-[10px] font-black text-gray-500">{product.rating}</span>
+                  <span className="text-[10px] text-gray-400 font-bold">({product.review_count})</span>
+                </div>
+                <div className="mt-auto pt-2">
+                  <p className="text-lg font-black text-green-700">£{product.price.toFixed(2)}</p>
                 </div>
               </div>
             </Link>
@@ -127,6 +120,5 @@ export default function PersonalizedRecommendations() {
         </div>
       </div>
     </section>
-  );
   );
 }

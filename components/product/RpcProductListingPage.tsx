@@ -14,7 +14,6 @@ import CategorySEOContent from '@/components/product/CategorySEOContent';
 import type { RpcSortOption } from '@/lib/services/rpcApiClient';
 import { useProductSync } from '@/hooks/useProductSync';
 import { useAuth } from '@/lib/context/AuthContext';
-import type { GetRpcProductsResult } from '@/lib/services/rpcApiClient';
 
 const SORT_OPTIONS: { value: RpcSortOption; label: string }[] = [
   { value: 'newest',     label: 'Newest'             },
@@ -115,7 +114,7 @@ function Pagination({
   );
 }
 
-export default function RpcProductListingPage({ initialData }: { initialData?: GetRpcProductsResult }) {
+export default function RpcProductListingPage() {
   useProductSync();
   const { user, loading: authLoading } = useAuth();
   const authKey = authLoading ? 'loading' : (user?.id ?? 'anon');
@@ -126,7 +125,7 @@ export default function RpcProductListingPage({ initialData }: { initialData?: G
     search, category, brand, sort,
     setSearch, setCategory, setBrand, setSort,
     goToPage, resetFilters, retry,
-  } = useRpcProducts(20, authKey, initialData);
+  } = useRpcProducts(20, authKey);
 
   const [searchInput, setSearchInput] = useState(search);
   const [showFilters, setShowFilters] = useState(false);

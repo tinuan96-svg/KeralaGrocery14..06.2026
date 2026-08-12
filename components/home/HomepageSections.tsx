@@ -11,7 +11,7 @@ import QuickNavigation from '@/components/home/QuickNavigation';
 import TrustStrip from '@/components/home/TrustStrip';
 import { ProductGridSkeleton } from '@/components/product/ProductCardSkeleton';
 import { PersonalisedGreeting } from '@/components/layout/CartEnhancements';
-import type { Brand, Category, ProductWithDetails } from '@/lib/types/database';
+import type { Brand } from '@/lib/types/database';
 
 const DealsSection = dynamic(() => import('@/components/home/DealsSection'), {
   loading: () => (
@@ -80,36 +80,15 @@ function SkeletonSection() {
   );
 }
 
-export default function HomepageSections({
-  initialCategories,
-  initialTrending,
-  initialDeals,
-  initialBestsellers,
-  initialNewArrivals
-}: {
-  initialCategories?: Category[];
-  initialTrending?: ProductWithDetails[];
-  initialDeals?: ProductWithDetails[];
-  initialBestsellers?: ProductWithDetails[];
-  initialNewArrivals?: ProductWithDetails[];
-}) {
+export default function HomepageSections() {
   const { trending, deals, bestsellers, newArrivals, allProducts, categories, isLoading } =
-    useHomepageData({
-      initialCategories,
-      initialTrending,
-      initialDeals,
-      initialBestsellers,
-      initialNewArrivals
-    });
+    useHomepageData();
 
-  const effectiveTrending = trending.length > 0 ? trending : (initialTrending || []);
-  const effectiveCategories = categories.length > 0 ? categories : (initialCategories || []);
-
-  const brands: Brand[] = (isLoading && !initialTrending)
+  const brands: Brand[] = isLoading
     ? []
     : Array.from(
         new Map(
-          (allProducts.length > 0 ? allProducts : (initialTrending || []))
+          allProducts
             .filter((p) => p.brand && p.stock > 0)
             .map((p) => [p.brand!.name, p.brand!])
         ).values()
@@ -117,7 +96,7 @@ export default function HomepageSections({
         .sort((a, b) => a.name.localeCompare(b.name))
         .slice(0, 8);
 
-  if (isLoading && !initialCategories) {
+  if (isLoading) {
     return (
       <>
         <SkeletonSection />
@@ -139,7 +118,7 @@ export default function HomepageSections({
       <TrustStrip />
 
       {/* 1. Major Categories — easy navigation as like brands */}
-      <MajorCategories categories={effectiveCategories} />
+      <MajorCategories categories={categories} />
 
       {/* 2. Flash Deals — highest urgency, first thing after categories */}
       {deals.length > 0 && <DealsSection products={deals} />}
@@ -151,12 +130,10 @@ export default function HomepageSections({
       <BrandShowcase brands={brands} />
 
       {/* 4. Kitchen Essentials — High visibility dense grid */}
-      {(allProducts.length > 0 || (initialTrending && initialTrending.length > 0)) && (
-        <KitchenEssentials products={allProducts.length > 0 ? allProducts : (initialTrending || [])} />
-      )}
+      {allProducts.length > 0 && <KitchenEssentials products={allProducts} />}
 
       {/* 5. Trending Now */}
-      {effectiveTrending.length > 0 && <TrendingNow products={effectiveTrending} />}
+      {trending.length > 0 && <TrendingNow products={trending} />}
 
       {/* Static Marketing Banners (Strip Type) */}
       <MarketingBannerStrip />

@@ -26,15 +26,7 @@ export default function BuyItAgain() {
           .eq('user_id', user.id)
           .limit(8);
 
-        if (error) {
-          // If view doesn't exist (404), just exit silently
-          if (error.status === 404 || error.code === 'PGRST116' || error.message?.includes('not found')) {
-            console.warn('[BuyItAgain] Database view missing, skipping section.');
-            setProducts([]);
-            return;
-          }
-          throw error;
-        }
+        if (error) throw error;
         setProducts(data || []);
       } catch (err) {
         console.error('[BuyItAgain] Error:', err);

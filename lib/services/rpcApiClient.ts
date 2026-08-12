@@ -8,8 +8,6 @@ import { getSupabase } from '@/lib/supabase/client';
 import { resolveProductImage } from '@/lib/utils/image';
 import { roundUpToNearestTen } from '@/lib/utils/formatters';
 
-const getClient = (customClient?: any) => customClient || getSupabase();
-
 export type RpcSortBy = 'created_at' | 'price' | 'name';
 export type RpcSortOrder = 'asc' | 'desc';
 export type RpcSortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'name_asc';
@@ -36,7 +34,6 @@ export interface RpcProduct {
   created_at: string | null;
   discount_pct: number;
   markup_percentage?: number | null;
-  backorder_enabled?: boolean;
   in_stock: boolean;
   display_title: string;
   variants?: ProductVariantOption[];
@@ -142,8 +139,7 @@ function mapRow(
     created_at:      (row.created_at as string | null) ?? null,
     discount_pct:    discountPct,
     markup_percentage: row.markup_percentage != null ? Number(row.markup_percentage) : null,
-    backorder_enabled: !!row.backorder_enabled,
-    in_stock:        !!row.backorder_enabled || Number(row.stock ?? row.stock_quantity ?? 0) > 0,
+    in_stock:        Number(row.stock ?? row.stock_quantity ?? 0) > 0,
     display_title:   displayTitle,
   };
 }
@@ -231,7 +227,7 @@ export async function getProducts(
     let query = supabase
       .from('products')
       .select(
-        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, backorder_enabled',
+        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock',
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
@@ -248,10 +244,8 @@ export async function getProducts(
     }
 
     if (brand) {
-      // Find the brand case-insensitively in the filters to match the exact string in the DB
-      const { filters: currentFilters } = await getFilters();
-      const exactBrand = currentFilters.brands.find(b => b.toLowerCase() === brand.toLowerCase()) || brand;
-      query = query.eq('brand', exactBrand);
+      // Filter by brand column (canonical, from CentralHub); also match source_brand as fallback
+      query = query.or(`brand.ilike.${brand},source_brand.ilike.${brand}`);
     }
 
     if (params.is_featured) query = query.eq('is_featured', true);
@@ -326,18 +320,17 @@ export async function getProducts(
 
 export async function getProductDetail(
   idOrSlug: string,
-  customClient?: any
 ): Promise<{ product: RpcProduct | null; error: string | null }> {
   try {
-    const supabase = getClient(customClient);
+    const supabase = getSupabase();
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, backorder_enabled')
+      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
-      .eq('visibility_status', 'visible')
+      .neq('visibility_status', false)
       .not('centralhub_product_id', 'is', null);
 
     if (isUuid) {

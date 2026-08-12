@@ -12,10 +12,7 @@ import { useWishlistCount } from '@/hooks/useWishlistOptimized';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import LiveSearch from '@/components/home/LiveSearch';
-import dynamic from 'next/dynamic';
-
-const MiniCart = dynamic(() => import('./MiniCart'), { ssr: false });
-
+import MiniCart from './MiniCart';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,7 +53,7 @@ export default function Header() {
   };
 
   return (
-    <header className="kg-web-header sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[#d1ead9]/50 shadow-[0_4px_30px_rgba(0,0,0,0.03)]"
+    <header className="kg-web-header sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#d1ead9] shadow-[0_2px_16px_rgba(11,93,59,0.07)]"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
 
@@ -95,7 +92,6 @@ export default function Header() {
                 height={40}
                 className="object-contain w-full h-full drop-shadow-sm"
                 priority
-                unoptimized
               />
             </div>
             <div className="flex flex-col leading-none min-w-0">

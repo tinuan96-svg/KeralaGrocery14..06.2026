@@ -92,11 +92,11 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-[#0B5D3B] transition-colors" />
         <input
           type="search"
-          placeholder={placeholder || "Search authentic Kerala groceries..."}
+          placeholder={placeholder || "Search Kerala groceries..."}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          className={`w-full pl-10 pr-10 py-2.5 rounded-[18px] border-2 border-[#d1ead9]/60 focus:border-[#0B5D3B] focus:ring-0 text-sm bg-gray-50/50 focus:bg-white transition-all duration-300 outline-none placeholder:text-gray-400 text-gray-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] ${inputClassName}`}
+          className={`w-full pl-10 pr-10 py-2.5 rounded-2xl border-2 border-[#d1ead9] focus:border-[#0B5D3B] focus:ring-0 text-sm bg-[#f4faf6] focus:bg-white transition-all duration-200 outline-none placeholder:text-gray-400 text-gray-800 ${inputClassName}`}
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {query && (

@@ -6,7 +6,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  *
  * Applies a wallet debit to a completed order.
  * Called after:
- *   - Trust Payments webhook fires "authorized" (card + wallet split)
+ *   - Worldpay webhook fires "authorized" (card + wallet split)
  *   - COD order creation (wallet portion deducted immediately)
  *
  * Request body:

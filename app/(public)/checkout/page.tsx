@@ -25,7 +25,7 @@ import { useAddresses } from '@/hooks/useAddresses';
 import type { CustomerAddress } from '@/lib/services/addressService';
 import { sendOrderPlacedNotification } from '@/lib/services/notificationService';
 
-type PaymentMethod = 'trustpayments';
+type PaymentMethod = 'stripe';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [stockError, setStockError] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('trustpayments');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
   const [deliveryFee, setDeliveryFee]     = useState(0);
   const [isFreeDelivery, setIsFreeDelivery] = useState(false);
   const [deliveryMsg, setDeliveryMsg]     = useState('');
@@ -61,7 +61,6 @@ export default function CheckoutPage() {
     phone: '',
     address: '',
     city: '',
-    county: '',
     postcode: '',
     notes: '',
   });
@@ -139,7 +138,6 @@ export default function CheckoutPage() {
         phone:    def.phone     || prev.phone,
         address:  def.address_line_1 + (def.address_line_2 ? `, ${def.address_line_2}` : ''),
         city:     def.city,
-        county:   def.county || '',
         postcode: def.postcode,
       }));
     }
@@ -190,7 +188,6 @@ export default function CheckoutPage() {
       phone:    addr.phone     || prev.phone,
       address:  addr.address_line_1 + (addr.address_line_2 ? `, ${addr.address_line_2}` : ''),
       city:     addr.city,
-      county:   addr.county || '',
       postcode: addr.postcode,
     }));
   };
@@ -200,7 +197,6 @@ export default function CheckoutPage() {
       ...prev,
       address:  selected.address,
       city:     selected.city     || prev.city,
-      county:   selected.county   || prev.county,
       postcode: selected.postcode || prev.postcode,
     }));
   };
@@ -221,7 +217,7 @@ export default function CheckoutPage() {
 
       const { data: products, error } = await supabase
         .from('products')
-        .select('id, name, stock, stock_quantity, backorder_enabled')
+        .select('id, name, stock, stock_quantity')
         .in('id', productIds);
 
       if (error) throw error;
@@ -231,9 +227,6 @@ export default function CheckoutPage() {
 
       products?.forEach(p => {
         const cartItem = cart.find(i => i.id === p.id);
-        // Skip stock check if backorder is enabled
-        if (p.backorder_enabled) return;
-
         // Robust check: use the maximum of both stock columns to avoid sync issues
         const available = Math.max(Number(p.stock || 0), Number(p.stock_quantity || 0));
 
@@ -244,7 +237,7 @@ export default function CheckoutPage() {
             removeFromCart(p.id);
           } else {
             issues.push(`Only ${available} units of ${p.name} are available. We've updated your cart.`);
-            updateQuantity(p.id, available, available, false);
+            updateQuantity(p.id, available, available);
           }
         }
       });
@@ -268,7 +261,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const buildOrderPayload = (status: 'pending' | 'paid', method: 'card' | 'wallet' | 'paypal', ref?: string) => ({
+  const buildOrderPayload = (status: 'pending' | 'paid', ref?: string) => ({
     idempotency_key:    idempotencyKey.current,
     user_id:            user?.id || null,
     customer_name:      formData.name,
@@ -279,7 +272,7 @@ export default function CheckoutPage() {
     delivery_postcode:  formData.postcode,
     delivery_fee:       deliveryFee,
     wallet_amount:      walletAmount,
-    payment_method:     method,
+    payment_method:     'card',
     payment_status:     status,
     payment_reference:  ref,
     notes:              formData.notes,
@@ -293,7 +286,7 @@ export default function CheckoutPage() {
     })),
   });
 
-  const createOrder = async (status: 'pending' | 'paid', method: 'card' | 'wallet' | 'paypal' = 'card', ref?: string) => {
+  const createOrder = async (status: 'pending' | 'paid', ref?: string) => {
     const supabase   = getSupabase();
     const { data: { session } } = await supabase.auth.getSession();
     const authToken  = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -305,7 +298,7 @@ export default function CheckoutPage() {
         'Content-Type': 'application/json',
         Authorization:  `Bearer ${authToken}`,
       },
-      body: JSON.stringify(buildOrderPayload(status, method, ref)),
+      body: JSON.stringify(buildOrderPayload(status, ref)),
     });
 
     const data = await res.json();
@@ -316,7 +309,7 @@ export default function CheckoutPage() {
     return data;
   };
 
-  const handleTrustPayments = async () => {
+  const handleStripePayment = async () => {
     if (!validateForm()) return;
     if (paymentInitiated.current) return;
 
@@ -337,7 +330,7 @@ export default function CheckoutPage() {
 
       // If the entire total is covered by wallet credit, process as 'paid' immediately
       if (cardChargeFinal <= 0) {
-        const result = await createOrder('paid', 'wallet');
+        const result = await createOrder('paid');
         const orderId = result.order.id;
 
         if (walletAmount > 0 && user) {
@@ -371,7 +364,7 @@ export default function CheckoutPage() {
       }
 
       // Normal card payment flow
-      const result = await createOrder('pending', 'card');
+      const result = await createOrder('pending');
       const orderNumber = result.order.order_number;
 
       const supabase = getSupabase();
@@ -379,7 +372,7 @@ export default function CheckoutPage() {
       const authToken = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/trustpayments-payment`,
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/stripe-payment`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
@@ -388,37 +381,16 @@ export default function CheckoutPage() {
             orderNumber: orderNumber,
             customerEmail: formData.email,
             customerName: formData.name,
-            customerPhone: formData.phone,
-            billingAddress: {
-              address: formData.address,
-              city: formData.city,
-              county: formData.county,
-              postcode: formData.postcode
-            }
           }),
         }
       );
 
       const data = await response.json();
       if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to initialize payment gateway');
+        throw new Error(data.error || 'Failed to create payment session');
       }
 
-      // Trust Payments Hosted Payment Page Redirect
-      // We create a form and submit it to the HPP endpoint
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = 'https://payments.securetrading.net/process/payments/details';
-
-      const jwtInput = document.createElement('input');
-      jwtInput.type = 'hidden';
-      jwtInput.name = 'jwt';
-      jwtInput.value = data.jwt;
-      form.appendChild(jwtInput);
-
-      document.body.appendChild(form);
-      form.submit();
-
+      window.location.href = data.url;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Payment failed. Please try again.';
       toast({ title: 'Payment Failed', description: message, variant: 'destructive' });
@@ -576,21 +548,13 @@ export default function CheckoutPage() {
                       className="h-10 border-gray-200 focus:border-green-500 focus:ring-green-500/20" />
                   </div>
 
-                  <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="city" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                         City <span className="text-red-500">*</span>
                       </Label>
                       <Input id="city" name="city" value={formData.city} onChange={handleInputChange}
                         placeholder="London"
-                        className="h-10 border-gray-200 focus:border-green-500 focus:ring-green-500/20" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="county" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                        County <span className="text-gray-400 font-normal normal-case">(optional)</span>
-                      </Label>
-                      <Input id="county" name="county" value={formData.county} onChange={handleInputChange}
-                        placeholder="Greater London"
                         className="h-10 border-gray-200 focus:border-green-500 focus:ring-green-500/20" />
                     </div>
                     <div className="space-y-1.5">
@@ -703,7 +667,7 @@ export default function CheckoutPage() {
               )}
 
               <div className="grid sm:grid-cols-2 gap-3 mb-5">
-                <button type="button" onClick={() => setPaymentMethod('trustpayments')}
+                <button type="button" onClick={() => setPaymentMethod('stripe')}
                   className="flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left border-green-500 bg-green-50">
                   <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center border-green-500">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -718,7 +682,7 @@ export default function CheckoutPage() {
                 </button>
               </div>
 
-              {paymentMethod === 'trustpayments' && (
+              {paymentMethod === 'stripe' && (
                 <div className="space-y-3">
                   {stockError && (
                     <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
@@ -739,13 +703,13 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
                     <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
                     <p className="text-xs text-blue-700 font-medium">
-                      Secured by Trust Payments. You&apos;ll be redirected to a secure payment page.
+                      Secured by Stripe. You&apos;ll be redirected to a secure payment page.
                     </p>
                   </div>
                   <Button
                     className="w-full h-12 bg-[#0B5D3B] hover:bg-green-700 text-white font-bold rounded-xl text-sm transition-colors"
                     disabled={isProcessing || !!stockError}
-                    onClick={handleTrustPayments}>
+                    onClick={handleStripePayment}>
                     {isProcessing ? (
                       <span className="flex items-center gap-2">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -902,7 +866,7 @@ export default function CheckoutPage() {
         <Button
           className="bg-[#0B5D3B] hover:bg-green-700 text-white font-bold px-6 h-11 rounded-xl text-sm"
           disabled={isProcessing || !!stockError}
-          onClick={handleTrustPayments}>
+          onClick={handleStripePayment}>
           {isProcessing ? 'Processing...' : 'Pay Now'}
         </Button>
       </div>

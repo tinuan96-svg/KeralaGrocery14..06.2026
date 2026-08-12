@@ -99,7 +99,7 @@ export default function AddressSelector({ selectedId, onSelect }: Props) {
               </div>
               <p className="text-sm font-semibold text-gray-900 truncate">{addr.full_name}</p>
               <p className="text-xs text-gray-500 leading-relaxed">
-                {addr.address_line_1}{addr.address_line_2 ? `, ${addr.address_line_2}` : ''}, {addr.city}, {addr.county ? `${addr.county}, ` : ''}{addr.postcode}
+                {addr.address_line_1}{addr.address_line_2 ? `, ${addr.address_line_2}` : ''}, {addr.city}, {addr.postcode}
               </p>
             </div>
           </button>

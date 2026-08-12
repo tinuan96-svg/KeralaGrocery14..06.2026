@@ -29,7 +29,7 @@ export default function RecipeCartActions({ ingredients }: Props) {
         if (ing.productId) {
           const { data } = await supabase
             .from('products')
-            .select('id, name, price, slug, image_url, image_main, stock, backorder_enabled')
+            .select('id, name, price, slug, image_url, image_main')
             .eq('id', ing.productId)
             .eq('approval_status', 'approved')
             .eq('visibility_status', true)
@@ -51,9 +51,7 @@ export default function RecipeCartActions({ ingredients }: Props) {
               name: p.display_title,
               price: p.price,
               slug: p.slug,
-              image_url: p.image_url,
-              stock: p.stock,
-              backorder_enabled: p.backorder_enabled
+              image_url: p.image_url
             };
           }
         }
@@ -65,7 +63,7 @@ export default function RecipeCartActions({ ingredients }: Props) {
             price: product.price,
             image_url: product.image_url || product.image_main || undefined,
             slug: product.slug || product.id,
-          }, 1, product.stock, product.backorder_enabled);
+          });
           return true;
         }
         return false;

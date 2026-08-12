@@ -20,7 +20,7 @@
   7. `get_revenue_chart(p_from timestamptz, p_to timestamptz, p_granularity text)` — day/week/month timeseries
 
   ## Notes
-  - Payment fee is estimated at 1.9% + £0.20 per order (standard UK card rate)
+  - Payment fee is estimated at 1.9% + £0.20 per order (Worldpay/card standard UK rate)
   - COGS = sum(order_items.unit_price / (1 + markup_pct/100) × quantity) using cost_price from products when available
   - All functions are SECURITY DEFINER with fixed search_path for safety
   - Admin-only access enforced via is_admin() check

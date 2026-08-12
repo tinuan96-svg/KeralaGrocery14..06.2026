@@ -5,9 +5,6 @@ export const metadata: Metadata = {
   title: 'Terms & Conditions | Kerala Groceries UK',
   description:
     'Terms and Conditions for shopping at Kerala Groceries UK, operated by Tasty Kerala Ltd. Covers orders, payments, delivery, refunds, wallet credits, and user responsibilities.',
-  alternates: {
-    canonical: 'https://keralagrocery.com/terms',
-  },
   keywords: [
     'Kerala Groceries UK terms',
     'Tasty Kerala Ltd terms and conditions',
@@ -172,7 +169,7 @@ export default function TermsPage() {
         <Section id="payment" title="6. Payment Methods">
           <p>We accept the following payment methods:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Debit/credit card</strong> — processed securely via Trust Payments (PCI-DSS compliant)</li>
+            <li><strong>Debit/credit card</strong> — processed securely via Worldpay (PCI-DSS compliant)</li>
             <li><strong>KG Wallet</strong> — digital wallet credits (see Section 7)</li>
           </ul>
           <p>

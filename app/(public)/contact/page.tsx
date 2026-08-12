@@ -5,9 +5,6 @@ export const metadata: Metadata = {
   title: 'Contact Us | Kerala Groceries UK – Customer Support',
   description:
     'Contact Kerala Groceries UK (Tasty Kerala Ltd) for order support, product enquiries, or general questions. Email, phone, and online contact form available.',
-  alternates: {
-    canonical: 'https://keralagrocery.com/contact',
-  },
   keywords: [
     'contact Kerala Groceries UK',
     'Kerala groceries customer support',

@@ -23,7 +23,7 @@ export default function ProductActions({ product, onAddToCart }: ProductActionsP
   const cartItem = cart.find((item) => item.id === product.id);
   const currentQuantity = cartItem?.quantity || 0;
   const inWishlist = isInWishlist(product.id);
-  const isOutOfStock = !product.backorder_enabled && product.stock === 0;
+  const isOutOfStock = product.stock === 0;
 
   const cartPayload = {
     id: product.id,
@@ -34,13 +34,13 @@ export default function ProductActions({ product, onAddToCart }: ProductActionsP
   };
 
   const handleAddToCart = () => {
-    addToCart(cartPayload, 1, product.stock, product.backorder_enabled);
+    addToCart(cartPayload);
     onAddToCart?.();
   };
 
   const handleIncrease = () => {
-    if (product.backorder_enabled || currentQuantity < product.stock) {
-      updateQuantity(product.id, currentQuantity + 1, product.stock, product.backorder_enabled);
+    if (currentQuantity < product.stock) {
+      updateQuantity(product.id, currentQuantity + 1);
     }
   };
 
@@ -54,7 +54,7 @@ export default function ProductActions({ product, onAddToCart }: ProductActionsP
 
   const handleBuyNow = () => {
     if (currentQuantity === 0) {
-      addToCart(cartPayload, 1, product.stock, product.backorder_enabled);
+      addToCart(cartPayload);
     }
     router.push('/checkout');
   };
@@ -105,7 +105,7 @@ export default function ProductActions({ product, onAddToCart }: ProductActionsP
                 </span>
                 <button
                   onClick={handleIncrease}
-                  disabled={!product.backorder_enabled && currentQuantity >= product.stock}
+                  disabled={currentQuantity >= product.stock}
                   className="w-12 h-12 flex items-center justify-center bg-[#0B5D3B] text-white hover:bg-[#094d31] disabled:opacity-40 disabled:cursor-not-allowed transition-colors active:scale-95"
                 >
                   <Plus className="w-4 h-4" />

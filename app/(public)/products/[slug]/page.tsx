@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import KeralaProductDetailPage from '@/components/product/KeralaProductDetailPage';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { getProductDetail } from '@/lib/services/rpcApiClient';
 import {
   ProductSchema,
   BreadcrumbSchema,
@@ -106,15 +105,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const rawDesc = p.short_description?.trim()
     || (p.description && p.description !== 'No description' ? stripHtml(p.description).substring(0, 200) : null)
     || fallbackDesc;
-
-  // Optimized for SEO: Keep total length under 160 characters
-  const suffix = " Order today for Next Day Delivery across London and the UK.";
-  const maxTotalLength = 158;
-  const availableLength = maxTotalLength - suffix.length;
-
-  const description = rawDesc.length > availableLength
-    ? `${rawDesc.substring(0, availableLength - 3)}...${suffix}`
-    : `${rawDesc}${suffix}`;
+  const description = `${rawDesc.substring(0, 160)}... Order today for Next Day Delivery across London and the UK.`;
   const title = `${name}${brand ? ` | ${brand}` : ''} | Kerala Groceries UK`;
   const canonicalUrl = `https://keralagrocery.com/products/${params.slug}`;
 
@@ -126,17 +117,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     title,
     description,
     alternates: { canonical: canonicalUrl },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
     openGraph: {
       title,
       description,
@@ -167,13 +147,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { product: p } = await getProductDetail(params.slug);
+  const p = await fetchProductBySlug(params.slug);
 
-  const name        = p?.product_title ?? params.slug.replace(/-/g, ' ');
-  const brand       = p?.brand ?? 'Kerala Groceries UK';
-  const category    = p?.category ?? null;
-  const price       = Number(p?.price ?? 0);
-  const image       = p?.image_url ?? 'https://keralagrocery.com/image.png';
+  const name        = p?.name ?? params.slug.replace(/-/g, ' ');
+  const brand       = p?.brand ?? p?.source_brand ?? 'Kerala Groceries UK';
+  const category    = (p?.categories as { name: string } | null)?.name ?? null;
+  const price       = Number(p?.selling_price ?? p?.price ?? 0);
+  const image       = p?.image_main ?? p?.image_url ?? 'https://keralagrocery.com/image.png';
   const description = (p?.description && p.description !== 'No description')
     ? p.description
     : `${name} — authentic Kerala grocery.`;
@@ -193,20 +173,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <MerchantReturnPolicySchema />
           <ShippingPolicySchema />
           <ProductSchema
-            name={p.display_title}
+            name={name}
             description={description}
             image={image}
             price={price}
             brand={brand}
             availability="InStock"
             url={canonicalUrl}
-            // ratingValue={p.rating || undefined}
-            // reviewCount={p.review_count || undefined}
+            ratingValue={p.rating || undefined}
+            reviewCount={p.review_count || undefined}
           />
           <BreadcrumbSchema items={breadcrumbs} />
         </>
       )}
-      <KeralaProductDetailPage slug={params.slug} initialProduct={p} />
+      <KeralaProductDetailPage slug={params.slug} />
     </>
   );
 }

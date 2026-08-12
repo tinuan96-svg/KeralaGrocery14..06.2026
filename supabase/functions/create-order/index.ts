@@ -271,7 +271,7 @@ Deno.serve(async (req: Request) => {
 
     // ── Order confirmation notifications (WhatsApp & Push) ──────────────────
     // Only notify if payment is confirmed (paid).
-    // For card payments, the confirmation is sent by the Trust Payments webhook after authorization.
+    // For card payments, the confirmation is sent by the Worldpay webhook after authorization.
     const shouldNotifyNow = orderData.payment_status === "paid";
 
     if (shouldNotifyNow && (orderData.customer_phone || userId)) {

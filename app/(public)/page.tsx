@@ -5,15 +5,11 @@ import HomepageSections from '@/components/home/HomepageSections';
 import AmazonStyleGrid from '@/components/home/AmazonStyleGrid';
 import LocalCityBanner from '@/components/home/LocalCityBanner';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
+import PersonalizedRecommendations from '@/components/product/PersonalizedRecommendations';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import PullToRefresh from '@/components/home/PullToRefresh';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
-
-const PersonalizedRecommendations = dynamic(() => import('@/components/product/PersonalizedRecommendations'), { ssr: false });
-import { fetchActiveBanners } from '@/lib/services/bannerService';
-import { fetchStoreProducts, fetchHomepageCategories } from '@/lib/services/storeProductsService';
-import { fetchActiveGridCards } from '@/lib/services/homepageGridService';
 
 export const metadata: Metadata = {
   title: 'Kerala Grocery UK | Buy Authentic Kerala Groceries Online',
@@ -47,21 +43,10 @@ const homepageFAQs = [
   }
 ];
 
-export default async function HomePage() {
-  // Fetch all critical storefront data on server to minimize waterfalls and LCP
-  const [banners, categories, trendingRes, dealsRes, bestsellersRes, newArrivalsRes, gridCards] = await Promise.all([
-    fetchActiveBanners(),
-    fetchHomepageCategories(),
-    fetchStoreProducts({ is_featured: true, limit: 12 }),
-    fetchStoreProducts({ is_deal: true, limit: 12 }),
-    fetchStoreProducts({ is_bestseller: true, limit: 12 }),
-    fetchStoreProducts({ is_new_arrival: true, limit: 12 }),
-    fetchActiveGridCards(),
-  ]);
-
+export default function HomePage() {
   return (
     <PullToRefresh>
-      <div className="min-h-screen pb-20 md:pb-0 bg-pattern-kerala">
+      <div className="min-h-screen pb-20 md:pb-0 bg-[#f1f3f4]">
         <LocalBusinessSchema />
         <MerchantReturnPolicySchema />
         <ShippingPolicySchema />
@@ -71,14 +56,13 @@ export default async function HomePage() {
         {/* Sticky search appears below header once hero scrolls away */}
         <StickySearchBar sentinelId="hero-end" />
 
-        {/* Pass initial banners to avoid LCP delay */}
-        <PromoBannerCarousel initialBanners={banners} />
+        <PromoBannerCarousel />
 
         {/* Sentinel — StickySearchBar watches this element */}
         <div id="hero-end" />
 
         {/* Amazon-style content grid */}
-        <AmazonStyleGrid initialCards={gridCards} />
+        <AmazonStyleGrid />
 
         <PersonalizedRecommendations />
 
@@ -86,13 +70,7 @@ export default async function HomePage() {
         <LocalCityBanner />
 
         {/* All product sections in feed order */}
-        <HomepageSections
-          initialCategories={categories}
-          initialTrending={trendingRes.products}
-          initialDeals={dealsRes.products}
-          initialBestsellers={bestsellersRes.products}
-          initialNewArrivals={newArrivalsRes.products}
-        />
+        <HomepageSections />
 
         <WhyChooseUs />
 

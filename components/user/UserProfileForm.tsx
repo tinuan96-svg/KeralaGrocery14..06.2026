@@ -5,22 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { getSupabase } from '@/lib/supabase/client';
-import { User, MapPin, Mail, Phone, ShieldCheck } from 'lucide-react';
+import { User, MapPin, Mail, Phone } from 'lucide-react';
 import AddressAutocomplete, { type SelectedAddress } from '@/components/ui/AddressAutocomplete';
-import type { UserProfile as DBProfile } from '@/lib/types/database';
 
-interface LocalProfile {
+interface UserProfile {
   name: string;
   email: string;
   phone: string;
   address: string;
   city: string;
   postcode: string;
-  accepts_marketing: boolean;
 }
 
 export default function UserProfileForm() {
@@ -28,14 +25,13 @@ export default function UserProfileForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<LocalProfile>({
+  const [profile, setProfile] = useState<UserProfile>({
     name: '',
     email: '',
     phone: '',
     address: '',
     city: '',
     postcode: '',
-    accepts_marketing: false,
   });
 
   const loadUserProfile = useCallback(async () => {
@@ -60,7 +56,6 @@ export default function UserProfileForm() {
           address: data.address || '',
           city: data.city || '',
           postcode: data.postcode || '',
-          accepts_marketing: data.accepts_marketing || false,
         });
       } else {
         setProfile({
@@ -70,7 +65,6 @@ export default function UserProfileForm() {
           address: '',
           city: '',
           postcode: '',
-          accepts_marketing: false,
         });
       }
     } catch (error) {
@@ -158,7 +152,6 @@ export default function UserProfileForm() {
         address: profile.address,
         city: profile.city,
         postcode: profile.postcode.toUpperCase(),
-        accepts_marketing: profile.accepts_marketing,
       });
 
       if (error) throw error;
@@ -211,40 +204,34 @@ export default function UserProfileForm() {
 
           <div>
             <Label htmlFor="email">Email</Label>
-            <div className="relative mt-1 group">
+            <div className="relative mt-1">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 id="email"
                 type="email"
                 placeholder="john@example.com"
                 value={profile.email}
-                className="pl-10 bg-gray-50 cursor-not-allowed"
+                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                className="pl-10"
                 readOnly
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-green-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                <ShieldCheck className="h-3 w-3" />
-                Verified
-              </div>
             </div>
           </div>
         </div>
 
         <div>
           <Label htmlFor="phone">Phone Number</Label>
-          <div className="relative mt-1 group">
+          <div className="relative mt-1">
             <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               id="phone"
               type="tel"
               placeholder="+44 7700 900000"
               value={profile.phone}
-              className="pl-10 bg-gray-50 cursor-not-allowed"
+              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+              className="pl-10"
               readOnly
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-green-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-              <ShieldCheck className="h-3 w-3" />
-              Verified
-            </div>
           </div>
         </div>
 
@@ -296,30 +283,6 @@ export default function UserProfileForm() {
                 />
                 <p className="text-xs text-gray-500 mt-1">UK postcode format (e.g., SW1A 1AA)</p>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-gray-100">
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id="marketing"
-              checked={profile.accepts_marketing}
-              onCheckedChange={(checked) =>
-                setProfile({ ...profile, accepts_marketing: checked === true })
-              }
-              className="mt-1 border-gray-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
-            />
-            <div className="grid gap-1.5 leading-none">
-              <Label
-                htmlFor="marketing"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                Marketing Preferences
-              </Label>
-              <p className="text-xs text-gray-500">
-                I would like to receive updates about new products, authentic Kerala recipes, and special offers via WhatsApp or Email.
-              </p>
             </div>
           </div>
         </div>

@@ -64,16 +64,9 @@ public class MainActivity extends BridgeActivity {
         }
 
         // Force Bottom Bar Visibility and 5-column layout exactly like the reference image
-        try {
-            java.io.InputStream is = getAssets().open("ui_fixes.js");
-            byte[] buffer = new byte[is.available()];
-            is.read(buffer);
-            is.close();
-            final String js = new String(buffer, "UTF-8");
-            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1000);
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
+        final String js = getString(R.string.ui_fixes_js);
+
+        webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1000);
     }
 
     @Override

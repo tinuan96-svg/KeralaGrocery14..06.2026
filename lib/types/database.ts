@@ -53,7 +53,6 @@ export interface Product {
   is_deal?: boolean;
   is_new_arrival?: boolean;
   sold_count?: number;
-  backorder_enabled?: boolean;
   tags?: string[];
   custom_attributes?: Record<string, any>;
   warehouse_location?: string | null;
@@ -125,7 +124,6 @@ export interface ProductWithDetails {
   is_deal?: boolean;
   is_new_arrival?: boolean;
   sold_count?: number;
-  backorder_enabled?: boolean;
   gallery_images?: GalleryImage[];
   variants?: ProductVariant[];
   tags?: string[];
@@ -161,8 +159,6 @@ export interface UserProfile {
   address: string | null;
   city: string | null;
   postcode: string | null;
-  accepts_marketing: boolean;
-  marketing_consent_date: string | null;
   created_at: string | null;
   updated_at: string | null;
 }

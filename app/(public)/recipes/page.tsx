@@ -8,9 +8,6 @@ import { Badge } from '@/components/ui/badge';
 export const metadata: Metadata = {
   title: 'Authentic Kerala Recipes | KeralaGrocery.com',
   description: 'Learn how to cook authentic Kerala dishes like Fish Curry, Appam, and Matta Rice. Shop all ingredients directly from our recipes.',
-  alternates: {
-    canonical: 'https://keralagrocery.com/recipes',
-  },
 };
 
 export default async function RecipesPage() {

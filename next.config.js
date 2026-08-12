@@ -24,7 +24,7 @@ const nextConfig = {
   },
   transpilePackages: ['lucide-react'],
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'lucide-react'],
+    // optimizePackageImports: ['lucide-react'],
   },
   webpack: (config, { dev }) => {
     if (dev) {
