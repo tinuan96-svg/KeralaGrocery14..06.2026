@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Store, Wallet, Grid2x2, User } from 'lucide-react';
+import { Chrome as Home, Store, Wallet, Grid2x2, User } from 'lucide-react';
 import { useWallet } from '@/hooks/useWallet';
 import { useAuth } from '@/lib/context/AuthContext';
 import { haptics } from '@/lib/utils/haptics';
@@ -51,7 +51,7 @@ export default function MobileNav() {
       <div className="flex items-center justify-around h-[var(--nav-height,64px)] w-full max-w-screen-xl mx-auto px-2">
 
         <NavItem href="/" label="Home" active={isActive('/')} icon={<Home />} onClick={handleNavClick} />
-        <NavItem href="/brands" label="Brands" active={isActive('/brands')} icon={<Store />} onClick={handleNavClick} />
+        <NavItem href="/categories" label="Categories" active={isActive('/categories')} icon={<Grid2x2 />} onClick={handleNavClick} />
 
         {/* Wallet — center featured tab */}
         <Link
@@ -61,7 +61,6 @@ export default function MobileNav() {
           className="flex flex-col items-center justify-center relative select-none active:scale-[0.88] transition-transform duration-200"
           aria-label="Wallet"
         >
-          {/* Elevated pill with dynamic glow */}
           <div
             style={{
               backgroundColor: isWalletActive ? '#0B5D3B' : 'rgba(11,93,59,0.05)',
@@ -88,7 +87,7 @@ export default function MobileNav() {
           </span>
         </Link>
 
-        <NavItem href="/categories" label="Explore" active={isActive('/categories')} icon={<Grid2x2 />} onClick={handleNavClick} />
+        <NavItem href="/products" label="Shop" active={isActive('/products')} icon={<Store />} onClick={handleNavClick} />
         <NavItem
           href="/account"
           label="Profile"

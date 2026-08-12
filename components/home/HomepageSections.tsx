@@ -2,13 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { useHomepageData } from '@/hooks/useHomepageData';
-import TrendingNow from '@/components/home/TrendingNow';
-import MajorCategories from '@/components/home/MajorCategories';
 import LoyaltyBanner from '@/components/home/LoyaltyBanner';
-import KitchenEssentials from '@/components/home/KitchenEssentials';
 import MarketingBannerStrip from '@/components/home/MarketingBannerStrip';
-import QuickNavigation from '@/components/home/QuickNavigation';
-import TrustStrip from '@/components/home/TrustStrip';
 import { ProductGridSkeleton } from '@/components/product/ProductCardSkeleton';
 import { PersonalisedGreeting } from '@/components/layout/CartEnhancements';
 import type { Brand } from '@/lib/types/database';
@@ -52,16 +47,6 @@ const BrandShowcase = dynamic(() => import('@/components/home/BrandShowcase'), {
   ssr: false,
 });
 
-const CategoryDiscoveryCarousel = dynamic(
-  () => import('@/components/home/CategoryDiscoveryCarousel'),
-  { ssr: false }
-);
-
-const DynamicProductBanners = dynamic(
-  () => import('@/components/home/DynamicProductBanners'),
-  { ssr: false }
-);
-
 const DiscoverMoreFeed = dynamic(
   () => import('@/components/home/DiscoverMoreFeed'),
   { ssr: false }
@@ -81,7 +66,7 @@ function SkeletonSection() {
 }
 
 export default function HomepageSections() {
-  const { trending, deals, bestsellers, newArrivals, allProducts, categories, isLoading } =
+  const { trending, deals, bestsellers, newArrivals, allProducts, isLoading } =
     useHomepageData();
 
   const brands: Brand[] = isLoading
@@ -101,7 +86,6 @@ export default function HomepageSections() {
       <>
         <SkeletonSection />
         <SkeletonSection />
-        <SkeletonSection />
       </>
     );
   }
@@ -111,49 +95,25 @@ export default function HomepageSections() {
       {/* Personalised greeting for logged-in users */}
       <PersonalisedGreeting />
 
-      {/* Quick Navigation for Mobile — instant access to top paths */}
-      <QuickNavigation />
-
-      {/* Trust signals & benefits */}
-      <TrustStrip />
-
-      {/* 1. Major Categories — easy navigation as like brands */}
-      <MajorCategories categories={categories} />
-
-      {/* 2. Flash Deals — highest urgency, first thing after categories */}
+      {/* Flash Deals */}
       {deals.length > 0 && <DealsSection products={deals} />}
 
-      {/* 3. Discover Carousel — sliding category chips */}
-      <CategoryDiscoveryCarousel />
-
-      {/* 4. Popular Brands */}
-      <BrandShowcase brands={brands} />
-
-      {/* 4. Kitchen Essentials — High visibility dense grid */}
-      {allProducts.length > 0 && <KitchenEssentials products={allProducts} />}
-
-      {/* 5. Trending Now */}
-      {trending.length > 0 && <TrendingNow products={trending} />}
-
-      {/* Static Marketing Banners (Strip Type) */}
-      <MarketingBannerStrip />
-
-      {/* 6. Top Sellers */}
+      {/* Best Sellers */}
       {bestsellers.length > 0 && <BestSellers products={bestsellers} />}
 
-      {/* 7. Wallet Rewards Banner */}
+      {/* Popular Brands */}
+      <BrandShowcase brands={brands} />
+
+      {/* Loyalty / Wallet — kept but lower on page */}
       <LoyaltyBanner />
 
-      {/* 8. Product Banners (promoted) */}
-      <DynamicProductBanners />
-
-      {/* 9. New Arrivals */}
+      {/* New Arrivals */}
       {newArrivals.length > 0 && <NewArrivals products={newArrivals} />}
 
-      {/* Second set of marketing banners (if any remain) */}
-      <MarketingBannerStrip offset={1} />
+      {/* Marketing banners */}
+      <MarketingBannerStrip />
 
-      {/* 10. Discover More — infinite scroll feed */}
+      {/* Discover More — infinite scroll feed */}
       <DiscoverMoreFeed />
     </>
   );

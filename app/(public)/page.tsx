@@ -1,13 +1,13 @@
-import SEOContent from '@/components/home/SEOContent';
-import { LocalBusinessSchema, MerchantReturnPolicySchema, ShippingPolicySchema, GroceryStoreSchema, FAQSchema } from '@/components/seo/StructuredData';
-import PromoBannerCarousel from '@/components/home/PromoBannerCarousel';
+import HomeHero from '@/components/home/HomeHero';
+import CategoryGrid from '@/components/home/CategoryGrid';
+import ShopByNeed from '@/components/home/ShopByNeed';
+import TrustSection from '@/components/home/TrustSection';
 import HomepageSections from '@/components/home/HomepageSections';
-import AmazonStyleGrid from '@/components/home/AmazonStyleGrid';
-import LocalCityBanner from '@/components/home/LocalCityBanner';
-import WhyChooseUs from '@/components/home/WhyChooseUs';
-import PersonalizedRecommendations from '@/components/product/PersonalizedRecommendations';
+import SEOContent from '@/components/home/SEOContent';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
+import CategoryProductSection from '@/components/home/CategoryProductSection';
 import PullToRefresh from '@/components/home/PullToRefresh';
+import { LocalBusinessSchema, MerchantReturnPolicySchema, ShippingPolicySchema, GroceryStoreSchema, FAQSchema } from '@/components/seo/StructuredData';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
@@ -53,27 +53,53 @@ export default function HomePage() {
         <GroceryStoreSchema />
         <FAQSchema items={homepageFAQs} />
 
-        {/* Sticky search appears below header once hero scrolls away */}
         <StickySearchBar sentinelId="hero-end" />
 
-        <PromoBannerCarousel />
+        {/* Hero */}
+        <HomeHero />
 
-        {/* Sentinel — StickySearchBar watches this element */}
+        {/* Sentinel for sticky search */}
         <div id="hero-end" />
 
-        {/* Amazon-style content grid */}
-        <AmazonStyleGrid />
+        {/* Shop by Category */}
+        <CategoryGrid />
 
-        <PersonalizedRecommendations />
+        {/* Shop by Need */}
+        <ShopByNeed />
 
-        {/* Dynamic Local City Marketing Banner */}
-        <LocalCityBanner />
-
-        {/* All product sections in feed order */}
+        {/* Existing homepage sections (deals, bestsellers, new arrivals, etc.) */}
         <HomepageSections />
 
-        <WhyChooseUs />
+        {/* Category product sections — lazy loaded */}
+        <CategoryProductSection
+          title="Kerala Snacks"
+          emoji="🍌"
+          categorySlugs={['snacks-namkeens']}
+          viewAllHref="/products?filter=snacks-namkeens"
+        />
+        <CategoryProductSection
+          title="Rice & Daily Essentials"
+          emoji="🍚"
+          categorySlugs={['rice-grains', 'rice-powders-flour']}
+          viewAllHref="/products?filter=rice-grains"
+        />
+        <CategoryProductSection
+          title="Spices & Masalas"
+          emoji="🌶️"
+          categorySlugs={['spices']}
+          viewAllHref="/products?filter=spices"
+        />
+        <CategoryProductSection
+          title="Frozen Foods"
+          emoji="❄️"
+          categorySlugs={['frozen-foods']}
+          viewAllHref="/products?filter=frozen-foods"
+        />
 
+        {/* Trust */}
+        <TrustSection />
+
+        {/* SEO content near bottom */}
         <SEOContent />
         <LocalSEOFooter />
       </div>
