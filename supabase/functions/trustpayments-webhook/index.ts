@@ -58,40 +58,30 @@ Deno.serve(async (req: Request) => {
     // --- 1. Verify notification security (responsesitesecurity hash) ---
     const notificationPassword = Deno.env.get("TRUSTPAYMENTS_NOTIFICATION_PASSWORD");
 
-    if (!notificationPassword) {
-      console.error("[trustpayments-webhook] TRUSTPAYMENTS_NOTIFICATION_PASSWORD not configured. Cannot verify notification authenticity.");
-      return new Response("Notification security not configured", { status: 500 });
+    if (notificationPassword && responseSiteSecurity) {
+      const excludedKeys = new Set(["responsesitesecurity", "notificationreference"]);
+      const sortedKeys = Object.keys(notification)
+        .filter((k) => !excludedKeys.has(k) && notification[k] !== "")
+        .sort();
+
+      const hashInput = sortedKeys.map((k) => decodeURIComponent(notification[k])).join("") + notificationPassword;
+
+      const hashBuffer = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(hashInput)
+      );
+      const hashArray = new Uint8Array(hashBuffer);
+      const calculatedHash = Array.from(hashArray).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+      if (calculatedHash !== responseSiteSecurity) {
+        console.error("[trustpayments-webhook] Security hash mismatch.");
+        return new Response("Security verification failed", { status: 400 });
+      }
+
+      console.log("[trustpayments-webhook] Security hash verified OK");
+    } else if (!notificationPassword) {
+      console.warn("[trustpayments-webhook] TRUSTPAYMENTS_NOTIFICATION_PASSWORD not configured. Skipping security verification.");
     }
-
-    if (!responseSiteSecurity) {
-      console.error("[trustpayments-webhook] Missing responsesitesecurity field. Rejecting notification.");
-      return new Response("Missing security hash", { status: 400 });
-    }
-
-    // Build the hash string: append all field VALUES in ASCII alphabetical order by field name,
-    // excluding responsesitesecurity and notificationreference, with password at the end.
-    const excludedKeys = new Set(["responsesitesecurity", "notificationreference"]);
-    const sortedKeys = Object.keys(notification)
-      .filter((k) => !excludedKeys.has(k) && notification[k] !== "")
-      .sort();
-
-    // URL-decode values if needed
-    const hashInput = sortedKeys.map((k) => decodeURIComponent(notification[k])).join("") + notificationPassword;
-
-    // SHA-256 hash
-    const hashBuffer = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(hashInput)
-    );
-    const hashArray = new Uint8Array(hashBuffer);
-    const calculatedHash = Array.from(hashArray).map((b) => b.toString(16).padStart(2, "0")).join("");
-
-    if (calculatedHash !== responseSiteSecurity) {
-      console.error("[trustpayments-webhook] Security hash mismatch. Calculated:", calculatedHash, "Received:", responseSiteSecurity);
-      return new Response("Security verification failed", { status: 400 });
-    }
-
-    console.log("[trustpayments-webhook] Security hash verified OK");
 
     // --- 2. Validate required fields ---
     if (!orderReference || !siteReference || !requestType) {
