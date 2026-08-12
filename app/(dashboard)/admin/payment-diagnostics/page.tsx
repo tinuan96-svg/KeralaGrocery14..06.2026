@@ -146,20 +146,15 @@ export default function PaymentDiagnosticsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-      const res = await fetch(`${supabaseUrl}/functions/v1/stripe-webhook`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/trustpayments-webhook`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
           'Authorization': `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({
-          type: 'checkout.session.completed',
-          data: {
-            object: {
-              client_reference_id: orderNumber,
-              payment_intent: `manual-retry-${Date.now()}`,
-            }
-          }
+          orderreference: orderNumber,
+          transactionreference: `manual-retry-${Date.now()}`,
         }),
       });
       const json = await res.json();
@@ -183,7 +178,7 @@ export default function PaymentDiagnosticsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-      const res = await fetch(`${supabaseUrl}/functions/v1/stripe-payment`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/trustpayments-jwt`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
@@ -197,8 +192,9 @@ export default function PaymentDiagnosticsPage() {
         }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.open(data.url, '_blank');
+      if (data.jwt) {
+        const params = new URLSearchParams({ order: row.order_number, amount: row.total.toFixed(2) });
+        window.open(`/trustpayments?${params.toString()}`, '_blank');
         showToast(`Payment link opened for ${row.order_number}`);
       } else {
         showToast(`Failed to create payment link: ${data.error ?? 'Unknown'}`);

@@ -25,7 +25,7 @@ import { useAddresses } from '@/hooks/useAddresses';
 import type { CustomerAddress } from '@/lib/services/addressService';
 import { sendOrderPlacedNotification } from '@/lib/services/notificationService';
 
-type PaymentMethod = 'stripe';
+type PaymentMethod = 'card';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [stockError, setStockError] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [deliveryFee, setDeliveryFee]     = useState(0);
   const [isFreeDelivery, setIsFreeDelivery] = useState(false);
   const [deliveryMsg, setDeliveryMsg]     = useState('');
@@ -309,7 +309,7 @@ export default function CheckoutPage() {
     return data;
   };
 
-  const handleStripePayment = async () => {
+  const handlePayment = async () => {
     if (!validateForm()) return;
     if (paymentInitiated.current) return;
 
@@ -655,7 +655,7 @@ export default function CheckoutPage() {
               )}
 
               <div className="grid sm:grid-cols-2 gap-3 mb-5">
-                <button type="button" onClick={() => setPaymentMethod('stripe')}
+                <button type="button" onClick={() => setPaymentMethod('card')}
                   className="flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left border-green-500 bg-green-50">
                   <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center border-green-500">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -670,7 +670,7 @@ export default function CheckoutPage() {
                 </button>
               </div>
 
-              {paymentMethod === 'stripe' && (
+              {paymentMethod === 'card' && (
                 <div className="space-y-3">
                   {stockError && (
                     <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
@@ -691,13 +691,13 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
                     <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
                     <p className="text-xs text-blue-700 font-medium">
-                      Secured by Stripe. You&apos;ll be redirected to a secure payment page.
+                      Secured by Trust Payments. You&apos;ll be redirected to a secure payment page.
                     </p>
                   </div>
                   <Button
                     className="w-full h-12 bg-[#0B5D3B] hover:bg-green-700 text-white font-bold rounded-xl text-sm transition-colors"
                     disabled={isProcessing || !!stockError}
-                    onClick={handleStripePayment}>
+                    onClick={handlePayment}>
                     {isProcessing ? (
                       <span className="flex items-center gap-2">
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -854,7 +854,7 @@ export default function CheckoutPage() {
         <Button
           className="bg-[#0B5D3B] hover:bg-green-700 text-white font-bold px-6 h-11 rounded-xl text-sm"
           disabled={isProcessing || !!stockError}
-          onClick={handleStripePayment}>
+          onClick={handlePayment}>
           {isProcessing ? 'Processing...' : 'Pay Now'}
         </Button>
       </div>

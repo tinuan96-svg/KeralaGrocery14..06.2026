@@ -139,10 +139,9 @@ export default function PrivacyPage() {
 
           <h3 className="font-semibold text-gray-900 mt-4 mb-1">4.1 Payment Gateways</h3>
           <p>
-            Card payments are processed through <strong>Worldpay</strong> (and may also be processed
-            through <strong>Stripe</strong> for certain transactions). These providers are PCI-DSS
-            compliant. We do not store or access your full card number. Please refer to Worldpay&apos;s and
-            Stripe&apos;s respective privacy policies for information on how they handle payment data.
+            Card payments are processed through <strong>Trust Payments</strong>. This provider is PCI-DSS
+            compliant. We do not store or access your full card number. Please refer to Trust Payments&apos;
+            privacy policy for information on how they handle payment data.
           </p>
 
           <h3 className="font-semibold text-gray-900 mt-4 mb-1">4.2 Communications – Twilio (WhatsApp & SMS)</h3>
