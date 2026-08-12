@@ -371,26 +371,14 @@ export default function CheckoutPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/stripe-payment`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-          body: JSON.stringify({
-            amount: cardChargeFinal,
-            orderNumber: orderNumber,
-            customerEmail: formData.email,
-            customerName: formData.name,
-          }),
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to create payment session');
-      }
-
-      window.location.href = data.url;
+      // Redirect to Trust Payments payment page
+      const params = new URLSearchParams({
+        order: orderNumber,
+        amount: cardChargeFinal.toFixed(2),
+        email: formData.email,
+        name: formData.name,
+      });
+      window.location.href = `/trustpayments?${params.toString()}`;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Payment failed. Please try again.';
       toast({ title: 'Payment Failed', description: message, variant: 'destructive' });
