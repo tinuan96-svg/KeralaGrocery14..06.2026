@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, ShoppingCart, Loader2, Sparkles, Mic, MicOff } from 'lucide-react';
+import { X, Send, ShoppingCart, Loader as Loader2, Sparkles, Mic, MicOff, Check, Plus } from 'lucide-react';
 import { useAssistant } from './AssistantContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useCart, useCartData } from '@/lib/context/CartContext';
 import { useWallet } from '@/hooks/useWallet';
+import { toast } from 'sonner';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -15,8 +16,25 @@ interface Message {
   content: string;
 }
 
+interface RecipeIngredientProduct {
+  id: string;
+  name: string;
+  slug: string;
+  price: number | string;
+  image_url?: string;
+  image_main?: string;
+  stock?: number;
+  brand?: string;
+}
+
+interface RecipeIngredients {
+  dish: string;
+  ingredients: string[];
+  products: RecipeIngredientProduct[];
+}
+
 export default function AssistantChat() {
-  const { isOpen, setIsOpen, setEmotion, isThinking, setIsThinking } = useAssistant();
+  const { isOpen, setIsOpen, setEmotion, isThinking, setIsThinking, setBubbleText } = useAssistant();
   const { user, profile } = useAuth();
   const { addToCart } = useCart();
   const { cartCount } = useCartData();
@@ -28,6 +46,9 @@ export default function AssistantChat() {
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [recommendedRecipes, setRecommendedRecipes] = useState<any[]>([]);
   const [orderInfo, setOrderInfo] = useState<any | null>(null);
+  const [recipeIngredients, setRecipeIngredients] = useState<RecipeIngredients | null>(null);
+  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
+  const [bulkAdding, setBulkAdding] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -47,7 +68,7 @@ export default function AssistantChat() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isThinking]);
+  }, [messages, isThinking, recipeIngredients]);
 
   const processMessage = async (text: string) => {
     if (!text.trim() || isThinking) return;
@@ -62,6 +83,8 @@ export default function AssistantChat() {
     setRecommendedProducts([]);
     setRecommendedRecipes([]);
     setOrderInfo(null);
+    setRecipeIngredients(null);
+    setAddedIds(new Set());
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/ai-assistant`, {
@@ -100,6 +123,12 @@ export default function AssistantChat() {
               setOrderInfo(action.order);
             } else if (action.type === 'RECOMMEND_RECIPE') {
               setRecommendedRecipes(prev => [...prev, action.recipe]);
+            } else if (action.type === 'RECIPE_INGREDIENTS') {
+              setRecipeIngredients({
+                dish: action.dish,
+                ingredients: action.ingredients,
+                products: action.products,
+              });
             }
           });
         }
@@ -156,6 +185,26 @@ export default function AssistantChat() {
     } finally {
       setIsThinking(false);
     }
+  };
+
+  const handleAddSingle = (p: RecipeIngredientProduct) => {
+    addToCart({ id: p.id, name: p.name, price: p.price, slug: p.slug, image_url: p.image_main || p.image_url });
+    setAddedIds(prev => new Set(prev).add(p.id));
+    toast.success(`${p.name} added to cart`);
+  };
+
+  const handleBulkAddAll = async () => {
+    if (!recipeIngredients || recipeIngredients.products.length === 0) return;
+    setBulkAdding(true);
+    const products = recipeIngredients.products;
+    for (const p of products) {
+      addToCart({ id: p.id, name: p.name, price: p.price, slug: p.slug, image_url: p.image_main || p.image_url });
+      setAddedIds(prev => new Set(prev).add(p.id));
+    }
+    setBulkAdding(false);
+    toast.success(`Added ${products.length} ingredients for ${recipeIngredients.dish} to your cart!`);
+    setEmotion('celebrate');
+    setBubbleText(`🎉 Awesome! All ${products.length} ingredients for ${recipeIngredients.dish} are in your cart!`);
   };
 
   const startVoiceInput = () => {
@@ -238,7 +287,7 @@ export default function AssistantChat() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setMessages([])}
+                onClick={() => { setMessages([]); setRecommendedProducts([]); setRecommendedRecipes([]); setOrderInfo(null); setRecipeIngredients(null); setAddedIds(new Set()); }}
                 title="Clear conversation"
                 className="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest border border-white/20"
               >
@@ -269,6 +318,68 @@ export default function AssistantChat() {
               </motion.div>
             ))}
 
+            {/* Recipe Ingredients Panel - inline in chat */}
+            {recipeIngredients && recipeIngredients.products.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-[2rem] border-2 border-green-100 shadow-md overflow-hidden"
+              >
+                <div className="bg-gradient-to-r from-[#0B5D3B]/5 to-transparent px-5 py-3 border-b border-green-50 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-black text-[#0B5D3B] uppercase tracking-widest">Recipe Ingredients</p>
+                    <h4 className="text-sm font-black text-gray-800 capitalize">{recipeIngredients.dish}</h4>
+                  </div>
+                  <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-full">{recipeIngredients.products.length} items</span>
+                </div>
+
+                <div className="p-3 space-y-2 max-h-[240px] overflow-y-auto">
+                  {recipeIngredients.products.map((p) => {
+                    const isAdded = addedIds.has(p.id);
+                    return (
+                      <div key={p.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-all">
+                        <div className="relative w-12 h-12 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden">
+                          <Image src={p.image_main || p.image_url || '/placeholder.webp'} alt={p.name} fill className="object-contain p-0.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-800 truncate">{p.name}</p>
+                          <span className="text-[10px] font-black text-green-700">£{Number(p.price).toFixed(2)}</span>
+                        </div>
+                        <button
+                          onClick={() => handleAddSingle(p)}
+                          disabled={isAdded}
+                          className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all shadow-sm ${
+                            isAdded
+                              ? 'bg-green-100 text-green-600'
+                              : 'bg-[#0B5D3B] text-white active:scale-90 hover:bg-[#064e3b]'
+                          }`}
+                        >
+                          {isAdded ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Bulk Add All Button */}
+                <div className="p-3 border-t border-gray-50">
+                  <button
+                    onClick={handleBulkAddAll}
+                    disabled={bulkAdding || addedIds.size === recipeIngredients.products.length}
+                    className="w-full bg-gradient-to-r from-[#0B5D3B] to-[#064e3b] text-white font-black text-xs py-3 rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all disabled:opacity-50 disabled:from-gray-400 disabled:to-gray-500"
+                  >
+                    {bulkAdding ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Adding...</>
+                    ) : addedIds.size === recipeIngredients.products.length ? (
+                      <><Check className="w-4 h-4" /> All Added!</>
+                    ) : (
+                      <><ShoppingCart className="w-4 h-4" /> Add All {recipeIngredients.products.length} Ingredients</>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
             {isThinking && (
               <div className="flex justify-start">
                 <div className="bg-white border border-gray-100 p-5 rounded-[2rem] rounded-tl-none shadow-sm flex items-center gap-2">
@@ -281,7 +392,7 @@ export default function AssistantChat() {
 
           {/* AI Recommendation Tray */}
           <AnimatePresence>
-            {(recommendedProducts.length > 0 || recommendedRecipes.length > 0 || orderInfo) && (
+            {(recommendedProducts.length > 0 || recommendedRecipes.length > 0 || orderInfo) && !recipeIngredients && (
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
