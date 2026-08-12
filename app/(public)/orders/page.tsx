@@ -24,6 +24,7 @@ interface OrderItem {
 interface Order {
   id: string;
   order_number: string;
+  confirmed_order_number: string | null;
   total: number;
   order_status: string;
   payment_status: string;
@@ -224,7 +225,7 @@ export default function OrdersPage() {
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="font-bold text-lg">{order.order_number}</p>
+                      <p className="font-bold text-lg">{order.confirmed_order_number || order.order_number}</p>
                       <p className="text-sm text-gray-600">
                         {new Date(order.created_at).toLocaleDateString('en-GB', {
                           day: 'numeric',

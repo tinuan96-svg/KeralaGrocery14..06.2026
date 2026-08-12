@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, ChevronRight, Package, Clock, CircleCheck as CheckCircle, Circle as XCircle, RefreshCw, MoreVertical, Edit2 } from 'lucide-react';
+import { ShoppingCart, ChevronRight, Package, Clock, CircleCheck as CheckCircle, Circle as XCircle, RefreshCw, MoveVertical as MoreVertical, CreditCard as Edit2 } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase/client';
 import { updateOrderStatus } from '@/lib/actions/orders';
 import {
@@ -19,6 +19,7 @@ const fmt = (n: number) =>
 interface Order {
   id: string;
   order_number: string;
+  confirmed_order_number: string | null;
   customer_name: string;
   customer_email: string;
   total: number;
@@ -63,7 +64,7 @@ export default function AdminOrdersPage() {
     const supabase = getSupabase();
     let query = supabase
       .from('orders')
-      .select('id, order_number, customer_name, customer_email, total, order_status, payment_status, payment_method, created_at')
+      .select('id, order_number, confirmed_order_number, customer_name, customer_email, total, order_status, payment_status, payment_method, created_at')
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
       .limit(100);
@@ -161,7 +162,7 @@ export default function AdminOrdersPage() {
                 <div key={order.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-800/40 transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-bold text-white">#{order.order_number}</p>
+                      <p className="text-sm font-bold text-white">#{order.confirmed_order_number || order.order_number}</p>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${STATUS_STYLES[order.order_status] ?? STATUS_STYLES.pending}`}>
                         {order.order_status}
                       </span>

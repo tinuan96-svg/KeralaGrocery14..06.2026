@@ -175,13 +175,25 @@ Deno.serve(async (req: Request) => {
       paymentStatus = "suspended";
     }
 
-    // --- 11. Update order (only if not already paid) ---
+    // --- 11. Generate confirmed order number for paid orders ---
+    let confirmedOrderNumber = order.confirmed_order_number || null;
+    if (paymentStatus === "paid" && !confirmedOrderNumber) {
+      const { data: generatedNum, error: genErr } = await supabase.rpc("generate_paid_order_number");
+      if (genErr || !generatedNum) {
+        console.error("[trustpayments-webhook] Failed to generate paid order number:", genErr);
+      } else {
+        confirmedOrderNumber = generatedNum as string;
+      }
+    }
+
+    // --- 12. Update order (only if not already paid) ---
     const { data: updatedOrder, error: updateError } = await supabase
       .from("orders")
       .update({
         payment_status: paymentStatus,
         order_status: paymentStatus === "paid" ? "confirmed" : order.order_status,
         payment_reference: transactionReference,
+        ...(confirmedOrderNumber ? { confirmed_order_number: confirmedOrderNumber } : {}),
       })
       .eq("id", order.id)
       .neq("payment_status", "paid") // Prevent double-update

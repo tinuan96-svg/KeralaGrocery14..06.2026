@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,19 +8,34 @@ import { CircleCheck as CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
+import { getSupabase } from '@/lib/supabase/client';
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { clearCart } = useCart();
-  const orderNumber = searchParams.get('order') || '';
+  const orderRef = searchParams.get('order') || '';
+  const [displayNumber, setDisplayNumber] = useState(orderRef);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { router.replace('/account'); return; }
     clearCart();
-  }, [authLoading, user, router, clearCart]);
+
+    // Fetch confirmed order number if available
+    if (orderRef) {
+      getSupabase()
+        .from('orders')
+        .select('confirmed_order_number, order_number')
+        .or(`order_number.eq.${orderRef},confirmed_order_number.eq.${orderRef}`)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.confirmed_order_number) setDisplayNumber(data.confirmed_order_number);
+          else if (data?.order_number) setDisplayNumber(data.order_number);
+        });
+    }
+  }, [authLoading, user, router, clearCart, orderRef]);
 
   if (authLoading || !user) {
     return (
@@ -43,9 +58,9 @@ function PaymentSuccessContent() {
           <p className="text-gray-600 mb-2">
             Thank you for your order
           </p>
-          {orderNumber && (
+          {displayNumber && (
             <p className="text-lg font-semibold text-green-600 mb-6">
-              Order #{orderNumber}
+              Order #{displayNumber}
             </p>
           )}
           <p className="text-sm text-gray-600 mb-8">
