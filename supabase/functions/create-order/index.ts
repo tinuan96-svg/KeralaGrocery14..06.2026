@@ -324,47 +324,51 @@ Deno.serve(async (req: Request) => {
     }
 
     // ── Transmit Order to CentralHub ──────────────────────────────────────────
-    const centralhubWebhookUrl = Deno.env.get("CENTRALHUB_ORDER_WEBHOOK_URL") || 'https://centralhub.network/api/sync-orders';
-    const centralhubSecret = Deno.env.get("CENTRALHUB_WEBHOOK_SECRET");
+    const centralhubSyncUrl = Deno.env.get("CENTRALHUB_SUPABASE_URL")
+      ? `${Deno.env.get("CENTRALHUB_SUPABASE_URL")}/functions/v1/sync-orders`
+      : "https://icnvrpnzjjcbvgcqgiua.supabase.co/functions/v1/sync-orders";
+    const centralhubAnonKey = Deno.env.get("CENTRALHUB_ANON_KEY") || "";
 
-    if (centralhubWebhookUrl) {
-      EdgeRuntime.waitUntil(
-        fetch(centralhubWebhookUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-webhook-secret": centralhubSecret || "",
-          },
-          body: JSON.stringify({
-            table: "orders",
-            type: "INSERT", // Use INSERT to trigger upsert on CentralHub
-            store_slug: "keralagrocery",
-            record: {
-              ...order,
-              status: (order.order_status === 'confirmed' || order.order_status === 'processing') ? 'confirmed' : order.order_status,
-              fulfillment_status: (order.order_status === 'confirmed' || order.order_status === 'processing') ? 'confirmed' : order.order_status,
-              packing_status: (order.order_status === 'confirmed' || order.order_status === 'processing') ? 'confirmed' : 'pending',
-              sync_store: "keralagrocery",
-              sync_origin: "local",
-              items: orderItems,
+    EdgeRuntime.waitUntil(
+      (async () => {
+        const doSync = async () => {
+          const res = await fetch(centralhubSyncUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${centralhubAnonKey}`,
             },
-          }),
-        }).then(async (res) => {
-          if (res.ok) {
-            const result = await res.json().catch(() => ({}));
-            if (result.external_order_id) {
-              await supabase
-                .from("orders")
-                .update({ external_order_id: result.external_order_id })
-                .eq("id", order.id);
-            }
-            console.log(`[create-order] Order ${orderNumber} transmitted to CentralHub`);
-          } else {
-            console.error(`[create-order] CentralHub transmission failed: ${res.status}`);
+            body: JSON.stringify({
+              orderId: order.id,
+              storeSlug: "keralagrocery",
+            }),
+          });
+          if (!res.ok) {
+            throw new Error(`sync-orders returned ${res.status}`);
           }
-        }).catch(err => console.error("[create-order] CentralHub transmission error:", err))
-      );
-    }
+          const result = await res.json().catch(() => ({}));
+          if (result.external_order_id) {
+            await supabase
+              .from("orders")
+              .update({ external_order_id: result.external_order_id })
+              .eq("id", order.id);
+          }
+          console.log(`[create-order] Order ${orderNumber} synced to CentralHub`);
+        };
+
+        try {
+          await doSync();
+        } catch (err) {
+          console.error(`[create-order] CentralHub sync failed for order ${order.id}, retrying in 5s:`, err);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          try {
+            await doSync();
+          } catch (retryErr) {
+            console.error(`[create-order] CentralHub sync retry failed for order ${order.id}:`, retryErr);
+          }
+        }
+      })().catch(err => console.error("[create-order] CentralHub sync unexpected error:", err))
+    );
 
     return respond(200, {
       success: true,

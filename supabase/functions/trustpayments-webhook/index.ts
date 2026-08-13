@@ -226,23 +226,43 @@ Deno.serve(async (req: Request) => {
       const promises: Promise<void>[] = [];
 
       // CentralHub Sync
-      const centralhubWebhookUrl = Deno.env.get("CENTRALHUB_ORDER_WEBHOOK_URL") || "https://centralhub.network/api/sync-orders";
-      const centralhubSecret = Deno.env.get("CENTRALHUB_WEBHOOK_SECRET");
-      promises.push(
-        fetch(centralhubWebhookUrl, {
+      const centralhubSyncUrl = Deno.env.get("CENTRALHUB_SUPABASE_URL")
+        ? `${Deno.env.get("CENTRALHUB_SUPABASE_URL")}/functions/v1/sync-orders`
+        : "https://icnvrpnzjjcbvgcqgiua.supabase.co/functions/v1/sync-orders";
+      const centralhubAnonKey = Deno.env.get("CENTRALHUB_ANON_KEY") || "";
+
+      const doOrderSync = async () => {
+        const res = await fetch(centralhubSyncUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-webhook-secret": centralhubSecret || "" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${centralhubAnonKey}`,
+          },
           body: JSON.stringify({
-            table: "orders",
-            type: "INSERT",
-            store_slug: "keralagrocery",
-            record: {
-              ...updatedOrder,
-              status: "confirmed",
-              items: updatedOrder.order_items,
-            },
+            orderId: updatedOrder.id,
+            storeSlug: "keralagrocery",
           }),
-        }).then(() => {}).catch((e) => console.error("[trustpayments-webhook] CentralHub sync error:", e))
+        });
+        if (!res.ok) {
+          throw new Error(`sync-orders returned ${res.status}`);
+        }
+        console.log(`[trustpayments-webhook] Order ${updatedOrder.order_number} synced to CentralHub`);
+      };
+
+      promises.push(
+        (async () => {
+          try {
+            await doOrderSync();
+          } catch (err) {
+            console.error(`[trustpayments-webhook] CentralHub sync failed for order ${updatedOrder.id}, retrying in 5s:`, err);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            try {
+              await doOrderSync();
+            } catch (retryErr) {
+              console.error(`[trustpayments-webhook] CentralHub sync retry failed for order ${updatedOrder.id}:`, retryErr);
+            }
+          }
+        })()
       );
 
       // Wallet Payment Processing

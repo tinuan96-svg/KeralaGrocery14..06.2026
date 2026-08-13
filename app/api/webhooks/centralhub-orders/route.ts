@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
         payment_method: orderData.payment_method,
         payment_status: orderData.payment_status,
         order_status: localStatus, // Use mapped status
+      status: localStatus, // Keep status column in sync with order_status
         payment_reference: orderData.payment_reference,
         notes: orderData.notes,
         shipment_id: orderData.shipment_id,
