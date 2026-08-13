@@ -261,8 +261,8 @@ Deno.serve(async (req: Request) => {
             sold_count: 0,
             rating: 4.5,
             review_count: 0,
-            approval_status: "approved",
-            visibility_status: true,
+            approval_status: "draft",
+            visibility_status: 'hidden',
             created_at: now,
           });
           importedNew++;
@@ -301,6 +301,8 @@ Deno.serve(async (req: Request) => {
                 const updatePayload = { ...item };
                 delete updatePayload.created_at;
                 delete updatePayload.slug;
+                delete updatePayload.approval_status;
+                delete updatePayload.visibility_status;
                 const { error: updateErr } = await kg.from("products").update(updatePayload).eq("id", existing[0].id);
                 if (updateErr) {
                   failed++;

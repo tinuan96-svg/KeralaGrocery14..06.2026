@@ -232,7 +232,7 @@ export async function getProducts(
       )
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
-      .neq('visibility_status', false)
+      .eq('visibility_status', 'visible')
       .not('centralhub_product_id', 'is', null);
 
     if (search) {
@@ -330,7 +330,7 @@ export async function getProductDetail(
       .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
-      .neq('visibility_status', false)
+      .eq('visibility_status', 'visible')
       .not('centralhub_product_id', 'is', null);
 
     if (isUuid) {
@@ -402,7 +402,7 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .select('category_id')
         .eq('approval_status', 'approved')
         .neq('is_deleted', true)
-        .neq('visibility_status', false)
+        .eq('visibility_status', 'visible')
         .not('centralhub_product_id', 'is', null)
         .not('category_id', 'is', null),
       // Use brand column (populated from CentralHub verbatim during sync)
@@ -411,7 +411,7 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .select('brand')
         .eq('approval_status', 'approved')
         .neq('is_deleted', true)
-        .neq('visibility_status', false)
+        .eq('visibility_status', 'visible')
         .not('centralhub_product_id', 'is', null)
         .not('brand', 'is', null)
         .neq('brand', ''),
@@ -420,7 +420,7 @@ export async function getFilters(): Promise<{ filters: RpcFilters; error: string
         .select('price')
         .eq('approval_status', 'approved')
         .neq('is_deleted', true)
-        .neq('visibility_status', false)
+        .eq('visibility_status', 'visible')
         .not('centralhub_product_id', 'is', null),
       supabase
         .from('categories')
