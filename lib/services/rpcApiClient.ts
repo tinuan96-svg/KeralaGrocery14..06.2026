@@ -233,7 +233,8 @@ export async function getProducts(
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .eq('visibility_status', 'visible')
-      .not('centralhub_product_id', 'is', null);
+      .not('centralhub_product_id', 'is', null)
+      .or('image_main.like.http%,image_url.like.http%');
 
     if (search) {
       query = query.ilike('name', `%${search}%`);
@@ -330,8 +331,7 @@ export async function getProductDetail(
       .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
-      .eq('visibility_status', 'visible')
-      .not('centralhub_product_id', 'is', null);
+      .eq('visibility_status', 'visible');
 
     if (isUuid) {
       query = query.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);
