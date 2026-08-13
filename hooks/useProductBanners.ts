@@ -198,6 +198,8 @@ export function useProductBanners(): ProductBannersData {
           .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
+          .or('image_main.like.http%,image_url.like.http%')
+          .gt('price', 0)
           .eq('is_bestseller', true)
           .order('sold_count', { ascending: false })
           .limit(BANNER_FETCH_LIMIT),
@@ -209,6 +211,8 @@ export function useProductBanners(): ProductBannersData {
           .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
+          .or('image_main.like.http%,image_url.like.http%')
+          .gt('price', 0)
           .eq('is_new_arrival', true)
           .order('created_at', { ascending: false })
           .limit(BANNER_FETCH_LIMIT),
@@ -220,6 +224,8 @@ export function useProductBanners(): ProductBannersData {
           .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
+          .or('image_main.like.http%,image_url.like.http%')
+          .gt('price', 0)
           .eq('is_featured', true)
           .limit(BANNER_FETCH_LIMIT),
         readyToEatCat
@@ -231,6 +237,8 @@ export function useProductBanners(): ProductBannersData {
               .neq('is_deleted', true)
               .not('centralhub_product_id', 'is', null)
               .not('brand', 'ilike', 'Brahmins')
+          .or('image_main.like.http%,image_url.like.http%')
+          .gt('price', 0)
               .eq('category_id', readyToEatCat.id)
               .limit(BANNER_FETCH_LIMIT)
           : Promise.resolve({ data: [] }),
@@ -242,6 +250,8 @@ export function useProductBanners(): ProductBannersData {
           .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
+          .or('image_main.like.http%,image_url.like.http%')
+          .gt('price', 0)
           .order('created_at', { ascending: false })
           .limit(BANNER_FETCH_LIMIT * 2),
       ]);
