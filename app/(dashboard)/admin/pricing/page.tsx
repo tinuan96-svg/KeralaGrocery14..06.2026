@@ -139,22 +139,10 @@ export default function AdminPricingPage() {
 
     try {
       const supabase = getSupabase();
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token ?? '';
+      const { data, error } = await supabase.rpc('recalculate_prices');
 
-      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/centralhub-sync`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ action: 'recalculate_prices' }),
-      });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-      setRecalcResult(json as RecalcResult);
+      if (error) throw new Error(error.message);
+      setRecalcResult(data as RecalcResult);
       loadData();
     } catch (err) {
       setRecalcError(err instanceof Error ? err.message : 'Recalculation failed');

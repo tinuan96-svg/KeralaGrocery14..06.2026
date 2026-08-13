@@ -387,7 +387,7 @@ function HomepageControl({ loading }: { loading: boolean }) {
 
   return (
     <Card>
-      <SectionHeader title="Homepage Control" icon={Globe} linkHref="/admin/centralhub-sync" linkLabel="Edit" />
+      <SectionHeader title="Homepage Control" icon={Globe} linkHref="/admin/homepage-grid" linkLabel="Edit" />
       <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
         {stats.map(s => (
           <Link key={s.label} href={s.href}
@@ -406,7 +406,7 @@ function HomepageControl({ loading }: { loading: boolean }) {
       </div>
       <div className="px-4 pb-4 space-y-2">
         <Link
-          href="/admin/centralhub-sync"
+          href="/admin/homepage-grid"
           className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-gray-700 text-xs font-bold text-gray-300 hover:text-white hover:border-gray-500 transition-colors"
         >
           Quick Edit Homepage <ArrowUpRight className="w-3.5 h-3.5" />
