@@ -123,11 +123,11 @@ Deno.serve(async (req: Request) => {
     const products = hubProducts ?? [];
     const now = new Date().toISOString();
 
-    // 2. Load existing products (with CH link) + all slugs + all active products for name+brand fallback
+    // 2. Load existing products (with CH link) + all slugs + all active products for name+brand+unit fallback
     const [existingRes, allSlugsRes, allActiveRes] = await Promise.all([
-      kg.from("products").select("id,centralhub_product_id,sku,name,source_name,brand,cost_price,selling_price,supplier_price,price").not("centralhub_product_id", "is", null).eq("is_deleted", false),
+      kg.from("products").select("id,centralhub_product_id,sku,name,source_name,brand,unit,cost_price,selling_price,supplier_price,price").not("centralhub_product_id", "is", null).eq("is_deleted", false),
       kg.from("products").select("slug"),
-      kg.from("products").select("id,centralhub_product_id,name,brand").eq("is_deleted", false),
+      kg.from("products").select("id,centralhub_product_id,name,brand,unit").eq("is_deleted", false),
     ]);
 
     const existingByChId = new Map<string, Record<string, unknown>>();
@@ -135,12 +135,13 @@ Deno.serve(async (req: Request) => {
       if (row.centralhub_product_id) existingByChId.set(row.centralhub_product_id as string, row);
     }
 
-    // Fallback map: lower(name) + lower(brand) -> existing product (for when CH regenerates IDs)
-    const existingByNameBrand = new Map<string, Record<string, unknown>>();
+    // Fallback map: lower(name) + lower(brand) + lower(unit) -> existing product (for when CH regenerates IDs)
+    // Includes unit to correctly distinguish product variants (e.g., 200g vs 500g)
+    const existingByNameBrandUnit = new Map<string, Record<string, unknown>>();
     for (const row of (allActiveRes.data ?? []) as Record<string, unknown>[]) {
-      const key = `${String(row.name ?? "").toLowerCase()}||${String(row.brand ?? "").toLowerCase()}`;
-      if (!existingByNameBrand.has(key)) {
-        existingByNameBrand.set(key, row);
+      const key = `${String(row.name ?? "").toLowerCase()}||${String(row.brand ?? "").toLowerCase()}||${String(row.unit ?? "").toLowerCase()}`;
+      if (!existingByNameBrandUnit.has(key)) {
+        existingByNameBrandUnit.set(key, row);
       }
     }
 
@@ -170,11 +171,12 @@ Deno.serve(async (req: Request) => {
           | { id: string; name: string; source_name: string | null; cost_price: number | null; selling_price: number | null; supplier_price: number | null; price: number | null }
           | undefined;
 
-        // Fallback match: by name+brand (case-insensitive) when CH regenerated its IDs
+        // Fallback match: by name+brand+unit (case-insensitive) when CH regenerated its IDs
+        // Includes unit to correctly match the right product variant
         let chIdUpdate: string | null = null;
         if (!exRow) {
-          const nameKey = `${String(hp.name ?? "").toLowerCase()}||${String(hp.brand ?? "").toLowerCase()}`;
-          const fallbackRow = existingByNameBrand.get(nameKey) as
+          const nameKey = `${String(hp.name ?? "").toLowerCase()}||${String(hp.brand ?? "").toLowerCase()}||${String(hp.unit ?? "").toLowerCase()}`;
+          const fallbackRow = existingByNameBrandUnit.get(nameKey) as
             | { id: string; centralhub_product_id: string | null; name: string; source_name: string | null; cost_price: number | null; selling_price: number | null; supplier_price: number | null; price: number | null }
             | undefined;
           if (fallbackRow) {
@@ -271,15 +273,54 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // 4. Batch insert (50 at a time)
+    // 4. Batch insert (one at a time to handle unique constraint violations gracefully)
+    // The unique index on (lower(name), lower(brand), lower(unit), weight) where is_deleted = false
+    // prevents duplicates. If an insert fails with a unique violation, we retry as an update
+    // on the existing product that caused the conflict.
     const BATCH = 50;
     for (let i = 0; i < toInsert.length; i += BATCH) {
       const batch = toInsert.slice(i, i + BATCH);
       const { error: batchErr } = await kg.from("products").insert(batch);
       if (batchErr) {
-        failed += batch.length;
-        errors.push(`Insert batch ${Math.floor(i / BATCH) + 1}: ${batchErr.message}`);
-        importedNew -= batch.length;
+        // If batch insert failed, try inserting one by one so we can recover individual failures
+        for (const item of batch) {
+          const { error: singleErr } = await kg.from("products").insert(item);
+          if (singleErr) {
+            // Check if this is a unique constraint violation (code 23505)
+            const isUniqueViolation = singleErr.code === "23505" || singleErr.message.includes("duplicate key") || singleErr.message.includes("unique");
+            if (isUniqueViolation) {
+              // Find the existing product by name+brand+unit and update it instead
+              const { data: existing } = await kg.from("products")
+                .select("id")
+                .eq("is_deleted", false)
+                .ilike("name", String(item.name ?? ""))
+                .ilike("brand", String(item.brand ?? ""))
+                .ilike("unit", String(item.unit ?? ""))
+                .limit(1);
+              if (existing && existing.length > 0) {
+                const updatePayload = { ...item };
+                delete updatePayload.created_at;
+                delete updatePayload.slug;
+                const { error: updateErr } = await kg.from("products").update(updatePayload).eq("id", existing[0].id);
+                if (updateErr) {
+                  failed++;
+                  errors.push(`Fallback update for ${item.name}: ${updateErr.message}`);
+                } else {
+                  updatedExisting++;
+                  importedNew--;
+                }
+              } else {
+                failed++;
+                errors.push(`Insert ${item.name}: ${singleErr.message}`);
+                importedNew--;
+              }
+            } else {
+              failed++;
+              errors.push(`Insert ${item.name}: ${singleErr.message}`);
+              importedNew--;
+            }
+          }
+        }
       }
     }
 
