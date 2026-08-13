@@ -123,15 +123,25 @@ Deno.serve(async (req: Request) => {
     const products = hubProducts ?? [];
     const now = new Date().toISOString();
 
-    // 2. Load existing products linked to CentralHub + all slugs
-    const [existingRes, allSlugsRes] = await Promise.all([
-      kg.from("products").select("id,centralhub_product_id,sku,name,source_name,cost_price,selling_price,supplier_price,price").not("centralhub_product_id", "is", null),
+    // 2. Load existing products (with CH link) + all slugs + all active products for name+brand fallback
+    const [existingRes, allSlugsRes, allActiveRes] = await Promise.all([
+      kg.from("products").select("id,centralhub_product_id,sku,name,source_name,brand,cost_price,selling_price,supplier_price,price").not("centralhub_product_id", "is", null).eq("is_deleted", false),
       kg.from("products").select("slug"),
+      kg.from("products").select("id,centralhub_product_id,name,brand").eq("is_deleted", false),
     ]);
 
     const existingByChId = new Map<string, Record<string, unknown>>();
     for (const row of (existingRes.data ?? []) as Record<string, unknown>[]) {
       if (row.centralhub_product_id) existingByChId.set(row.centralhub_product_id as string, row);
+    }
+
+    // Fallback map: lower(name) + lower(brand) -> existing product (for when CH regenerates IDs)
+    const existingByNameBrand = new Map<string, Record<string, unknown>>();
+    for (const row of (allActiveRes.data ?? []) as Record<string, unknown>[]) {
+      const key = `${String(row.name ?? "").toLowerCase()}||${String(row.brand ?? "").toLowerCase()}`;
+      if (!existingByNameBrand.has(key)) {
+        existingByNameBrand.set(key, row);
+      }
     }
 
     const usedSlugs = new Set<string>();
@@ -154,9 +164,25 @@ Deno.serve(async (req: Request) => {
         const chId = String(hp.id);
         const supplierPrice = Number(hp.price ?? hp.cost_price ?? 0);
         const sellingPrice = applyMarkup(supplierPrice);
-        const exRow = existingByChId.get(chId) as
+
+        // Primary match: by centralhub_product_id
+        let exRow = existingByChId.get(chId) as
           | { id: string; name: string; source_name: string | null; cost_price: number | null; selling_price: number | null; supplier_price: number | null; price: number | null }
           | undefined;
+
+        // Fallback match: by name+brand (case-insensitive) when CH regenerated its IDs
+        let chIdUpdate: string | null = null;
+        if (!exRow) {
+          const nameKey = `${String(hp.name ?? "").toLowerCase()}||${String(hp.brand ?? "").toLowerCase()}`;
+          const fallbackRow = existingByNameBrand.get(nameKey) as
+            | { id: string; centralhub_product_id: string | null; name: string; source_name: string | null; cost_price: number | null; selling_price: number | null; supplier_price: number | null; price: number | null }
+            | undefined;
+          if (fallbackRow) {
+            exRow = fallbackRow as typeof exRow;
+            // Need to update the CH ID on the existing product
+            chIdUpdate = chId;
+          }
+        }
 
         const commonFields = {
           source_name: hp.name,
@@ -186,6 +212,11 @@ Deno.serve(async (req: Request) => {
         if (exRow) {
           // UPDATE
           const updatePayload: Record<string, unknown> = { ...commonFields };
+
+          // Update CH ID if this was a fallback match (CH regenerated its ID)
+          if (chIdUpdate) {
+            updatePayload.centralhub_product_id = chIdUpdate;
+          }
 
           const nameIsAdminEdited = exRow.source_name != null && exRow.name !== exRow.source_name;
           if (!nameIsAdminEdited) updatePayload.name = hp.name;
