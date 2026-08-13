@@ -583,3 +583,71 @@ export async function bulkApproveDraftProducts(
 
   return { approved: eligibleIds.length, error: null };
 }
+
+export interface AutoTaskResult {
+  processed: number;
+  pricesUpdated: number;
+  categoriesAssigned: number;
+  descriptionsGenerated: number;
+  errors: string[];
+  error: string | null;
+}
+
+export async function autoTaskDrafts(): Promise<AutoTaskResult> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return {
+      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0,
+      errors: [], error: 'Missing Supabase environment variables',
+    };
+  }
+
+  const supabase = getSupabase();
+  const { data: { session } } = await supabase.auth.getSession();
+  const accessToken = session?.access_token ?? supabaseAnonKey;
+
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/auto-process-drafts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'apikey': supabaseAnonKey,
+      },
+      body: JSON.stringify({}),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      return {
+        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0,
+        errors: [], error: `Request failed (${res.status}): ${errText.slice(0, 200)}`,
+      };
+    }
+
+    const data = await res.json();
+
+    if (data.error) {
+      return {
+        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0,
+        errors: [], error: data.error,
+      };
+    }
+
+    return {
+      processed: data.processed ?? 0,
+      pricesUpdated: data.pricesUpdated ?? 0,
+      categoriesAssigned: data.categoriesAssigned ?? 0,
+      descriptionsGenerated: data.descriptionsGenerated ?? 0,
+      errors: data.errors ?? [],
+      error: null,
+    };
+  } catch (err) {
+    return {
+      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0,
+      errors: [], error: err instanceof Error ? err.message : 'Unknown error',
+    };
+  }
+}

@@ -2,12 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
-import {
-  Search, CircleCheck as CheckCircle, Circle as XCircle, RotateCcw,
-  CreditCard as Edit2, Eye, EyeOff, RefreshCw, CircleAlert as AlertCircle,
-  Loader as Loader2, ChevronUp, ChevronDown, ChevronsUpDown,
-  Info, X,
-} from 'lucide-react';
+import { Search, CircleCheck as CheckCircle, Circle as XCircle, RotateCcw, CreditCard as Edit2, Eye, EyeOff, RefreshCw, CircleAlert as AlertCircle, Loader as Loader2, ChevronUp, ChevronDown, ChevronsUpDown, Info, X, Wand as Wand2 } from 'lucide-react';
 import {
   fetchApprovalStats,
   fetchProductsByStatus,
@@ -18,6 +13,8 @@ import {
   updateProduct,
   syncProductsFromKeralagroceries,
   bulkApproveDraftProducts,
+  autoTaskDrafts,
+  type AutoTaskResult,
   type ApprovalProduct,
   type ApprovalStats,
   type ApprovalStatus,
@@ -166,6 +163,8 @@ export default function ProductApprovalPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ imported: number; errors: string[] } | null>(null);
   const [bulkApproving, setBulkApproving] = useState(false);
+  const [autoTasking, setAutoTasking] = useState(false);
+  const [autoTaskResult, setAutoTaskResult] = useState<AutoTaskResult | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null);
   const [diagnostics, setDiagnostics] = useState<{ productName: string; approvalError: ApprovalError } | null>(null);
 
@@ -283,6 +282,17 @@ export default function ProductApprovalPage() {
     await Promise.all([loadProducts(), loadStats()]);
   };
 
+  const handleAutoTask = async () => {
+    setAutoTasking(true);
+    setAutoTaskResult(null);
+    const result = await autoTaskDrafts();
+    setAutoTaskResult(result);
+    setAutoTasking(false);
+    if (result.error) showToast(result.error, 'err');
+    else showToast(`Processed ${result.processed} products: ${result.pricesUpdated} prices, ${result.categoriesAssigned} categories, ${result.descriptionsGenerated} descriptions`);
+    await Promise.all([loadProducts(), loadStats()]);
+  };
+
   const handleBulkApprove = async () => {
     if (!user) return;
     const draftCount = stats?.draft ?? 0;
@@ -342,6 +352,14 @@ export default function ProductApprovalPage() {
             </button>
           )}
           <button
+            onClick={handleAutoTask}
+            disabled={autoTasking}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors disabled:opacity-50"
+          >
+            {autoTasking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+            Auto-Task Drafts
+          </button>
+          <button
             onClick={handleSync}
             disabled={syncing}
             className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
@@ -351,6 +369,27 @@ export default function ProductApprovalPage() {
           </button>
         </div>
       </div>
+
+      {/* Auto-task result */}
+      {autoTaskResult && (
+        <div className={`mb-4 px-3 py-2 rounded-xl text-sm border ${
+          autoTaskResult.error
+            ? 'bg-red-50 border-red-200 text-red-800'
+            : 'bg-indigo-50 border-indigo-200 text-indigo-800'
+        }`}>
+          {autoTaskResult.error ? autoTaskResult.error : (
+            <span>
+              Auto-tasked {autoTaskResult.processed} product{autoTaskResult.processed !== 1 ? 's' : ''}:
+              {' '}{autoTaskResult.pricesUpdated} price{autoTaskResult.pricesUpdated !== 1 ? 's' : ''} updated,
+              {' '}{autoTaskResult.categoriesAssigned} categor{autoTaskResult.categoriesAssigned !== 1 ? 'ies' : 'y'} assigned,
+              {' '}{autoTaskResult.descriptionsGenerated} description{autoTaskResult.descriptionsGenerated !== 1 ? 's' : ''} generated.
+            </span>
+          )}
+          {autoTaskResult.errors.length > 0 && (
+            <span className="ml-1">{autoTaskResult.errors.length} error{autoTaskResult.errors.length !== 1 ? 's' : ''}.</span>
+          )}
+        </div>
+      )}
 
       {/* Sync result */}
       {syncResult && (

@@ -31,7 +31,7 @@ function slugify(text: string): string {
 }
 
 function applyMarkup(supplierPrice: number): number {
-  return Math.ceil(supplierPrice * 1.05 * 10) / 10;
+  return Math.ceil(supplierPrice * 1.10 * 10) / 10;
 }
 
 Deno.serve(async (req: Request) => {
@@ -235,7 +235,7 @@ Deno.serve(async (req: Request) => {
               new_cost_price: supplierPrice,
               old_selling_price: oldSelling,
               new_selling_price: sellingPrice,
-              markup_percentage: 5,
+              markup_percentage: 10,
               changed_by: "centralhub-sync",
             });
           }
