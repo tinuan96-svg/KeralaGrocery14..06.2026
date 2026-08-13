@@ -332,16 +332,67 @@ Deno.serve(async (req: Request) => {
     EdgeRuntime.waitUntil(
       (async () => {
         const doSync = async () => {
+          // Fetch the full order row and all line items joined with
+          // products.centralhub_product_id so CentralHub receives the
+          // complete order details in a single payload.
+          const { data: fullOrder } = await supabase
+            .from("orders")
+            .select("*")
+            .eq("id", order.id)
+            .maybeSingle();
+
+          const { data: fullItems } = await supabase
+            .from("order_items")
+            .select(`
+              product_id,
+              product_name,
+              product_image,
+              quantity,
+              unit_price,
+              total_price,
+              products!left ( centralhub_product_id )
+            `)
+            .eq("order_id", order.id);
+
+          const itemsPayload = (fullItems ?? []).map((item: any) => ({
+            product_id:            item.product_id,
+            centralhub_product_id: item.products?.centralhub_product_id ?? null,
+            product_name:          item.product_name,
+            product_image:         item.product_image,
+            quantity:              item.quantity,
+            unit_price:            item.unit_price,
+            total_price:           item.total_price,
+          }));
+
+          const mappedStatus =
+            orderData.payment_status === "paid" ? "confirmed" : "pending";
+          const fulfillmentStatus = mappedStatus;
+          const packingStatus =
+            mappedStatus === "confirmed" ? "confirmed" : "pending";
+
+          const syncPayload = {
+            table:      "orders",
+            type:       "INSERT",
+            store_slug: "keralagrocery",
+            record: {
+              ...(fullOrder ?? {}),
+              items:              itemsPayload,
+              status:             mappedStatus,
+              fulfillment_status: fulfillmentStatus,
+              packing_status:     packingStatus,
+              sync_store:         "keralagrocery",
+              sync_origin:        "local",
+              sync_updated_at:    new Date().toISOString(),
+            },
+          };
+
           const res = await fetch(centralhubSyncUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${centralhubAnonKey}`,
             },
-            body: JSON.stringify({
-              orderId: order.id,
-              storeSlug: "keralagrocery",
-            }),
+            body: JSON.stringify(syncPayload),
           });
           if (!res.ok) {
             throw new Error(`sync-orders returned ${res.status}`);
