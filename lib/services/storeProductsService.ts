@@ -122,8 +122,9 @@ export async function fetchStoreProducts(
     }
 
     const products = (data || []).map(mapProduct);
+    const productsWithImages = products.filter((p) => p.image_main);
 
-    return { products, error: null };
+    return { products: productsWithImages, error: null };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to load products';
     console.error('[storeProductsService] Unexpected error:', err);

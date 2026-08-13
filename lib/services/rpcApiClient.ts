@@ -307,7 +307,9 @@ export async function getProducts(
       }
     }
 
-    return { products, total, page, totalPages, error: null };
+    const productsWithImages = products.filter((p) => p.image_url);
+
+    return { products: productsWithImages, total: productsWithImages.length, page, totalPages: Math.ceil(productsWithImages.length / limit), error: null };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unexpected error';
     console.error('[rpcApiClient] getProducts unexpected:', err);
