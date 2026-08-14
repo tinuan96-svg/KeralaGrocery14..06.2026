@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Sparkles, ChevronRight, Star } from 'lucide-react';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { getSupabase } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/context/AuthContext';
 
@@ -90,11 +90,13 @@ export default function PersonalizedRecommendations() {
               className="group flex flex-col bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-green-200 transition-all duration-300"
             >
               <div className="relative aspect-square bg-white">
-                <Image
+                <FallbackImage
                   src={product.image_url || '/placeholder.webp'}
                   alt={product.name}
                   fill
                   className="object-contain"
+                  sizes="(max-width: 768px) 50vw, 20vw"
+                  unoptimized
                 />
                 {product.discount_percentage > 0 && (
                   <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg">

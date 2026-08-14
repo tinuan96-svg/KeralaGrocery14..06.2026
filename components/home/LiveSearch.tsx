@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Search, Loader2, ChevronRight, CornerDownRight, History, X } from 'lucide-react';
+import { FallbackImage } from '@/components/ui/FallbackImage';
+import { Search, Loader as Loader2, ChevronRight, CornerDownRight, History, X } from 'lucide-react';
 import { getProducts, type RpcProduct } from '@/lib/services/rpcApiClient';
 import { useClickAway } from '@/hooks/useClickAway';
 import { useRouter } from 'next/navigation';
@@ -167,12 +167,13 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
                     }}
                   >
                     <div className="relative w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0">
-                      <Image
+                      <FallbackImage
                         src={product.image_url || '/placeholder.webp'}
                         alt={product.display_title}
                         fill
                         sizes="48px"
                         className="object-contain p-1"
+                        unoptimized
                       />
                     </div>
                     <div className="flex-1 min-w-0">

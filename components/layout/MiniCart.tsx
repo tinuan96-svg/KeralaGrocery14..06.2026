@@ -4,8 +4,8 @@ import * as React from 'react';
 import { Drawer } from 'vaul';
 import { ShoppingCart, X, Plus, Minus, Trash2, ArrowRight, PackageOpen } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
-import Image from 'next/image';
 import Link from 'next/link';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { Button } from '@/components/ui/button';
 import { blurDataURL } from '@/lib/utils/image';
 import { haptics } from '@/lib/utils/haptics';
@@ -78,13 +78,12 @@ export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
                 {cart.map((item) => (
                   <div key={item.id} className="flex gap-4 p-3 bg-white border border-gray-100 rounded-2xl shadow-sm hover:border-green-100 transition-colors group">
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-50 border border-gray-50 flex-shrink-0">
-                      <Image
+                      <FallbackImage
                         src={item.image_url || '/placeholder.webp'}
                         alt={item.name}
                         fill
                         className="object-contain"
-                        placeholder="blur"
-                        blurDataURL={blurDataURL}
+                        unoptimized
                       />
                     </div>
                     <div className="flex-1 flex flex-col min-w-0">

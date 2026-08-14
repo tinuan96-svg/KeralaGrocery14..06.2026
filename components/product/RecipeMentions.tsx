@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ChefHat, ChevronRight, Utensils } from 'lucide-react';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { getRecipesForProduct, type Recipe } from '@/lib/services/recipeService';
 
 interface Props {
@@ -39,11 +39,12 @@ export default function RecipeMentions({ productName }: Props) {
               className="group flex items-center gap-4 bg-white p-3 rounded-2xl border border-transparent hover:border-green-200 hover:shadow-md transition-all"
             >
               <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                <Image
+                <FallbackImage
                   src={recipe.image_url}
                   alt={recipe.title}
                   fill
                   className="object-cover"
+                  unoptimized
                 />
               </div>
               <div className="flex-1 min-w-0">

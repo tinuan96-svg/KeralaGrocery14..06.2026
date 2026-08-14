@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Clock } from 'lucide-react';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { blurDataURL } from '@/lib/utils/image';
 
 export interface RecentlyViewedItem {
@@ -61,14 +61,13 @@ export default function RecentlyViewed({ currentProductId }: { currentProductId:
           >
             <div className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all">
               <div className="relative aspect-square bg-[#F8F6F2]">
-                <Image
+                <FallbackImage
                   src={item.image_url?.startsWith('http') ? item.image_url : '/placeholder.webp'}
                   alt={item.name}
                   fill
                   sizes="112px"
                   className="object-contain p-2 group-hover:scale-105 transition-transform"
-                  placeholder="blur"
-                  blurDataURL={blurDataURL}
+                  unoptimized
                 />
               </div>
               <div className="p-2">

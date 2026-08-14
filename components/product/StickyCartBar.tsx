@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { ShoppingCart, Minus, Plus } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
 import { blurDataURL } from '@/lib/utils/image';
@@ -66,14 +66,13 @@ export default function StickyCartBar({ product, triggerRef }: StickyCartBarProp
         >
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
             <div className="relative w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden bg-[#F8F6F2] border border-gray-100">
-              <Image
+              <FallbackImage
                 src={displayImage}
                 alt={product.name}
                 fill
                 sizes="40px"
                 className="object-contain p-1"
-                placeholder="blur"
-                blurDataURL={blurDataURL}
+                unoptimized
               />
             </div>
 

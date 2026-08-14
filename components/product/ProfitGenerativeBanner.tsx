@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { TrendingUp, Plus, ShoppingCart, Sparkles } from 'lucide-react';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { getHighMarginProducts } from '@/lib/services/recommendationService';
 import type { RpcProduct } from '@/lib/services/rpcApiClient';
 import { useCart } from '@/lib/context/CartContext';
@@ -67,7 +67,7 @@ export default function ProfitGenerativeBanner() {
           {products.map((p) => (
             <div key={p.id} className="group bg-white/95 backdrop-blur-sm rounded-[28px] p-3 flex flex-col h-full border border-white/20 shadow-lg hover:shadow-2xl transition-all duration-300">
               <Link href={`/products/${p.slug ?? p.id}`} className="block relative aspect-square overflow-hidden rounded-[20px] bg-gray-50 mb-3">
-                <Image
+                <FallbackImage
                   src={p.image_url || '/placeholder.webp'}
                   alt={p.display_title}
                   fill

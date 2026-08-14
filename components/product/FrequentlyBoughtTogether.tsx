@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { Plus, ShoppingCart, Check } from 'lucide-react';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/lib/context/CartContext';
 import { getFrequentlyBoughtTogether } from '@/lib/services/recommendationService';
@@ -60,13 +60,12 @@ export default function FrequentlyBoughtTogether({ mainProduct }: Props) {
         <div className="flex items-center gap-2 flex-wrap justify-center">
           {/* Main Product */}
           <div className="relative w-24 h-24 border border-gray-100 rounded-2xl p-2 bg-gray-50/50">
-            <Image
+            <FallbackImage
               src={mainProduct.image_url || '/placeholder.webp'}
               alt={mainProduct.display_title}
               fill
               className="object-contain p-2"
-              placeholder="blur"
-              blurDataURL={blurDataURL}
+              unoptimized
             />
           </div>
 
@@ -74,13 +73,12 @@ export default function FrequentlyBoughtTogether({ mainProduct }: Props) {
             <div key={p.id} className="flex items-center gap-2">
               <Plus className="w-5 h-5 text-gray-300" />
               <div className="relative w-24 h-24 border border-gray-100 rounded-2xl p-2 bg-gray-50/50">
-                <Image
+                <FallbackImage
                   src={p.image_url || '/placeholder.webp'}
                   alt={p.display_title}
                   fill
                   className="object-contain p-2"
-                  placeholder="blur"
-                  blurDataURL={blurDataURL}
+                  unoptimized
                 />
               </div>
             </div>
