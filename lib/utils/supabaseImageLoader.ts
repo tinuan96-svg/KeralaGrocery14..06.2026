@@ -31,8 +31,8 @@ export default function supabaseImageLoader({ src, width, quality }: SupabaseLoa
       // Replace /object/public/ with /render/image/public/ for on-the-fly transforms
       const renderPath = url.pathname.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
       url.pathname = renderPath;
-      url.searchParams.set('width', String(Math.min(width, 400)));
-      url.searchParams.set('quality', String(quality ?? 75));
+      url.searchParams.set('width', String(Math.min(width, 1200)));
+      url.searchParams.set('quality', String(quality ?? 80));
       return url.toString();
     }
   } catch {

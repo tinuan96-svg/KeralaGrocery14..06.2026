@@ -21,6 +21,8 @@ function toSrcSet(url: string | null): { webp: string | null; jpeg: string } {
   if (src === '/placeholder.webp') {
     return { webp: null, jpeg: src };
   }
+
+  // Supabase render/image URLs: derive JPEG fallback by changing format param
   if (src.includes('/render/image/')) {
     try {
       const u = new URL(src);
@@ -29,12 +31,8 @@ function toSrcSet(url: string | null): { webp: string | null; jpeg: string } {
     } catch { /* fall through */ }
   }
 
-  // If it's already a webp, we use it for both. Modern browsers that support <picture> support webp.
-  if (src.toLowerCase().endsWith('.webp') || src.toLowerCase().includes('.webp?')) {
-    return { webp: src, jpeg: src };
-  }
-
-  // Fallback for others
+  // For all other URLs (including Supabase object/public URLs, CDN URLs, etc.)
+  // use the original URL for both. The browser handles format negotiation.
   return { webp: null, jpeg: src };
 }
 
@@ -80,7 +78,7 @@ function ProductCard({
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-contain transition-transform duration-500 scale-[1.18] group-hover:scale-[1.28]"
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.05]"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = '/placeholder.webp';
                     }}
@@ -147,7 +145,7 @@ function ProductCard({
               alt={product.name}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-contain transition-transform duration-500 scale-[1.18] group-hover:scale-[1.28]"
+              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.05]"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src = '/placeholder.webp';
               }}
