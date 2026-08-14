@@ -7,7 +7,7 @@ import type { ProductWithDetails } from '@/lib/types/database';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import { memo, useState } from 'react';
-import { getProductImageSrc } from '@/lib/utils/image';
+import { getProductThumbnailSrc } from '@/lib/utils/image';
 import { useProductPrice } from '@/hooks/useProductPrice';
 import { haptics } from '@/lib/utils/haptics';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,7 +28,7 @@ function ProductCardComponent({ product, priority = false }: ProductCardProps) {
 
   const discount = product.discount_percentage || 0;
   const originalPrice = product.original_price || price;
-  const displayImage = getProductImageSrc(product);
+  const displayImage = getProductThumbnailSrc(product);
 
   const brandName = product.brand?.name ?? '';
   const displayName =

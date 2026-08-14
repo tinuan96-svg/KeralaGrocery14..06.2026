@@ -195,6 +195,8 @@ export default function RootLayout({
         <WebSiteSchema />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vnqjqopzoeunojomssmq.supabase.co'} crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vnqjqopzoeunojomssmq.supabase.co'} />
       </head>
       <body className="font-sans antialiased">
         <ServiceWorkerRegistration />

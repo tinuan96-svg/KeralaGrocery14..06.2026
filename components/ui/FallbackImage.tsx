@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image, { ImageProps } from 'next/image';
+import { blurDataURL } from '@/lib/utils/image';
 
 interface FallbackImageProps extends Omit<ImageProps, 'onError'> {
   fallbackSrc?: string;
@@ -13,7 +14,6 @@ export function FallbackImage({ src, fallbackSrc = '/placeholder.webp', alt, ...
 
   const handleError = () => {
     if (!errored) {
-      console.warn('[FallbackImage] Image failed to load, using fallback:', src);
       setImgSrc(fallbackSrc);
       setErrored(true);
     }
@@ -25,6 +25,8 @@ export function FallbackImage({ src, fallbackSrc = '/placeholder.webp', alt, ...
       src={imgSrc || fallbackSrc}
       alt={alt}
       onError={handleError}
+      placeholder={props.placeholder ?? 'blur'}
+      blurDataURL={props.blurDataURL ?? blurDataURL}
     />
   );
 }

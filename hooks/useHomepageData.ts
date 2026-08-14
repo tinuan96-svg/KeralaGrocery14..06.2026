@@ -27,30 +27,31 @@ export function useHomepageData(): HomepageData {
     let cancelled = false;
 
     async function loadData() {
-      const [
-        { products: trendingItems },
-        { products: dealItems },
-        { products: bestsellerItems },
-        { products: arrivalItems },
-        { products: allItems },
-        cats
-      ] = await Promise.all([
-        fetchStoreProducts({ is_featured: true, limit: 12 }),
-        fetchStoreProducts({ is_deal: true, limit: 12 }),
-        fetchStoreProducts({ is_bestseller: true, limit: 12 }),
-        fetchStoreProducts({ is_new_arrival: true, limit: 12 }),
-        fetchStoreProducts({ limit: 40 }), // For "Kitchen Essentials" and general pool
+      const [{ products: allItems }, cats] = await Promise.all([
+        fetchStoreProducts({ limit: 40 }),
         fetchHomepageCategories(),
       ]);
 
       if (cancelled) return;
 
-      setTrending(trendingItems.length > 0 ? trendingItems : allItems.slice(0, 10));
-      setDeals(dealItems.length > 0 ? dealItems : allItems.slice(10, 20));
-      setBestsellers(bestsellerItems.length > 0 ? bestsellerItems : allItems.slice(20, 30));
-      setNewArrivals(arrivalItems.length > 0 ? arrivalItems : allItems.slice(30, 40));
-
       setAllProducts(allItems);
+
+      setTrending(allItems.filter(p => p.is_featured).slice(0, 12).length > 0
+        ? allItems.filter(p => p.is_featured).slice(0, 12)
+        : allItems.slice(0, 10));
+
+      setDeals(allItems.filter(p => p.is_deal).slice(0, 12).length > 0
+        ? allItems.filter(p => p.is_deal).slice(0, 12)
+        : allItems.slice(10, 20));
+
+      setBestsellers(allItems.filter(p => p.is_bestseller).slice(0, 12).length > 0
+        ? allItems.filter(p => p.is_bestseller).slice(0, 12)
+        : allItems.slice(20, 30));
+
+      setNewArrivals(allItems.filter(p => p.is_new_arrival).slice(0, 12).length > 0
+        ? allItems.filter(p => p.is_new_arrival).slice(0, 12)
+        : allItems.slice(30, 40));
+
       setCategories(cats);
       setIsLoading(false);
     }

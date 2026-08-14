@@ -24,7 +24,6 @@ const DealsSection = dynamic(() => import('@/components/home/DealsSection'), {
       </div>
     </section>
   ),
-  ssr: false,
 });
 
 const BestSellers = dynamic(() => import('@/components/home/BestSellers'), {
@@ -34,7 +33,6 @@ const BestSellers = dynamic(() => import('@/components/home/BestSellers'), {
       <ProductGridSkeleton count={6} />
     </section>
   ),
-  ssr: false,
 });
 
 const NewArrivals = dynamic(() => import('@/components/home/NewArrivals'), {
@@ -44,12 +42,10 @@ const NewArrivals = dynamic(() => import('@/components/home/NewArrivals'), {
       <ProductGridSkeleton count={6} />
     </section>
   ),
-  ssr: false,
 });
 
 const BrandShowcase = dynamic(() => import('@/components/home/BrandShowcase'), {
   loading: () => <div className="h-24 bg-gray-50 animate-pulse rounded-xl mx-4 my-4" />,
-  ssr: false,
 });
 
 const CategoryDiscoveryCarousel = dynamic(
