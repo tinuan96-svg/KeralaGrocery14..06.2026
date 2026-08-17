@@ -1,0 +1,47 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# IDEs and Tools
+.idea/
+.vscode/
+.bolt/
+.claude/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+*.pem
+
+# capacitor (usually tracked if customized, but keep clean)
+# /android
+# /ios
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
