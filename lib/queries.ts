@@ -89,6 +89,8 @@ export async function getAllProducts(): Promise<ProductWithDetails[]> {
     .eq('is_active', true)
     .eq('approval_status', 'approved')
     .eq('visibility_status', 'visible')
+    .neq('is_archived', true)
+    .not('centralhub_product_id', 'is', null)
     .order('created_at', { ascending: false });
 
   if (error) {

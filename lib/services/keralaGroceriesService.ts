@@ -140,6 +140,7 @@ export async function getProducts(
       .select(PRODUCT_COLUMNS, { count: 'exact' })
       .eq('approval_status', 'approved')
       .eq('visibility_status', 'visible')
+      .eq('is_active', true)
       .neq('is_deleted', true);
 
     if (search.trim()) {

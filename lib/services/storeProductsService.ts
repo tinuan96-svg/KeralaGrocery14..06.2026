@@ -99,8 +99,10 @@ export async function fetchStoreProducts(
       .from('products')
       .select(PRODUCTS_SELECT)
       .eq('approval_status', 'approved')
-      .neq('is_deleted', true)
       .eq('visibility_status', 'visible')
+      .eq('is_active', true)
+      .neq('is_deleted', true)
+      .neq('is_archived', true)
       .not('centralhub_product_id', 'is', null)
       .gt('price', 0);
 
