@@ -151,9 +151,9 @@ export async function getProducts(
 
     if (category) query = query.eq('category', category);
     if (brand)    query = query.eq('brand', brand);
-    if (minPrice != null) query = query.gte('effective_price', minPrice);
-    if (maxPrice != null) query = query.lte('effective_price', maxPrice);
-    if (inStockOnly)      query = query.gt('effective_stock', 0);
+    if (minPrice != null) query = query.gte('price', minPrice);
+    if (maxPrice != null) query = query.lte('price', maxPrice);
+    if (inStockOnly)      query = query.gt('stock', 0);
 
     switch (sort) {
       case 'price_asc':  query = query.order('price', { ascending: true });  break;

@@ -235,8 +235,7 @@ export async function getProducts(
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .eq('visibility_status', 'visible')
-      .not('centralhub_product_id', 'is', null)
-      .or('image_main.like.http%,image_url.like.http%');
+      .not('centralhub_product_id', 'is', null);
 
     if (search) {
       query = query.ilike('name', `%${search}%`);

@@ -102,8 +102,7 @@ export async function fetchStoreProducts(
       .neq('is_deleted', true)
       .eq('visibility_status', 'visible')
       .not('centralhub_product_id', 'is', null)
-      .gt('price', 0)
-      .or('image_main.like.http%,image_url.like.http%');
+      .gt('price', 0);
 
     if (_options.is_featured) query = query.eq('is_featured', true);
     if (_options.is_bestseller) query = query.eq('is_bestseller', true);
