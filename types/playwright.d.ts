@@ -3,4 +3,5 @@ declare module '@playwright/test' {
   export const expect: any;
   export const defineConfig: any;
   export const devices: any;
+  export type Page = any;
 }
