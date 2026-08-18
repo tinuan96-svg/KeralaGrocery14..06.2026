@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, ChevronRight, Package, Clock, CircleCheck as CheckCircle, Circle as XCircle, RefreshCw, MoveVertical as MoreVertical, CreditCard as Edit2 } from 'lucide-react';
+import { ShoppingCart, ChevronRight, Package, Clock, CircleCheck as CheckCircle, Circle as XCircle, RefreshCw, MoveVertical as MoreVertical, CreditCard as Edit2, AlertCircle } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase/client';
 import { updateOrderStatus } from '@/lib/actions/orders';
 import {
@@ -12,6 +12,36 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+
+function SyncStatusBadge({ state }: { state?: string }) {
+  if (!state) return null;
+
+  switch (state.toLowerCase()) {
+    case 'pending':
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/30 px-1.5 py-0.5 rounded">
+          <RefreshCw className="h-2.5 w-2.5 animate-spin" />
+          Syncing
+        </span>
+      );
+    case 'synced':
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+          <CheckCircle className="h-2.5 w-2.5" />
+          Synced
+        </span>
+      );
+    case 'failed':
+      return (
+        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-500 border border-red-500/30 px-1.5 py-0.5 rounded">
+          <AlertCircle className="h-2.5 w-2.5" />
+          Failed
+        </span>
+      );
+    default:
+      return null;
+  }
+}
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 2 }).format(n);
@@ -27,6 +57,10 @@ interface Order {
   payment_status: string;
   payment_method: string;
   created_at: string;
+  sync_state?: string;
+  centralhub_order_id?: string | null;
+  last_synced_at?: string | null;
+  sync_error?: string | null;
 }
 
 function Skel({ className = '' }: { className?: string }) {
@@ -64,7 +98,7 @@ export default function AdminOrdersPage() {
     const supabase = getSupabase();
     let query = supabase
       .from('orders')
-      .select('id, order_number, confirmed_order_number, customer_name, customer_email, total, order_status, payment_status, payment_method, created_at')
+      .select('id, order_number, confirmed_order_number, customer_name, customer_email, total, order_status, payment_status, payment_method, created_at, sync_state, centralhub_order_id, last_synced_at, sync_error')
       .eq('is_deleted', false)
       .order('created_at', { ascending: false })
       .limit(100);
@@ -101,6 +135,25 @@ export default function AdminOrdersPage() {
       }
     } catch (err) {
       toast.error('Unexpected error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRetrySync = async (orderId: string) => {
+    setLoading(true);
+    try {
+      const supabase = getSupabase();
+      const { error } = await supabase
+        .from('orders')
+        .update({ sync_state: 'pending', sync_error: null })
+        .eq('id', orderId);
+
+      if (error) throw error;
+      toast.success('Sync re-queued successfully');
+      load();
+    } catch (err) {
+      toast.error('Failed to retry sync');
     } finally {
       setLoading(false);
     }
@@ -163,6 +216,7 @@ export default function AdminOrdersPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-bold text-white">#{order.confirmed_order_number || order.order_number}</p>
+                      <SyncStatusBadge state={order.sync_state} />
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${STATUS_STYLES[order.order_status] ?? STATUS_STYLES.pending}`}>
                         {order.order_status}
                       </span>
@@ -186,6 +240,18 @@ export default function AdminOrdersPage() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800 text-gray-300">
+                        {order.sync_state === 'failed' && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => handleRetrySync(order.id)}
+                              className="text-amber-400 focus:bg-gray-800 focus:text-amber-300 cursor-pointer gap-2 font-bold"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                              Retry Synchronization
+                            </DropdownMenuItem>
+                            <div className="h-px bg-gray-800 my-1" />
+                          </>
+                        )}
                         <p className="text-[10px] font-bold uppercase tracking-widest px-2 py-1.5 text-gray-500">Update Status</p>
                         {STATUS_OPTIONS.map(s => (
                           <DropdownMenuItem

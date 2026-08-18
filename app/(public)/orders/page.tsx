@@ -5,13 +5,43 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Package, ChevronDown, ChevronUp, CircleCheck as CheckCircle2, Clock, Truck, PackageCheck } from 'lucide-react';
+import { Package, ChevronDown, ChevronUp, CircleCheck as CheckCircle2, Clock, Truck, PackageCheck, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/lib/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase/client';
 import Image from 'next/image';
 import { useOrderRealtime } from '@/hooks/useOrderRealtime';
+
+function SyncStatusBadge({ state }: { state?: string }) {
+  if (!state) return null;
+
+  switch (state.toLowerCase()) {
+    case 'pending':
+      return (
+        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1.5 py-0.5">
+          <RefreshCw className="h-3 w-3 animate-spin" />
+          Syncing...
+        </Badge>
+      );
+    case 'synced':
+      return (
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1.5 py-0.5">
+          <CheckCircle2 className="h-3 w-3" />
+          Synced
+        </Badge>
+      );
+    case 'failed':
+      return (
+        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1.5 py-0.5">
+          <AlertCircle className="h-3 w-3" />
+          Sync Failed
+        </Badge>
+      );
+    default:
+      return null;
+  }
+}
 
 interface OrderItem {
   id: string;
@@ -245,9 +275,12 @@ export default function OrdersPage() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <Badge className={getStatusBadgeClass(order.order_status)}>
-                        {order.order_status}
-                      </Badge>
+                      <div className="flex gap-2">
+                        <SyncStatusBadge state={order.sync_state} />
+                        <Badge className={getStatusBadgeClass(order.order_status)}>
+                          {order.order_status}
+                        </Badge>
+                      </div>
                       <Badge variant="outline" className="text-xs">
                         {order.payment_status}
                       </Badge>
@@ -332,6 +365,45 @@ export default function OrdersPage() {
 
                 {expandedOrder === order.id && order.items && (
                   <div className="border-t bg-gray-50 p-6">
+                    {order.sync_state && (
+                      <div className="mb-6 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                        <h4 className="text-xs font-bold uppercase text-gray-500 mb-3 tracking-wider flex items-center gap-2">
+                          <RefreshCw className="h-3 w-3" />
+                          Synchronization Details
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-gray-500">CentralHub ID</p>
+                            <p className="text-sm font-mono text-gray-700 bg-gray-50 px-2 py-1 rounded mt-1 break-all">
+                              {order.centralhub_order_id || 'Not assigned yet'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Last Synced</p>
+                            <p className="text-sm font-medium text-gray-700 mt-1">
+                              {order.last_synced_at
+                                ? new Date(order.last_synced_at).toLocaleString('en-GB')
+                                : 'Awaiting sync...'}
+                            </p>
+                          </div>
+                        </div>
+                        {order.sync_state === 'failed' && (
+                          <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+                            <p className="text-xs font-bold text-red-700 flex items-center gap-2">
+                              <AlertCircle className="h-3 w-3" />
+                              Sync Error
+                            </p>
+                            <p className="text-xs text-red-600 mt-1 line-clamp-2" title={order.sync_error || ''}>
+                              {order.sync_error || 'Unknown error occurred during sync'}
+                            </p>
+                            <p className="text-[10px] text-red-500 mt-2 italic">
+                              Our team has been notified. We will retry synchronization automatically.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <h3 className="font-semibold mb-4">Order Items</h3>
                     <div className="space-y-3">
                       {order.items.map((item) => (
