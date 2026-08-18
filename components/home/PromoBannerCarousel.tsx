@@ -168,7 +168,6 @@ function BannerSlide({
                 className="object-contain drop-shadow-xl"
                 sizes="(max-width: 640px) 130px, (max-width: 1024px) 180px, 240px"
                 priority={priority}
-                unoptimized
               />
             </div>
           </div>

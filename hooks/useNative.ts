@@ -236,8 +236,21 @@ export function usePullToRefresh(onRefresh: () => Promise<void>) {
   const triggerRefresh = useCallback(async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
+
+    // Trigger medium-impact haptic to signal the refresh started
+    try {
+      const { Haptics, ImpactStyle } = await import('@capacitor/haptics');
+      await Haptics.impact({ style: ImpactStyle.Medium });
+    } catch {}
+
     try {
       await onRefresh();
+
+      // Success feedback haptic
+      try {
+        const { Haptics, NotificationType } = await import('@capacitor/haptics');
+        await Haptics.notification({ type: NotificationType.Success });
+      } catch {}
     } finally {
       setIsRefreshing(false);
     }

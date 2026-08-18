@@ -65,7 +65,6 @@ export default function FrequentlyBoughtTogether({ mainProduct }: Props) {
               alt={mainProduct.display_title}
               fill
               className="object-contain p-2"
-              unoptimized
             />
           </div>
 
@@ -78,7 +77,6 @@ export default function FrequentlyBoughtTogether({ mainProduct }: Props) {
                   alt={p.display_title}
                   fill
                   className="object-contain p-2"
-                  unoptimized
                 />
               </div>
             </div>

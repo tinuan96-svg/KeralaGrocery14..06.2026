@@ -72,7 +72,6 @@ export default function BrandShowcase({ brands }: BrandShowcaseProps) {
                       loading="lazy"
                       placeholder="blur"
                       blurDataURL={blurDataURL}
-                      unoptimized
                     />
                   </div>
                 ) : (

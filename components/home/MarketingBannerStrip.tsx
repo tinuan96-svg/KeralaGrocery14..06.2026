@@ -65,7 +65,6 @@ export default function MarketingBannerStrip({ offset = 0, limit = 1 }: { offset
                       alt={banner.image_alt || banner.title}
                       fill
                       className="object-contain p-4 md:p-6 drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
-                      unoptimized
                     />
                   </div>
                 )}
