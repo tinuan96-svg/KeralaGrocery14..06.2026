@@ -12,11 +12,10 @@ interface Props {
   params: { slug: string };
 }
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
-  const recipes = await getRecipes();
-  return recipes.map((recipe) => ({
-    slug: recipe.slug,
-  }));
+  return [{ slug: 'test-recipe' }];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

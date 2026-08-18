@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 // Force Bolt Refresh: July 14, 2026 09:10
 const nextConfig = {
+  output: 'export',
   eslint: {
     ignoreDuringBuilds: true,
   },

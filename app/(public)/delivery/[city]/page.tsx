@@ -16,6 +16,8 @@ const VALID_CITIES = [
   'reading', 'cambridge', 'oxford', 'cardiff', 'coventry', 'croydon'
 ];
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return VALID_CITIES.map((city) => ({
     city,
