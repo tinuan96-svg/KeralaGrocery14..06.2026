@@ -107,7 +107,7 @@ function TrustPaymentsContent() {
       try {
         const st = window.SecureTrading({
           jwt,
-          livestatus: 1,
+          livestatus: process.env.NEXT_PUBLIC_ENVIRONMENT === 'production' ? 1 : 0,
           components: {
             startAnimation: {
               enabled: false,
