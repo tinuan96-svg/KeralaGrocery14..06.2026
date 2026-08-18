@@ -112,6 +112,7 @@ export default function AmazonStyleGrid() {
                           fill
                           className="object-contain transition-transform duration-500 group-hover:scale-[1.05]"
                           sizes="(max-width: 768px) 45vw, 25vw"
+                          unoptimized
                         />
                         {item.badge && (
                           <div className="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider">
@@ -136,6 +137,7 @@ export default function AmazonStyleGrid() {
                       fill
                       className="object-contain p-2 transition-transform duration-700 group-hover:scale-[1.02]"
                       sizes="(max-width: 1024px) 95vw, 25vw"
+                      unoptimized
                     />
                   </div>
                 </Link>

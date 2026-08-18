@@ -13,9 +13,7 @@ interface Props {
 const VALID_CITIES = [
   'london', 'birmingham', 'manchester', 'glasgow', 'leeds', 'liverpool',
   'newcastle', 'sheffield', 'bristol', 'belfast', 'leicester', 'nottingham',
-  'reading', 'cambridge', 'oxford', 'cardiff', 'coventry', 'croydon',
-  'edinburgh', 'southampton', 'portsmouth', 'aberdeen', 'swansea',
-  'milton-keynes', 'northampton', 'luton', 'swindon', 'warrington'
+  'reading', 'cambridge', 'oxford', 'cardiff', 'coventry', 'croydon'
 ];
 
 export async function generateStaticParams() {

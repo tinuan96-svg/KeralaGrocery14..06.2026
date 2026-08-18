@@ -74,6 +74,7 @@ function CategoryChip({ item, priority }: { item: CategoryCarouselItem; priority
             fill
             draggable={false}
             className="absolute inset-0 w-full h-full object-contain p-2.5 group-hover:scale-110 transition-transform duration-500 z-10"
+            unoptimized
           />
         ) : (
           <div

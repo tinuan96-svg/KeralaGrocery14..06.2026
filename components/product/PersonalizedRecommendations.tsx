@@ -96,6 +96,7 @@ export default function PersonalizedRecommendations() {
                   fill
                   className="object-contain"
                   sizes="(max-width: 768px) 50vw, 20vw"
+                  unoptimized
                 />
                 {product.discount_percentage > 0 && (
                   <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg">

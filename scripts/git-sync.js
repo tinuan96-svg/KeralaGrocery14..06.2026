@@ -35,17 +35,11 @@ try {
   }
 
   console.log('Syncing with remote...');
-  const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
   run('git fetch origin');
+  // Pull remote changes, favor local in case of conflict to ensure push succeeds
+  run('git pull origin main --rebase -X ours');
 
-  // Try to pull from the current branch on origin
-  const pullSuccess = run(`git pull origin ${branch} --rebase -X ours`);
-
-  if (!pullSuccess) {
-    console.error(`Failed to pull from origin ${branch}. Trying to pull from main...`);
-    run('git pull origin main --rebase -X ours');
-  }
-
+  const branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
   run(`git push origin ${branch}`);
 } catch (error) {
   console.error('Failed to sync with git.');

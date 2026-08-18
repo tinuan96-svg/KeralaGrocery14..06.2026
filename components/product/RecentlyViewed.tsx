@@ -67,6 +67,7 @@ export default function RecentlyViewed({ currentProductId }: { currentProductId:
                   fill
                   sizes="112px"
                   className="object-contain p-2 group-hover:scale-105 transition-transform"
+                  unoptimized
                 />
               </div>
               <div className="p-2">
