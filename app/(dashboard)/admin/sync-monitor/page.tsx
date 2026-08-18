@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
 import { RefreshCw, CircleCheck as CheckCircle2, Circle as XCircle, TriangleAlert as AlertTriangle, Loader as Loader2, Package, Clock, TrendingUp, Zap, Database, Activity, ArrowUpToLine, Stethoscope, ChevronRight } from 'lucide-react';
 
-const CENTRALHUB_PUSH_URL = 'https://icnvrpnzjjcbvgcqgiua.supabase.co/functions/v1/centralhub-product-sync';
+const CENTRALHUB_PUSH_URL = (process.env.NEXT_PUBLIC_CENTRALHUB_URL || 'https://icnvrpnzjjcbvgcqgiua.supabase.co').replace(/\/rest\/v1\/?$/, '') + '/functions/v1/centralhub-product-sync';
 
 interface ProductStats {
   total: number;

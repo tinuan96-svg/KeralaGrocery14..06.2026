@@ -28,8 +28,7 @@ function slugify(text: string): string {
 }
 
 function applyMarkup(supplierPrice: number): number {
-  const sellingPrice = supplierPrice * 1.05;
-  return Math.ceil(sellingPrice * 10) / 10;
+  return Math.ceil(supplierPrice * 1.10 * 10) / 10;
 }
 
 Deno.serve(async (req: Request) => {
@@ -105,7 +104,7 @@ Deno.serve(async (req: Request) => {
       cost_price: supplierPrice,
       selling_price: sellingPrice,
       price: sellingPrice,
-      markup_percentage: 5,
+      markup_percentage: 10,
       last_sync_at: now,
       updated_at: now,
       is_deleted: false,
@@ -136,7 +135,7 @@ Deno.serve(async (req: Request) => {
           new_cost_price: supplierPrice,
           old_selling_price: oldSelling,
           new_selling_price: sellingPrice,
-          markup_percentage: 5,
+          markup_percentage: 10,
           changed_by: "webhook",
         });
       }
