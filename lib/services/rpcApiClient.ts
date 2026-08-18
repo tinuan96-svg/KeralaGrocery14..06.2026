@@ -233,11 +233,11 @@ export async function getProducts(
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
       .eq('is_active', true)
       .neq('is_deleted', true)
       .neq('is_archived', true)
-      .not('centralhub_product_id', 'is', null);
+      .not('centralhub_product_id', 'is', null)
+      .or('visibility_status.eq.visible,visibility_status.eq.true');
 
     if (search) {
       query = query.ilike('name', `%${search}%`);
@@ -310,7 +310,7 @@ export async function getProducts(
       }
     }
 
-    const productsWithImages = products.filter((p) => p.image_url);
+    const productsWithImages = products.filter((p) => p.image_url && p.image_url.startsWith('http'));
 
     return { products: productsWithImages, total, page, totalPages, error: null };
   } catch (err) {

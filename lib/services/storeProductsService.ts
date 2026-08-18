@@ -99,12 +99,14 @@ export async function fetchStoreProducts(
       .from('products')
       .select(PRODUCTS_SELECT)
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
       .eq('is_active', true)
       .neq('is_deleted', true)
       .neq('is_archived', true)
       .not('centralhub_product_id', 'is', null)
       .gt('price', 0);
+
+    // Dynamic visibility check to handle both boolean and text formats
+    query = query.or('visibility_status.eq.visible,visibility_status.eq.true');
 
     if (_options.is_featured) query = query.eq('is_featured', true);
     if (_options.is_bestseller) query = query.eq('is_bestseller', true);
@@ -124,7 +126,7 @@ export async function fetchStoreProducts(
     }
 
     const products = (data || []).map(mapProduct);
-    const productsWithImages = products.filter((p) => p.image_main);
+    const productsWithImages = products.filter((p) => p.image_main && p.image_main.startsWith('http'));
 
     return { products: productsWithImages, error: null };
   } catch (err) {

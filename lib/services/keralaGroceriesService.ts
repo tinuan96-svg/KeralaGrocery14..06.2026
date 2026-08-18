@@ -139,9 +139,9 @@ export async function getProducts(
       .from('products')
       .select(PRODUCT_COLUMNS, { count: 'exact' })
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
       .eq('is_active', true)
-      .neq('is_deleted', true);
+      .neq('is_deleted', true)
+      .or('visibility_status.eq.visible,visibility_status.eq.true');
 
     if (search.trim()) {
       const term = search.trim();
@@ -175,7 +175,7 @@ export async function getProducts(
     }
 
     return {
-      products: (data as unknown as Record<string, unknown>[]).map(castRow),
+      products: (data as unknown as Record<string, unknown>[]).map(castRow).filter(p => p.image_main && p.image_main.startsWith('http')),
       total: count ?? 0,
       error: null,
     };
