@@ -9,6 +9,9 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowCompat;
 import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Scanner;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -64,9 +67,15 @@ public class MainActivity extends BridgeActivity {
         }
 
         // Force Bottom Bar Visibility and 5-column layout exactly like the reference image
-        final String js = getString(R.string.ui_fixes_js);
-
-        webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1000);
+        try {
+            InputStream is = getAssets().open("ui_fixes.js");
+            Scanner s = new Scanner(is).useDelimiter("\\A");
+            String js = s.hasNext() ? s.next() : "";
+            is.close();
+            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1000);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
