@@ -36,6 +36,10 @@ interface Order {
   tracking_number?: string | null;
   tracking_url?: string | null;
   courier_name?: string | null;
+  centralhub_order_id?: string | null;
+  sync_state?: string;
+  sync_error?: string | null;
+  last_synced_at?: string | null;
   items?: OrderItem[];
 }
 

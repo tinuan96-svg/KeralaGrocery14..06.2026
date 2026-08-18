@@ -165,6 +165,8 @@ export interface UserProfile {
   updated_at: string | null;
 }
 
+export type SyncState = 'pending' | 'synced' | 'failed';
+
 export interface Order {
   id: string;
   order_number: string;
@@ -189,6 +191,9 @@ export interface Order {
   shipment_label_url?: string | null;
   courier_name?: string | null;
   shipment_booked_at?: string | null;
+  centralhub_order_id?: string | null;
+  sync_state?: SyncState;
+  sync_error?: string | null;
   last_synced_at?: string | null;
 }
 
