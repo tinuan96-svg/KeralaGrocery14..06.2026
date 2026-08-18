@@ -66,6 +66,8 @@ export interface Product {
 export interface ProductVariant {
   id: string;
   product_id: string;
+  variant_id?: string;
+  group_key?: string;
   variant_name: string;
   price: number;
   cost_price?: number;

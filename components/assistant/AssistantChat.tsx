@@ -20,7 +20,7 @@ interface RecipeIngredientProduct {
   id: string;
   name: string;
   slug: string;
-  price: number | string;
+  price: number;
   image_url?: string;
   image_main?: string;
   stock?: number;

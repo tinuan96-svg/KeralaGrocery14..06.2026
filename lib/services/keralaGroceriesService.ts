@@ -7,28 +7,25 @@ import { resolveProductImage } from '@/lib/utils/image';
 
 export const KERALA_STORE_ID = 'a2e4d9f9-6b51-4071-97eb-decf72485b5a';
 
-// Exact columns fetched from v_storefront_products — no wildcards
+// Exact columns fetched from products — no wildcards
 const PRODUCT_COLUMNS = [
-  'product_id',
-  'store_id',
-  'product_code',
-  'product_title',
-  'product_display_name',
+  'id',
+  'name',
+  'slug',
   'brand',
-  'effective_price',
+  'price',
   'original_price',
-  'effective_stock',
+  'stock',
   'unit',
   'weight',
-  'display_category',
+  'category',
   'main_category',
-  'parent_category',
-  'product_slug',
   'image_url',
   'image_main',
-  'product_description',
+  'description',
   'status',
   'created_at',
+  'variants:product_variants(id, variant_id, group_key, variant_name, price, stock, is_active)'
 ].join(',');
 
 // ---------------------------------------------------------------------------
@@ -86,31 +83,31 @@ export interface GetProductsResult {
 // ---------------------------------------------------------------------------
 
 function castRow(row: Record<string, unknown>): StorefrontProduct {
-  const stock = Number(row.effective_stock ?? 0);
+  const stock = Number(row.stock ?? 0);
   const imageUrl = resolveProductImage({
     image_url: row.image_url as string,
     image_main: row.image_main as string,
   });
 
   return {
-    product_id: row.product_id as string,
-    store_id: (row.store_id as string | null) ?? null,
-    product_code: (row.product_code as string | null) ?? null,
-    product_title: row.product_title as string,
-    product_display_name: (row.product_display_name as string | null) ?? null,
+    product_id: row.id as string,
+    store_id: null,
+    product_code: null,
+    product_title: row.name as string,
+    product_display_name: row.name as string,
     brand: (row.brand as string | null) ?? null,
-    effective_price: Number(row.effective_price ?? 0),
+    effective_price: Number(row.price ?? 0),
     original_price: Number(row.original_price ?? 0),
     effective_stock: stock,
     unit: (row.unit as string | null) ?? null,
     weight: row.weight != null ? Number(row.weight) : null,
-    display_category: (row.display_category as string | null) ?? null,
+    display_category: (row.category as string | null) ?? null,
     main_category: (row.main_category as string | null) ?? null,
-    parent_category: (row.parent_category as string | null) ?? null,
-    product_slug: (row.product_slug as string | null) ?? null,
+    parent_category: null,
+    product_slug: (row.slug as string | null) ?? null,
     image_url: imageUrl,
     image_main: imageUrl,
-    product_description: (row.product_description as string | null) ?? null,
+    product_description: (row.description as string | null) ?? null,
     status: (row.status as string | null) ?? null,
     created_at: row.created_at as string,
     is_available: stock > 0,
@@ -139,9 +136,11 @@ export async function getProducts(
   try {
     const supabase = getSupabase();
     let query = supabase
-      .from('v_storefront_products')
+      .from('products')
       .select(PRODUCT_COLUMNS, { count: 'exact' })
-      .eq('store_id', KERALA_STORE_ID);
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', 'visible')
+      .neq('is_deleted', true);
 
     if (search.trim()) {
       const term = search.trim();
@@ -150,16 +149,16 @@ export async function getProducts(
       );
     }
 
-    if (category) query = query.eq('display_category', category);
+    if (category) query = query.eq('category', category);
     if (brand)    query = query.eq('brand', brand);
     if (minPrice != null) query = query.gte('effective_price', minPrice);
     if (maxPrice != null) query = query.lte('effective_price', maxPrice);
     if (inStockOnly)      query = query.gt('effective_stock', 0);
 
     switch (sort) {
-      case 'price_asc':  query = query.order('effective_price', { ascending: true });  break;
-      case 'price_desc': query = query.order('effective_price', { ascending: false }); break;
-      case 'name_asc':   query = query.order('product_title',   { ascending: true });  break;
+      case 'price_asc':  query = query.order('price', { ascending: true });  break;
+      case 'price_desc': query = query.order('price', { ascending: false }); break;
+      case 'name_asc':   query = query.order('name',   { ascending: true });  break;
       case 'newest':
       default:           query = query.order('created_at',      { ascending: false }); break;
     }
@@ -241,10 +240,12 @@ export async function getProductBySlug(slug: string): Promise<StorefrontProduct 
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
-      .from('v_storefront_products')
+      .from('products')
       .select(PRODUCT_COLUMNS)
-      .eq('store_id', KERALA_STORE_ID)
       .eq('product_slug', slug)
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', 'visible')
+      .neq('is_deleted', true)
       .maybeSingle();
 
     if (error) {
@@ -266,10 +267,9 @@ export async function getProductById(productId: string): Promise<StorefrontProdu
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
-      .from('v_storefront_products')
+      .from('products')
       .select(PRODUCT_COLUMNS)
-      .eq('store_id', KERALA_STORE_ID)
-      .eq('product_id', productId)
+      .eq('id', productId)
       .maybeSingle();
 
     if (error) {
@@ -291,10 +291,12 @@ export async function getCategories(): Promise<string[]> {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
-      .from('v_storefront_products')
-      .select('display_category')
-      .eq('store_id', KERALA_STORE_ID)
-      .not('display_category', 'is', null);
+      .from('products')
+      .select('category')
+      .not('category', 'is', null)
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', 'visible')
+      .neq('is_deleted', true);
 
     if (error) {
       console.error('[keralaGroceries] getCategories error:', error);
@@ -302,7 +304,7 @@ export async function getCategories(): Promise<string[]> {
     }
 
     return Array.from(
-      new Set((data as { display_category: string }[]).map((r) => r.display_category))
+      new Set((data as { category: string }[]).map((r) => r.category))
     ).filter(Boolean).sort();
   } catch (err) {
     console.error('[keralaGroceries] getCategories unexpected:', err);
@@ -318,10 +320,12 @@ export async function getBrands(): Promise<string[]> {
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
-      .from('v_storefront_products')
+      .from('products')
       .select('brand')
-      .eq('store_id', KERALA_STORE_ID)
-      .not('brand', 'is', null);
+      .not('brand', 'is', null)
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', 'visible')
+      .neq('is_deleted', true);
 
     if (error) {
       console.error('[keralaGroceries] getBrands error:', error);
@@ -349,12 +353,14 @@ export async function getRelatedProducts(
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
-      .from('v_storefront_products')
+      .from('products')
       .select(PRODUCT_COLUMNS)
-      .eq('store_id', KERALA_STORE_ID)
-      .eq('display_category', category)
-      .neq('product_id', productId)
-      .gt('effective_stock', 0)
+      .eq('category', category)
+      .neq('id', productId)
+      .gt('stock', 0)
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', 'visible')
+      .neq('is_deleted', true)
       .limit(limit);
 
     if (error) {

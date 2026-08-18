@@ -154,9 +154,9 @@ export default function SyncMonitorPage() {
   };
 
   const issues: { label: string; count: number; severity: 'error' | 'warn' }[] = [
-    { label: 'Inactive but visible', count: stats?.inactiveButVisible ?? 0, severity: 'error' },
-    { label: 'Draft but visible', count: stats?.draftButVisible ?? 0, severity: 'warn' },
-    { label: 'Zero price', count: stats?.zeroPrice ?? 0, severity: 'warn' },
+    { label: 'Inactive but visible', count: stats?.inactiveButVisible ?? 0, severity: 'error' as const },
+    { label: 'Draft but visible', count: stats?.draftButVisible ?? 0, severity: 'warn' as const },
+    { label: 'Zero price', count: stats?.zeroPrice ?? 0, severity: 'warn' as const },
   ].filter(i => i.count > 0);
 
   return (

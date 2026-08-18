@@ -34,6 +34,8 @@ type ProductImageFields = {
   image_large?: string | null;
   enhanced_image_url?: string | null;
   image_url?: string | null;
+  image_cdn_url?: string | null;
+  image_override?: string | null;
   updated_at?: string | null;
 };
 

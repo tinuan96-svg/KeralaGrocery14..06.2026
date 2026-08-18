@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test.describe('E-commerce Critical Path', () => {
-  test('should allow user to browse and add items to cart', async ({ page }) => {
+  test('should allow user to browse and add items to cart', async ({ page }: { page: Page }) => {
     // 1. Visit homepage
     await page.goto('/');
 
@@ -29,7 +29,7 @@ test.describe('E-commerce Critical Path', () => {
     }
   });
 
-  test('should require login for checkout', async ({ page }) => {
+  test('should require login for checkout', async ({ page }: { page: Page }) => {
     await page.goto('/cart');
 
     const checkoutButton = page.getByRole('link', { name: /Proceed to Checkout/i });

@@ -30,7 +30,8 @@ const PRODUCTS_SELECT = `
   brand_id,
   brand,
   stock,
-  categories:category_id(id, name, slug)
+  categories:category_id(id, name, slug),
+  variants:product_variants(*)
 `;
 
 function mapProduct(p: any): ProductWithDetails {
@@ -55,7 +56,6 @@ function mapProduct(p: any): ProductWithDetails {
     image_path: p.image_path ?? null,
     category_id: p.category_id ?? null,
     brand_id: p.brand_id ?? null,
-    brand: p.brand ?? null,
     created_at: p.created_at ?? '',
     stock: p.stock ?? 0,
     is_active: p.is_active ?? true,
@@ -68,6 +68,7 @@ function mapProduct(p: any): ProductWithDetails {
     is_deal: p.is_deal ?? undefined,
     sold_count: p.sold_count ?? undefined,
     category: p.categories ?? undefined,
+    variants: p.variants ?? undefined,
     brand: p.brand
       ? { id: '', name: p.brand, slug: p.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''), logo_url: null, description: null, created_at: '', updated_at: '' }
       : undefined,

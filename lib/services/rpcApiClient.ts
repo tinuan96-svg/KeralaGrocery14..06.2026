@@ -41,6 +41,8 @@ export interface RpcProduct {
 
 export interface ProductVariantOption {
   id: string;
+  variant_id?: string;
+  group_key?: string;
   variant_name: string;
   price: number;
   cost_price?: number;
@@ -353,7 +355,7 @@ export async function getProductDetail(
     try {
       const { data: variants } = await supabase
         .from('product_variants')
-        .select('*')
+        .select('id, variant_id, group_key, variant_name, price, cost_price, stock, sku, barcode, unit_value, unit_type, is_active')
         .eq('product_id', product.id)
         .eq('is_active', true);
 
