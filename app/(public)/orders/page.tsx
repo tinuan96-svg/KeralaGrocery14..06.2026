@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase/client';
 import Image from 'next/image';
+import { useOrderRealtime } from '@/hooks/useOrderRealtime';
 
 interface OrderItem {
   id: string;
@@ -159,6 +160,9 @@ export default function OrdersPage() {
       setLoading(false);
     }
   }, [user]);
+
+  // Realtime subscription
+  useOrderRealtime(fetchOrders);
 
   useEffect(() => {
     if (!authLoading && !user) {
