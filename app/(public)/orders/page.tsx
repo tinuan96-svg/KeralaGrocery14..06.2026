@@ -19,22 +19,22 @@ function SyncStatusBadge({ state }: { state?: string }) {
   switch (state.toLowerCase()) {
     case 'pending':
       return (
-        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1.5 py-0.5">
-          <RefreshCw className="h-3 w-3 animate-spin" />
+        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 gap-1.5 py-0.5" aria-label="Order synchronization pending">
+          <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
           Syncing...
         </Badge>
       );
     case 'synced':
       return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1.5 py-0.5">
-          <CheckCircle2 className="h-3 w-3" />
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1.5 py-0.5" aria-label="Order synchronized with CentralHub">
+          <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
           Synced
         </Badge>
       );
     case 'failed':
       return (
-        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1.5 py-0.5">
-          <AlertCircle className="h-3 w-3" />
+        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 gap-1.5 py-0.5" aria-label="Order synchronization failed">
+          <AlertCircle className="h-3 w-3" aria-hidden="true" />
           Sync Failed
         </Badge>
       );
