@@ -284,15 +284,3 @@ const ProductCard = memo(ProductCardComponent, (prev, next) =>
 
 ProductCard.displayName = 'ProductCard';
 export default ProductCard;
-
-const ProductCard = memo(ProductCardComponent, (prev, next) =>
-  prev.product.id === next.product.id &&
-  prev.product.stock === next.product.stock &&
-  prev.product.image_url === next.product.image_url &&
-  prev.product.image_main === next.product.image_main &&
-  prev.priority === next.priority &&
-  prev.showCashback === next.showCashback
-);
-
-ProductCard.displayName = 'ProductCard';
-export default ProductCard;
