@@ -16,7 +16,7 @@ interface MiniCartProps {
 }
 
 export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
-  const { cart, cartTotal, updateQuantity, removeFromCart } = useCart();
+  const { cart, cartTotal, updateQuantity, removeFromCart, closeMiniCart } = useCart();
 
   const handleQtyChange = (item: any, delta: number) => {
     const newQty = item.quantity + delta;
@@ -34,11 +34,11 @@ export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
   };
 
   return (
-    <Drawer.Root open={open} onOpenChange={onOpenChange}>
+    <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[2000] backdrop-blur-[2px]" />
-        <Drawer.Content className="bg-white flex flex-col rounded-t-[32px] h-[85vh] fixed bottom-0 left-0 right-0 z-[2001] outline-none border-t border-green-50 shadow-2xl">
-          <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-200 mt-4 mb-2" />
+        <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[2000] backdrop-blur-[2px]" onClick={() => closeMiniCart()} />
+        <Drawer.Content className="bg-white flex flex-col rounded-t-[32px] h-[90vh] md:h-[80vh] md:max-w-md md:ml-auto md:mr-4 md:mb-4 md:rounded-3xl fixed bottom-0 left-0 right-0 z-[2001] outline-none border-t border-green-50 shadow-2xl">
+          <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-gray-200 mt-4 mb-2 md:hidden" />
 
           <div className="flex items-center justify-between px-6 py-2">
             <div className="flex items-center gap-2">
@@ -151,12 +151,13 @@ export default function MiniCart({ open, onOpenChange }: MiniCartProps) {
               </div>
 
               <div className="flex gap-3">
-                <Drawer.Close asChild>
-                  <Button variant="outline" className="flex-1 h-12 rounded-2xl font-bold border-gray-200">
-                    Keep Shopping
-                  </Button>
-                </Drawer.Close>
-                <Link href="/checkout" className="flex-[1.5]">
+                <button
+                  onClick={() => closeMiniCart()}
+                  className="flex-1 px-4 py-3 rounded-2xl font-bold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all"
+                >
+                  Keep Shopping
+                </button>
+                <Link href="/checkout" className="flex-[1.5]" onClick={() => closeMiniCart()}>
                   <Button className="w-full h-12 rounded-2xl bg-[#0B5D3B] hover:bg-green-700 text-white font-bold shadow-xl shadow-green-900/20 group">
                     Checkout Now
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -40,6 +40,8 @@ interface CartActions {
   updateQuantity: (id: string, quantity: number, maxStock?: number) => void;
   clearCart: () => void;
   getQuantity: (id: string) => number;
+  openMiniCart: () => void;
+  closeMiniCart: () => void;
 }
 
 interface CartData {
@@ -47,16 +49,21 @@ interface CartData {
   cartCount: number;
   cartTotal: number;
   isHydrated: boolean;
+  isMiniCartOpen: boolean;
 }
 
 // ---------------------------------------------------------------------------
 // Reducer — pure, no side effects
 // ---------------------------------------------------------------------------
 
-function cartReducer(state: CartState, action: CartAction): CartState {
+function cartReducer(state: CartState & { isMiniCartOpen: boolean }, action: CartAction | { type: 'OPEN_MINI_CART' } | { type: 'CLOSE_MINI_CART' }): CartState & { isMiniCartOpen: boolean } {
   switch (action.type) {
     case 'HYDRATE':
-      return { cart: action.cart, isHydrated: true };
+      return { ...state, cart: action.cart, isHydrated: true };
+    case 'OPEN_MINI_CART':
+      return { ...state, isMiniCartOpen: true };
+    case 'CLOSE_MINI_CART':
+      return { ...state, isMiniCartOpen: false };
     case 'ADD': {
       const existing = state.cart.find((i) => i.id === action.item.id);
       const effectiveMaxStock = action.maxStock ?? existing?.maxStock;
@@ -121,7 +128,7 @@ const CartDataContext = createContext<CartData | null>(null);
 // ---------------------------------------------------------------------------
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { cart: [], isHydrated: false });
+  const [state, dispatch] = useReducer(cartReducer, { cart: [], isHydrated: false, isMiniCartOpen: false });
   const { user } = useAuth();
 
   // hydrate from localStorage once
@@ -190,6 +197,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const actions = useMemo<CartActions>(() => ({
     addToCart(item, quantity = 1, maxStock) {
       dispatch({ type: 'ADD', item, qty: quantity, maxStock });
+      dispatch({ type: 'OPEN_MINI_CART' });
     },
     removeFromCart(id) {
       dispatch({ type: 'REMOVE', id });
@@ -203,6 +211,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     getQuantity(id) {
       return cartRef.current.find((i) => i.id === id)?.quantity ?? 0;
     },
+    openMiniCart() {
+      dispatch({ type: 'OPEN_MINI_CART' });
+    },
+    closeMiniCart() {
+      dispatch({ type: 'CLOSE_MINI_CART' });
+    },
   }), []);
 
   const data = useMemo<CartData>(() => ({
@@ -210,6 +224,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     cartCount: state.cart.reduce((s, i) => s + i.quantity, 0),
     cartTotal: state.cart.reduce((s, i) => s + i.price * i.quantity, 0),
     isHydrated: state.isHydrated,
+    isMiniCartOpen: state.isMiniCartOpen,
   }), [state]);
 
   return (

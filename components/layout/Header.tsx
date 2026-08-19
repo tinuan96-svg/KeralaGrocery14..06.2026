@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useCartCount } from '@/hooks/useCartOptimized';
 import { useWishlistCount } from '@/hooks/useWishlistOptimized';
 import { useAuth } from '@/lib/context/AuthContext';
+import { useCart } from '@/lib/context/CartContext';
 import { useRouter } from 'next/navigation';
 import LiveSearch from '@/components/home/LiveSearch';
 import MiniCart from './MiniCart';
@@ -33,10 +34,10 @@ export default function Header() {
   const cartCount = useCartCount();
   const wishlistCount = useWishlistCount();
   const { user, signOut, loading } = useAuth();
+  const { isMiniCartOpen, openMiniCart, closeMiniCart } = useCart();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const [showMiniCart, setShowMiniCart] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -162,7 +163,7 @@ export default function Header() {
 
             {/* Cart — mobile (icon only) + desktop (full) */}
             <button
-              onClick={() => setShowMiniCart(true)}
+              onClick={() => openMiniCart()}
               className="flex lg:hidden w-9 h-9 items-center justify-center rounded-xl hover:bg-[#f4faf6] transition-colors relative"
               aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}
             >
@@ -174,8 +175,8 @@ export default function Header() {
               )}
             </button>
 
-            <Link
-              href="/cart"
+            <button
+              onClick={() => openMiniCart()}
               className="hidden lg:flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0B5D3B] hover:bg-[#0d6b44] text-white transition-all duration-200 shadow-brand-sm hover:shadow-brand relative active:scale-95"
               aria-label="Cart"
             >
@@ -188,7 +189,7 @@ export default function Header() {
               ) : (
                 <span className="text-xs font-bold">Cart</span>
               )}
-            </Link>
+            </button>
 
             {/* Auth — desktop */}
             {!loading && (
@@ -259,7 +260,7 @@ export default function Header() {
           </div>
         </div>
       </div>
-      <MiniCart open={showMiniCart} onOpenChange={setShowMiniCart} />
+      <MiniCart open={isMiniCartOpen} onOpenChange={(open) => open ? openMiniCart() : closeMiniCart()} />
     </header>
   );
 }
