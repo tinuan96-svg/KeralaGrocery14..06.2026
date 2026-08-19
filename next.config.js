@@ -23,7 +23,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.webcontainer-api.io' },
     ],
   },
-  transpilePackages: ['lucide-react', '@tanstack/react-query'],
+  transpilePackages: ['lucide-react'],
   experimental: {
     // optimizePackageImports: ['lucide-react'],
   },
