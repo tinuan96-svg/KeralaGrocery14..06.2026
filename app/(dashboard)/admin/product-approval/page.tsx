@@ -279,7 +279,7 @@ export default function ProductApprovalPage() {
     setAutoTaskResult(result);
     setAutoTasking(false);
     if (result.error) showToast(result.error, 'err');
-    else showToast(`Processed ${result.processed} products: ${result.pricesUpdated} prices, ${result.categoriesAssigned} categories, ${result.descriptionsGenerated} descriptions`);
+    else showToast(`Processed ${result.processed} products: ${result.pricesUpdated} prices, ${result.categoriesAssigned} categories, ${result.descriptionsGenerated} descriptions, ${result.seoOptimized} SEO`);
     await Promise.all([loadProducts(), loadStats()]);
   };
 
