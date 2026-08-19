@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import {
   getProducts,
   getFilters,
@@ -85,7 +85,7 @@ export function useRpcProducts(limit = DEFAULT_LIMIT, authKey?: string): UseRpcP
       sort,
       status: 'active',
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 

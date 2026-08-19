@@ -45,7 +45,7 @@ export default function MediaPicker({ onSelect, onClose }: Props) {
             allFiles.push({
               name: f.name,
               url: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/uploads/${f.name}`,
-              created_at: f.created_at
+              created_at: f.created_at || new Date().toISOString()
             });
           });
       }
@@ -57,7 +57,7 @@ export default function MediaPicker({ onSelect, onClose }: Props) {
             allFiles.push({
               name: f.name,
               url: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${f.name}`,
-              created_at: f.created_at
+              created_at: f.created_at || new Date().toISOString()
             });
           });
       }
