@@ -28,7 +28,7 @@ export function useHomepageData(): HomepageData {
 
     async function loadData() {
       const [{ products: allItems }, cats] = await Promise.all([
-        fetchStoreProducts({ limit: 40 }),
+        fetchStoreProducts({ limit: 80, stockOnly: true }),
         fetchHomepageCategories(),
       ]);
 
