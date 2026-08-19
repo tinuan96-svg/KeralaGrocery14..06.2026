@@ -30,6 +30,7 @@ const PRODUCTS_SELECT = `
   brand_id,
   brand,
   stock,
+  stock_status,
   categories:category_id(id, name, slug),
   variants:product_variants(*)
 `;
@@ -58,6 +59,7 @@ function mapProduct(p: any): ProductWithDetails {
     brand_id: p.brand_id ?? null,
     created_at: p.created_at ?? '',
     stock: p.stock ?? 0,
+    stock_status: p.stock_status ?? null,
     is_active: p.is_active ?? true,
     discount_percentage: p.discount_percentage ?? undefined,
     is_bestseller: p.is_bestseller ?? undefined,
@@ -109,7 +111,7 @@ export async function fetchStoreProducts(
     query = query.filter('visibility_status', 'eq', 'visible');
 
     if (_options.stockOnly) {
-      query = query.gt('stock', 0);
+      query = query.or('stock.gt.0,stock_status.eq.backorder');
     }
 
     if (_options.is_featured) query = query.eq('is_featured', true);

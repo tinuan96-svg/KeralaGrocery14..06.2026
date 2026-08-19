@@ -209,15 +209,22 @@ export default function KeralaProductDetailPage({ slug }: Props) {
     : (settings?.bronze_rate ?? 0.01);
   const potentialCashback = (currentPrice * (rate || 0.01)).toFixed(2);
 
+  const isBackorder = product.stock_status === 'backorder';
   const stockStatus = inStock
     ? currentStock <= 5
       ? { text: `Only ${currentStock} left!`, color: 'text-amber-700 bg-amber-50 border border-amber-200', dot: 'bg-amber-500' }
       : { text: 'In Stock',                    color: 'text-green-700 bg-green-50 border border-green-200', dot: 'bg-green-500' }
+    : isBackorder
+    ? { text: 'Available on Backorder',        color: 'text-blue-700 bg-blue-50 border border-blue-200',    dot: 'bg-blue-500' }
     : { text: 'Out of Stock',                  color: 'text-red-700 bg-red-50 border border-red-200',       dot: 'bg-red-500' };
 
   // Update productWD for child components
   productWD.price = currentPrice;
   productWD.stock = currentStock;
+  // Handle in_stock logic for the button
+  if (isBackorder && currentStock <= 0) {
+    productWD.stock = 999; // Allow adding to cart if backorder enabled
+  }
 
   const resolvedImg = product.image_url?.startsWith('http') ? product.image_url : '/placeholder.webp';
   const galleryImages = galleryUrls.length > 0 ? galleryUrls : [resolvedImg];

@@ -35,16 +35,16 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!product.in_stock || product.stock <= 0) return;
+    if (!product.in_stock && product.stock_status !== 'backorder') return;
     haptics.impact('medium');
-    addToCart(cartProduct, 1, product.stock);
+    addToCart(cartProduct, 1, product.stock_status === 'backorder' ? 999 : product.stock);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (qty >= product.stock) return;
+    if (product.stock_status !== 'backorder' && qty >= product.stock) return;
     haptics.impact('light');
-    addToCart(cartProduct, 1, product.stock);
+    addToCart(cartProduct, 1, product.stock_status === 'backorder' ? 999 : product.stock);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -86,11 +86,16 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
               Only {product.stock} left!
             </span>
           )}
-          {!product.in_stock && (
+          {product.stock <= 0 && product.stock_status !== 'backorder' && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20 backdrop-blur-[2px]">
               <span className="text-gray-600 font-semibold text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow">
                 Out of Stock
               </span>
+            </div>
+          )}
+          {product.stock <= 0 && product.stock_status === 'backorder' && (
+            <div className="absolute bottom-2 left-1.5 right-1.5 bg-blue-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full text-center z-10 block">
+              Backorder Available
             </div>
           )}
         </div>
@@ -140,11 +145,11 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
         <div className="mt-auto">
           {qty === 0 ? (
             <button
-              disabled={!product.in_stock}
+              disabled={product.stock <= 0 && product.stock_status !== 'backorder'}
               onClick={handleAdd}
               className="w-full flex items-center justify-center gap-1 bg-[#0B5D3B] hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 text-white font-black rounded-lg text-[10px] h-7 transition-all active:scale-95 shadow-sm"
             >
-              {product.in_stock ? 'ADD' : 'Out of Stock'}
+              {product.stock > 0 || product.stock_status === 'backorder' ? 'ADD' : 'Out of Stock'}
             </button>
           ) : (
             <div

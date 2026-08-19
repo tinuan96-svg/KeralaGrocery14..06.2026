@@ -28,7 +28,7 @@ export function useHomepageData(): HomepageData {
 
     async function loadData() {
       const [{ products: allItems }, cats] = await Promise.all([
-        fetchStoreProducts({ limit: 80, stockOnly: true }),
+        fetchStoreProducts({ limit: 100, stockOnly: true }),
         fetchHomepageCategories(),
       ]);
 
@@ -36,21 +36,17 @@ export function useHomepageData(): HomepageData {
 
       setAllProducts(allItems);
 
-      setTrending(allItems.filter(p => p.is_featured).slice(0, 12).length > 0
-        ? allItems.filter(p => p.is_featured).slice(0, 12)
-        : allItems.slice(0, 10));
+      const featured = allItems.filter(p => p.is_featured).slice(0, 12);
+      setTrending(featured.length > 0 ? featured : allItems.slice(0, 10));
 
-      setDeals(allItems.filter(p => p.is_deal).slice(0, 12).length > 0
-        ? allItems.filter(p => p.is_deal).slice(0, 12)
-        : allItems.slice(10, 20));
+      const deals = allItems.filter(p => p.is_deal).slice(0, 12);
+      setDeals(deals.length > 0 ? deals : allItems.slice(10, 20));
 
-      setBestsellers(allItems.filter(p => p.is_bestseller).slice(0, 12).length > 0
-        ? allItems.filter(p => p.is_bestseller).slice(0, 12)
-        : allItems.slice(20, 30));
+      const bs = allItems.filter(p => p.is_bestseller).slice(0, 12);
+      setBestsellers(bs.length > 0 ? bs : allItems.slice(20, 30));
 
-      setNewArrivals(allItems.filter(p => p.is_new_arrival).slice(0, 12).length > 0
-        ? allItems.filter(p => p.is_new_arrival).slice(0, 12)
-        : allItems.slice(30, 40));
+      const na = allItems.filter(p => p.is_new_arrival).slice(0, 12);
+      setNewArrivals(na.length > 0 ? na : allItems.slice(30, 40));
 
       setCategories(cats);
       setIsLoading(false);

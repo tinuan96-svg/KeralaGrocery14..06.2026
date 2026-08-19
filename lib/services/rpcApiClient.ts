@@ -35,6 +35,7 @@ export interface RpcProduct {
   discount_pct: number;
   markup_percentage?: number | null;
   in_stock: boolean;
+  stock_status: string | null;
   display_title: string;
   variants?: ProductVariantOption[];
 }
@@ -141,7 +142,8 @@ function mapRow(
     created_at:      (row.created_at as string | null) ?? null,
     discount_pct:    discountPct,
     markup_percentage: row.markup_percentage != null ? Number(row.markup_percentage) : null,
-    in_stock:        Number(row.stock ?? row.stock_quantity ?? 0) > 0,
+    in_stock:        Number(row.stock ?? row.stock_quantity ?? 0) > 0 || row.stock_status === 'backorder',
+    stock_status:    (row.stock_status as string | null) ?? null,
     display_title:   displayTitle,
   };
 }
@@ -229,7 +231,7 @@ export async function getProducts(
     let query = supabase
       .from('products')
       .select(
-        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock',
+        'id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_status',
         { count: 'exact' }
       )
       .eq('approval_status', 'approved')
@@ -333,7 +335,7 @@ export async function getProductDetail(
 
     let query = supabase
       .from('products')
-      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock')
+      .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_status')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
       .eq('visibility_status', 'visible');

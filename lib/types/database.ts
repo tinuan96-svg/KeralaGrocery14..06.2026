@@ -61,6 +61,7 @@ export interface Product {
   centralhub_product_id?: string | null;
   stock_quantity?: number;
   sale_price?: number | null;
+  stock_status?: string | null;
 }
 
 export interface ProductVariant {
@@ -136,6 +137,7 @@ export interface ProductWithDetails {
   centralhub_product_id?: string | null;
   stock_quantity?: number;
   sale_price?: number | null;
+  stock_status?: string | null;
 }
 
 export interface Banner {
