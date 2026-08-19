@@ -98,14 +98,20 @@ Deno.serve(async (req: Request) => {
 
     const jwt = await createJwt(jwtPayload, jwtSecret);
 
+    console.log(`[trustpayments-jwt] JWT generated for order ${orderNumber}, amount ${baseAmount} pence`);
+
     // Store session info
-    await supabase.from("payment_sessions").upsert({
+    const { error: upsertError } = await supabase.from("payment_sessions").upsert({
       order_number: orderNumber,
       amount_pence: baseAmount,
       status: "pending",
       gateway: "trustpayments",
       created_at: new Date().toISOString(),
     }, { onConflict: "order_number" });
+
+    if (upsertError) {
+      console.error("[trustpayments-jwt] database upsert error:", upsertError);
+    }
 
     return new Response(JSON.stringify({ jwt }), {
       status: 200,

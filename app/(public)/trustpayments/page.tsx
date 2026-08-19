@@ -14,7 +14,7 @@ declare global {
 }
 
 const ST_SCRIPT_URL = 'https://cdn.eu.trustpayments.com/js/latest/st.js';
-const INIT_TIMEOUT_MS = 20000;
+const INIT_TIMEOUT_MS = 30000; // Increased to 30s
 
 function TrustPaymentsContent() {
   const searchParams = useSearchParams();
@@ -37,12 +37,14 @@ function TrustPaymentsContent() {
   // Step 1: Fetch JWT from edge function
   useEffect(() => {
     if (!orderNumber || !amount) {
+      console.error('[TrustPayments] Missing order or amount in URL params');
       setError('Missing order or amount');
       setLoading(false);
       return;
     }
 
     const fetchJwt = async () => {
+      console.log('[TrustPayments] Fetching JWT for order:', orderNumber);
       try {
         const supabase = getSupabase();
         const { data: { session } } = await supabase.auth.getSession();
@@ -67,13 +69,15 @@ function TrustPaymentsContent() {
 
         const data = await response.json();
         if (!response.ok || data.error) {
+          console.error('[TrustPayments] JWT edge function error:', data.error);
           throw new Error(data.error || 'Failed to initialize payment');
         }
+        console.log('[TrustPayments] JWT received successfully');
         setJwt(data.jwt);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to initialize payment';
-        console.error('[TrustPayments] JWT fetch error:', msg);
-        setError('We couldn\'t initialize your payment. Please try again or choose another payment method.');
+        console.error('[TrustPayments] JWT fetch catch:', msg);
+        setError('We couldn\'t initialize your payment session. Please try again or choose another payment method.');
         setLoading(false);
       }
     };
@@ -86,27 +90,29 @@ function TrustPaymentsContent() {
     if (!jwt || initStartedRef.current) return;
     initStartedRef.current = true;
 
+    console.log('[TrustPayments] JWT available, proceeding to load st.js');
+
     // Set initialization timeout
     timeoutRef.current = setTimeout(() => {
       if (loading) {
-        console.error('[TrustPayments] Initialization timed out after', INIT_TIMEOUT_MS, 'ms');
-        setError('We couldn\'t load the secure payment form. Please try again or choose another payment method.');
+        console.error('[TrustPayments] Initialization timed out after', INIT_TIMEOUT_MS, 'ms. loading state is', loading);
+        setError('The secure payment form is taking too long to load. Please refresh or try again.');
         setLoading(false);
       }
     }, INIT_TIMEOUT_MS);
 
     const initPayment = () => {
-      console.log('[TrustPayments] Initializing payment form...');
-      if (!window.SecureTrading || !jwt) {
-        console.error('[TrustPayments] SecureTrading not available on window or JWT missing');
-        setError('We couldn\'t load the secure payment form. Please try again or choose another payment method.');
+      console.log('[TrustPayments] Starting initPayment function...');
+      if (!window.SecureTrading) {
+        console.error('[TrustPayments] window.SecureTrading not found after script load');
+        setError('We couldn\'t load the secure payment form components. Please refresh and try again.');
         setLoading(false);
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         return;
       }
 
       try {
-        console.log('[TrustPayments] Calling window.SecureTrading...');
+        console.log('[TrustPayments] Configuring window.SecureTrading...');
         const st = window.SecureTrading({
           jwt,
           livestatus: 1,
@@ -116,58 +122,63 @@ function TrustPaymentsContent() {
             },
           },
           submitCallback: (response: any) => {
-            console.log('[TrustPayments] Submit callback response:', response);
-            // Form submitted - Trust Payments will redirect via form action
+            console.log('[TrustPayments] Submit callback triggered:', response);
             if (response && response.errorcode && response.errorcode !== '0') {
-              console.error('[TrustPayments] Payment error:', response);
+              console.error('[TrustPayments] Submission error:', response.errormessage);
             }
           },
           errorCallback: (error: any) => {
-            console.error('[TrustPayments] SDK error callback:', error);
+            console.error('[TrustPayments] SDK errorCallback:', error);
           }
         });
 
+        console.log('[TrustPayments] Initializing ST Components...');
         st.Components({
           callbacks: {
             onPaymentFormRendered: () => {
-              console.log('[TrustPayments] Payment form rendered successfully');
-              // Form is rendered - hide loading spinner
+              console.log('[TrustPayments] onPaymentFormRendered fired!');
               if (timeoutRef.current) clearTimeout(timeoutRef.current);
               setLoading(false);
             },
           },
         });
       } catch (err) {
-        console.error('[TrustPayments] Init exception:', err);
-        setError('We couldn\'t load the secure payment form. Please try again or choose another payment method.');
+        console.error('[TrustPayments] Initialization crash:', err);
+        setError('A technical error occurred while loading the payment form.');
         setLoading(false);
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
       }
     };
 
-    // Check if script already loaded
+    // Robust script loading
     const existingScript = document.querySelector(`script[src*="st.js"]`);
     if (existingScript) {
+      console.log('[TrustPayments] st.js script already in document');
       if (window.SecureTrading) {
         initPayment();
       } else {
-        // Script loaded but SecureTrading not yet available - wait for load event
+        console.log('[TrustPayments] Waiting for existing st.js to load');
         existingScript.addEventListener('load', initPayment);
-        existingScript.addEventListener('error', () => {
-          setError('We couldn\'t load the secure payment form. Please try again or choose another payment method.');
+        existingScript.addEventListener('error', (e) => {
+          console.error('[TrustPayments] Existing st.js load error', e);
+          setError('Failed to load secure payment script.');
           setLoading(false);
         });
       }
       return;
     }
 
+    console.log('[TrustPayments] Injecting st.js script tag');
     const script = document.createElement('script');
     script.src = ST_SCRIPT_URL;
     script.async = true;
-    script.onload = () => initPayment();
-    script.onerror = () => {
-      console.error('[TrustPayments] Failed to load st.js script');
-      setError('We couldn\'t load the secure payment form. Please try again or choose another payment method.');
+    script.onload = () => {
+      console.log('[TrustPayments] st.js script tag onload fired');
+      initPayment();
+    };
+    script.onerror = (e) => {
+      console.error('[TrustPayments] st.js script tag onerror fired', e);
+      setError('The secure payment script could not be loaded. Please check your connection.');
       setLoading(false);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
