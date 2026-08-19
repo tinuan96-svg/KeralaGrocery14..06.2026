@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   fetchAllGridCards, upsertGridCard, deleteGridCard
 } from '@/lib/services/homepageGridService';
+import { getSupabase } from '@/lib/supabase/client';
 import {
   Plus, Trash2, Edit2, Save, X, GripVertical, Eye, EyeOff, LayoutGrid, Square,
-  ArrowUp, ArrowDown, ExternalLink, Image as ImageIcon, Loader2
+  ArrowUp, ArrowDown, ExternalLink, Image as ImageIcon, Loader2, AlertCircle, CheckCircle
 } from 'lucide-react';
 import type { HomepageGridCard, GridCardItem } from '@/lib/types/database';
 import Image from 'next/image';
@@ -25,6 +26,10 @@ export default function HomepageGridAdmin() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'ok' | 'err' } | null>(null);
 
+  // Link verification state
+  const [verifying, setVerifying] = useState(false);
+  const [invalidLinks, setInvalidLinks] = useState<Record<string, boolean>>({});
+
   const load = useCallback(async () => {
     setLoading(true);
     const data = await fetchAllGridCards();
@@ -37,6 +42,50 @@ export default function HomepageGridAdmin() {
   const showMsg = (text: string, type: 'ok' | 'err' = 'ok') => {
     setMessage({ text, type });
     setTimeout(() => setMessage(null), 3000);
+  };
+
+  const handleVerifyLinks = async () => {
+    setVerifying(true);
+    const productSlugs = new Set<string>();
+
+    cards.forEach(card => {
+      card.items.forEach(item => {
+        if (item.link.startsWith('/products/')) {
+          const slug = item.link.split('/').pop()?.split('?')[0];
+          if (slug) productSlugs.add(slug);
+        }
+      });
+    });
+
+    if (productSlugs.size === 0) {
+      setVerifying(false);
+      return showMsg('No product links found to verify');
+    }
+
+    const supabase = getSupabase();
+    const { data: validProducts } = await supabase
+      .from('products')
+      .select('slug')
+      .in('slug', Array.from(productSlugs))
+      .eq('approval_status', 'approved')
+      .eq('is_active', true)
+      .eq('is_deleted', false)
+      .gt('stock', 0);
+
+    const validSet = new Set(validProducts?.map(p => p.slug) || []);
+    const results: Record<string, boolean> = {};
+
+    productSlugs.forEach(slug => {
+      if (!validSet.has(slug)) results[slug] = true;
+    });
+
+    setInvalidLinks(results);
+    setVerifying(false);
+    if (Object.keys(results).length > 0) {
+      showMsg(`Found ${Object.keys(results).length} unavailable product links`, 'err');
+    } else {
+      showMsg('All product links are valid and in stock');
+    }
   };
 
   const handleEdit = (card: HomepageGridCard) => {
@@ -108,12 +157,22 @@ export default function HomepageGridAdmin() {
           <h1 className="text-2xl font-bold text-gray-900">Homepage Grid Cards</h1>
           <p className="text-gray-500 text-sm">Amazon-style content blocks for your homepage</p>
         </div>
-        <button
-          onClick={handleAddNew}
-          className="flex items-center gap-2 bg-[#0B5D3B] hover:bg-green-700 text-white px-4 py-2 rounded-xl font-bold transition-all"
-        >
-          <Plus className="w-5 h-5" /> Add Card
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleVerifyLinks}
+            disabled={verifying || loading || cards.length === 0}
+            className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 px-4 py-2 rounded-xl font-semibold transition-all disabled:opacity-50"
+          >
+            {verifying ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+            Verify Product Links
+          </button>
+          <button
+            onClick={handleAddNew}
+            className="flex items-center gap-2 bg-[#0B5D3B] hover:bg-green-700 text-white px-4 py-2 rounded-xl font-bold transition-all"
+          >
+            <Plus className="w-5 h-5" /> Add Card
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -140,18 +199,28 @@ export default function HomepageGridAdmin() {
               <h3 className="font-bold text-gray-900 truncate mb-4">{card.title}</h3>
 
               <div className="grid grid-cols-2 gap-2 mb-4 bg-gray-50 p-2 rounded-xl aspect-square">
-                {card.items.slice(0, card.layout_type === 'grid_2x2' ? 4 : 1).map((it, j) => (
-                  <div key={j} className={`relative bg-white rounded-lg overflow-hidden border ${card.layout_type === 'single' ? 'col-span-2 row-span-2' : ''}`}>
-                    {it.image_url ? (
-                      <div className="relative w-full h-full">
-                        <Image src={it.image_url} alt="" fill className="object-cover" unoptimized />
-                      </div>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-200"><ImageIcon className="w-6 h-6" /></div>
-                    )}
-                    {it.badge && <span className="absolute top-1 left-1 bg-red-600 text-white text-[8px] font-bold px-1 rounded z-10">{it.badge}</span>}
-                  </div>
-                ))}
+                {card.items.slice(0, card.layout_type === 'grid_2x2' ? 4 : 1).map((it, j) => {
+                  const slug = it.link.startsWith('/products/') ? it.link.split('/').pop()?.split('?')[0] : null;
+                  const isInvalid = slug && invalidLinks[slug];
+
+                  return (
+                    <div key={j} className={`relative bg-white rounded-lg overflow-hidden border ${card.layout_type === 'single' ? 'col-span-2 row-span-2' : ''} ${isInvalid ? 'border-red-400 ring-1 ring-red-400' : ''}`}>
+                      {it.image_url ? (
+                        <div className="relative w-full h-full">
+                          <Image src={it.image_url} alt="" fill className="object-cover" unoptimized />
+                        </div>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-200"><ImageIcon className="w-6 h-6" /></div>
+                      )}
+                      {it.badge && <span className="absolute top-1 left-1 bg-red-600 text-white text-[8px] font-bold px-1 rounded z-10">{it.badge}</span>}
+                      {isInvalid && (
+                        <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center pointer-events-none">
+                          <AlertCircle className="w-5 h-5 text-red-600 fill-white" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="flex items-center justify-between border-t pt-4">
@@ -232,65 +301,73 @@ export default function HomepageGridAdmin() {
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {editing.items?.slice(0, editing.layout_type === 'grid_2x2' ? 4 : 1).map((item, idx) => (
-                    <div key={idx} className="p-4 bg-gray-50 rounded-2xl space-y-3 relative border border-gray-100">
-                      <div className="absolute -top-2 -left-2 w-6 h-6 bg-gray-900 text-white rounded-full flex items-center justify-center text-xs font-bold">{idx + 1}</div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Image URL</label>
-                        <input
-                          value={item.image_url}
-                          onChange={e => {
-                            const next = [...(editing.items || [])];
-                            next[idx] = { ...item, image_url: e.target.value };
-                            setEditing({...editing, items: next});
-                          }}
-                          placeholder="https://..."
-                          className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-xs outline-none"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
+                  {editing.items?.slice(0, editing.layout_type === 'grid_2x2' ? 4 : 1).map((item, idx) => {
+                    const slug = item.link.startsWith('/products/') ? item.link.split('/').pop()?.split('?')[0] : null;
+                    const isInvalid = slug && invalidLinks[slug];
+
+                    return (
+                      <div key={idx} className={`p-4 bg-gray-50 rounded-2xl space-y-3 relative border ${isInvalid ? 'border-red-200 bg-red-50/30' : 'border-gray-100'}`}>
+                        <div className={`absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isInvalid ? 'bg-red-600 text-white' : 'bg-gray-900 text-white'}`}>{idx + 1}</div>
                         <div>
-                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Label</label>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Image URL</label>
                           <input
-                            value={item.label || ''}
+                            value={item.image_url}
                             onChange={e => {
                               const next = [...(editing.items || [])];
-                              next[idx] = { ...item, label: e.target.value };
+                              next[idx] = { ...item, image_url: e.target.value };
                               setEditing({...editing, items: next});
                             }}
-                            placeholder="e.g. Skin care"
+                            placeholder="https://..."
                             className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-xs outline-none"
                           />
                         </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Label</label>
+                            <input
+                              value={item.label || ''}
+                              onChange={e => {
+                                const next = [...(editing.items || [])];
+                                next[idx] = { ...item, label: e.target.value };
+                                setEditing({...editing, items: next});
+                              }}
+                              placeholder="e.g. Skin care"
+                              className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-xs outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Badge</label>
+                            <input
+                              value={item.badge || ''}
+                              onChange={e => {
+                                const next = [...(editing.items || [])];
+                                next[idx] = { ...item, badge: e.target.value };
+                                setEditing({...editing, items: next});
+                              }}
+                              placeholder="e.g. 20% off"
+                              className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-xs outline-none"
+                            />
+                          </div>
+                        </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Badge</label>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                            Link
+                            {isInvalid && <span className="text-red-500 normal-case font-semibold flex items-center gap-1"><AlertCircle className="w-2.5 h-2.5" /> Product unavailable</span>}
+                          </label>
                           <input
-                            value={item.badge || ''}
+                            value={item.link}
                             onChange={e => {
                               const next = [...(editing.items || [])];
-                              next[idx] = { ...item, badge: e.target.value };
+                              next[idx] = { ...item, link: e.target.value };
                               setEditing({...editing, items: next});
                             }}
-                            placeholder="e.g. 20% off"
-                            className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-xs outline-none"
+                            placeholder="/products"
+                            className={`w-full px-3 py-1.5 rounded-lg border text-xs outline-none ${isInvalid ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-green-500'}`}
                           />
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Link</label>
-                        <input
-                          value={item.link}
-                          onChange={e => {
-                            const next = [...(editing.items || [])];
-                            next[idx] = { ...item, link: e.target.value };
-                            setEditing({...editing, items: next});
-                          }}
-                          placeholder="/products"
-                          className="w-full px-3 py-1.5 rounded-lg border border-gray-200 text-xs outline-none"
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

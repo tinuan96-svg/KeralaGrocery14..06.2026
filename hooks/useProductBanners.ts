@@ -107,6 +107,7 @@ type ProductRow = {
   category_id: string | null;
   brand_id: string | null;
   created_at: string | null;
+  stock: number;
 };
 
 type LookupRow = { id: string; name: string; slug: string | null };
@@ -144,7 +145,7 @@ function toProduct(row: ProductRow, catMap: Record<string, LookupRow>, brdMap: R
     price,
     original_price: orig,
     image_url: resolveImage(row),
-    stock: 100,
+    stock: row.stock ?? 0,
     discount,
     cat_id: cat?.id ?? null,
     cat_name: cat?.name ?? null,
@@ -158,9 +159,11 @@ function toProduct(row: ProductRow, catMap: Record<string, LookupRow>, brdMap: R
 const BASE_FILTER = {
   approval_status: 'approved',
   is_active: true,
+  is_deleted: false,
+  is_archived: false,
 } as const;
 
-const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,image_medium,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at';
+const SELECT = 'id,name,slug,price,original_price,discount_percentage,image_url,image_main,enhanced_image_url,image_medium,is_featured,is_bestseller,is_new_arrival,sold_count,category_id,brand_id,created_at,stock';
 
 export function useProductBanners(): ProductBannersData {
   const [banners, setBanners] = useState<Record<BannerKey, BannerProduct[]>>({
@@ -195,11 +198,11 @@ export function useProductBanners(): ProductBannersData {
           .select(SELECT)
           .match(BASE_FILTER)
           .eq('visibility_status', 'visible')
-          .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
           .or('image_main.like.http%,image_url.like.http%')
           .gt('price', 0)
+          .gt('stock', 0)
           .eq('is_bestseller', true)
           .order('sold_count', { ascending: false })
           .limit(BANNER_FETCH_LIMIT),
@@ -208,11 +211,11 @@ export function useProductBanners(): ProductBannersData {
           .select(SELECT)
           .match(BASE_FILTER)
           .eq('visibility_status', 'visible')
-          .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
           .or('image_main.like.http%,image_url.like.http%')
           .gt('price', 0)
+          .gt('stock', 0)
           .eq('is_new_arrival', true)
           .order('created_at', { ascending: false })
           .limit(BANNER_FETCH_LIMIT),
@@ -221,11 +224,11 @@ export function useProductBanners(): ProductBannersData {
           .select(SELECT)
           .match(BASE_FILTER)
           .eq('visibility_status', 'visible')
-          .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
           .or('image_main.like.http%,image_url.like.http%')
           .gt('price', 0)
+          .gt('stock', 0)
           .eq('is_featured', true)
           .limit(BANNER_FETCH_LIMIT),
         readyToEatCat
@@ -234,11 +237,11 @@ export function useProductBanners(): ProductBannersData {
               .select(SELECT)
               .match(BASE_FILTER)
               .eq('visibility_status', 'visible')
-              .neq('is_deleted', true)
               .not('centralhub_product_id', 'is', null)
               .not('brand', 'ilike', 'Brahmins')
-          .or('image_main.like.http%,image_url.like.http%')
-          .gt('price', 0)
+              .or('image_main.like.http%,image_url.like.http%')
+              .gt('price', 0)
+              .gt('stock', 0)
               .eq('category_id', readyToEatCat.id)
               .limit(BANNER_FETCH_LIMIT)
           : Promise.resolve({ data: [] }),
@@ -247,11 +250,11 @@ export function useProductBanners(): ProductBannersData {
           .select(SELECT)
           .match(BASE_FILTER)
           .eq('visibility_status', 'visible')
-          .neq('is_deleted', true)
           .not('centralhub_product_id', 'is', null)
           .not('brand', 'ilike', 'Brahmins')
           .or('image_main.like.http%,image_url.like.http%')
           .gt('price', 0)
+          .gt('stock', 0)
           .order('created_at', { ascending: false })
           .limit(BANNER_FETCH_LIMIT * 2),
       ]);

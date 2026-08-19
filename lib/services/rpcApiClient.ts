@@ -239,6 +239,7 @@ export async function getProducts(
       .neq('is_deleted', true)
       .neq('is_archived', true)
       .not('centralhub_product_id', 'is', null)
+      .gt('stock', 0)
       .or('visibility_status.eq.visible,visibility_status.eq.true');
 
     if (search) {

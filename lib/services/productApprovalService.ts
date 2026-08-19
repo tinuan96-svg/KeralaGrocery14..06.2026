@@ -589,6 +589,7 @@ export interface AutoTaskResult {
   pricesUpdated: number;
   categoriesAssigned: number;
   descriptionsGenerated: number;
+  seoOptimized: number;
   errors: string[];
   error: string | null;
 }
@@ -599,7 +600,7 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return {
-      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0,
+      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0,
       errors: [], error: 'Missing Supabase environment variables',
     };
   }
@@ -622,7 +623,7 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
     if (!res.ok) {
       const errText = await res.text().catch(() => '');
       return {
-        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0,
+        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0,
         errors: [], error: `Request failed (${res.status}): ${errText.slice(0, 200)}`,
       };
     }
@@ -631,7 +632,7 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
 
     if (data.error) {
       return {
-        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0,
+        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0,
         errors: [], error: data.error,
       };
     }
@@ -641,12 +642,13 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
       pricesUpdated: data.pricesUpdated ?? 0,
       categoriesAssigned: data.categoriesAssigned ?? 0,
       descriptionsGenerated: data.descriptionsGenerated ?? 0,
+      seoOptimized: data.seoOptimized ?? data.descriptionsGenerated ?? 0,
       errors: data.errors ?? [],
       error: null,
     };
   } catch (err) {
     return {
-      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0,
+      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0,
       errors: [], error: err instanceof Error ? err.message : 'Unknown error',
     };
   }

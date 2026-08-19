@@ -131,12 +131,15 @@ Deno.serve(async (req: Request) => {
     let pricesUpdated = 0;
     let categoriesAssigned = 0;
     let descriptionsGenerated = 0;
+    let seoOptimized = 0;
     const errors: string[] = [];
 
     // 3. Process each draft product
     for (const product of drafts) {
       const updatePayload: Record<string, unknown> = {};
       let needsUpdate = false;
+      let hasDescription = false;
+      let hasSeo = false;
 
       // --- Pricing: apply 10% markup if selling price is missing or zero ---
       const supplierPrice = Number(product.supplier_price ?? product.cost_price ?? 0);
@@ -260,26 +263,30 @@ Return ONLY the JSON object. No markdown, no code fences, no extra text.`;
               if (parsed.shortDescription?.trim()) {
                 updatePayload.short_description = parsed.shortDescription.trim();
                 needsUpdate = true;
+                hasDescription = true;
               }
               if (parsed.fullDescription?.trim()) {
                 updatePayload.description = parsed.fullDescription.trim();
                 needsUpdate = true;
+                hasDescription = true;
               }
               if (parsed.seoTitle?.trim()) {
                 updatePayload.seo_title = parsed.seoTitle.trim();
                 needsUpdate = true;
+                hasSeo = true;
               }
               if (parsed.seoDescription?.trim()) {
                 updatePayload.seo_description = parsed.seoDescription.trim();
                 needsUpdate = true;
+                hasSeo = true;
               }
               if (parsed.seoKeywords?.trim()) {
                 updatePayload.seo_keywords = parsed.seoKeywords.trim();
                 needsUpdate = true;
+                hasSeo = true;
               }
-              if (needsUpdate && (parsed.shortDescription?.trim() || parsed.fullDescription?.trim())) {
-                descriptionsGenerated++;
-              }
+              if (hasDescription) descriptionsGenerated++;
+              if (hasSeo) seoOptimized++;
             } catch {
               errors.push(`${product.name}: Failed to parse AI response as JSON`);
             }
@@ -302,6 +309,8 @@ Return ONLY the JSON object. No markdown, no code fences, no extra text.`;
 
         if (updateErr) {
           errors.push(`${product.name}: Update failed — ${updateErr.message}`);
+          if (hasDescription) descriptionsGenerated--;
+          if (hasSeo) seoOptimized--;
         }
       }
     }
@@ -309,11 +318,12 @@ Return ONLY the JSON object. No markdown, no code fences, no extra text.`;
     return new Response(
       JSON.stringify({
         ok: true,
-        message: `Processed ${drafts.length} draft product(s). ${pricesUpdated} price(s) updated, ${categoriesAssigned} categor(ies) assigned, ${descriptionsGenerated} description(s) generated.`,
+        message: `Processed ${drafts.length} draft product(s). ${pricesUpdated} price(s) updated, ${categoriesAssigned} categor(ies) assigned, ${descriptionsGenerated} description(s) generated, ${seoOptimized} SEO optimized.`,
         processed: drafts.length,
         pricesUpdated,
         categoriesAssigned,
         descriptionsGenerated,
+        seoOptimized,
         errors: errors.slice(0, 10),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
