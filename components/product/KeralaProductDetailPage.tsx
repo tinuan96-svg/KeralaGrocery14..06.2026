@@ -26,6 +26,7 @@ import { useWallet } from '@/hooks/useWallet';
 import type { RpcProduct, ProductVariantOption } from '@/lib/services/rpcApiClient';
 import type { ProductWithDetails } from '@/lib/types/database';
 import { useProductSync } from '@/hooks/useProductSync';
+import { haptics } from '@/lib/utils/haptics';
 
 const TRUST_BADGES = [
   { icon: Truck,      label: 'Free UK Delivery', sub: 'On all orders'       },
@@ -306,7 +307,10 @@ export default function KeralaProductDetailPage({ slug }: Props) {
                     return (
                       <button
                         key={v.id}
-                        onClick={() => setSelectedVariant(v)}
+                        onClick={() => {
+                          haptics.selectionChanged();
+                          setSelectedVariant(v);
+                        }}
                         className={`inline-flex flex-col items-center px-4 py-2 rounded-xl border text-sm font-semibold transition-colors ${
                           isCurrent
                             ? 'bg-[#0B5D3B] border-[#0B5D3B] text-white'
