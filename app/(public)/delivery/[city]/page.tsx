@@ -16,7 +16,7 @@ const VALID_CITIES = [
   'reading', 'cambridge', 'oxford', 'cardiff', 'coventry', 'croydon'
 ];
 
-export const dynamicParams = false;
+export const dynamicParams = process.env.CAPACITOR_BUILD === 'true' ? false : true;
 
 export async function generateStaticParams() {
   return VALID_CITIES.map((city) => ({

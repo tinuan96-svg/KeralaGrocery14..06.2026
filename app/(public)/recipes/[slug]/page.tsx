@@ -12,7 +12,7 @@ interface Props {
   params: { slug: string };
 }
 
-export const dynamicParams = false;
+export const dynamicParams = process.env.CAPACITOR_BUILD === 'true' ? false : true;
 
 export async function generateStaticParams() {
   try {

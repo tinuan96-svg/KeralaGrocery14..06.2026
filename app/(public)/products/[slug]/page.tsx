@@ -31,7 +31,7 @@ interface ProductRow {
 }
 
 // In static export, we must specify all possible paths at build time
-export const dynamicParams = false;
+export const dynamicParams = process.env.CAPACITOR_BUILD === 'true' ? false : true;
 
 export async function generateStaticParams() {
   try {
