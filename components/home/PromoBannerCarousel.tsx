@@ -160,12 +160,12 @@ function BannerSlide({
         {/* Right: banner image */}
         {banner.image_url ? (
           <div className="flex-shrink-0 h-full flex items-center justify-end py-2">
-            <div className="relative w-[130px] sm:w-[180px] lg:w-[240px] h-full max-h-[170px] sm:max-h-[200px]">
+            <div className="relative w-[130px] sm:w-[180px] lg:w-[240px] h-full max-h-[170px] sm:max-h-[200px] animate-float-slow">
               <Image
                 src={banner.image_url}
                 alt={banner.image_alt || banner.title}
                 fill
-                className="object-contain drop-shadow-xl"
+                className="object-contain drop-shadow-2xl transition-transform duration-1000 group-hover:scale-105"
                 sizes="(max-width: 640px) 130px, (max-width: 1024px) 180px, 240px"
                 priority={priority}
                 unoptimized
