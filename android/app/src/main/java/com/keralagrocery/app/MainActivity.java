@@ -9,9 +9,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowCompat;
 import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -46,41 +43,15 @@ public class MainActivity extends BridgeActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        // Force UI refresh on new intent (like deep link return)
-        injectUIFixes();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        injectUIFixes();
-    }
-
-    private void injectUIFixes() {
-        final WebView webView = getBridge().getWebView();
-        if (webView == null) return;
-
-        // Append our app identifier to the default User Agent instead of hardcoding a fixed string
-        String defaultUA = webView.getSettings().getUserAgentString();
-        if (!defaultUA.contains(getString(R.string.user_agent_keyword))) {
-            webView.getSettings().setUserAgentString(defaultUA + getString(R.string.user_agent_suffix));
-        }
-
-        // Force Bottom Bar Visibility and 5-column layout exactly like the reference image
-        try {
-            InputStream is = getAssets().open("ui_fixes.js");
-            Scanner s = new Scanner(is).useDelimiter("\\A");
-            String js = s.hasNext() ? s.next() : "";
-            is.close();
-            webView.postDelayed(() -> webView.evaluateJavascript(js, null), 1000);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        injectUIFixes();
     }
 }

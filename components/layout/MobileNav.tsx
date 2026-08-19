@@ -40,48 +40,44 @@ export default function MobileNav() {
         paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 8px)',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)',
-        background: 'rgba(255,255,255,0.75)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 -10px 40px rgba(0,0,0,0.06)',
+        background: 'rgba(255, 255, 255, 0.85)',
+        backdropFilter: 'blur(25px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(25px) saturate(200%)',
+        borderTop: '1px solid rgba(0, 0, 0, 0.05)',
+        boxShadow: '0 -12px 40px rgba(0, 0, 0, 0.08)',
       }}
       aria-label="Mobile navigation"
     >
-      <div className="flex items-center justify-around h-[var(--nav-height,64px)] w-full max-w-screen-xl mx-auto px-2">
+      <div className="flex items-center justify-around h-[var(--nav-height,60px)] w-full max-w-screen-xl mx-auto px-2">
 
         <NavItem href="/" label="Home" active={isActive('/')} icon={<Home />} onClick={handleNavClick} />
         <NavItem href="/brands" label="Brands" active={isActive('/brands')} icon={<Store />} onClick={handleNavClick} />
 
-        {/* Wallet — center featured tab */}
+        {/* Wallet — elevated center tab */}
         <Link
           href="/account/wallet"
           onClick={handleNavClick}
-          style={{ touchAction: 'manipulation' }}
-          className="flex flex-col items-center justify-center relative select-none active:scale-[0.88] transition-transform duration-200"
+          className="flex flex-col items-center justify-center relative select-none active:scale-[0.88] transition-transform duration-200 px-2"
           aria-label="Wallet"
         >
-          {/* Elevated pill with dynamic glow */}
           <div
-            style={{
-              backgroundColor: isWalletActive ? '#0B5D3B' : 'rgba(11,93,59,0.05)',
-              boxShadow: isWalletActive ? '0 8px 24px rgba(11,93,59,0.25)' : undefined
-            }}
             className={[
-              'relative flex items-center justify-center w-14 h-11 rounded-[22px] transition-all duration-300 mb-1',
-              isWalletActive ? 'scale-110' : 'border border-white/50 shadow-sm',
+              'relative flex items-center justify-center w-14 h-10 rounded-2xl transition-all duration-300 mb-1',
+              isWalletActive
+                ? 'bg-[#0B5D3B] shadow-[0_8px_20px_rgba(11,93,59,0.3)] scale-110'
+                : 'bg-[#0B5D3B]/5 border border-[#0B5D3B]/10',
             ].join(' ')}
           >
             <Wallet className={[
-              'h-[22px] w-[24px] transition-all duration-300',
+              'h-5 w-5 transition-all duration-300',
               isWalletActive ? 'text-white' : 'text-[#0B5D3B]',
             ].join(' ')} />
             {hasCashback && (
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white bg-amber-500 shadow-sm animate-pulse" />
+              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white bg-amber-500 shadow-sm animate-pulse" />
             )}
           </div>
           <span className={[
-            'text-[10px] font-black tracking-tight transition-colors duration-300 uppercase',
+            'text-[10px] font-bold tracking-tight transition-colors duration-300 uppercase',
             isWalletActive ? 'text-[#0B5D3B]' : 'text-gray-400',
           ].join(' ')}>
             Wallet
@@ -118,22 +114,21 @@ function NavItem({
     <Link
       href={href}
       onClick={onClick}
-      style={{ touchAction: 'manipulation' }}
       className="flex flex-1 flex-col items-center justify-center gap-1.5 relative select-none active:scale-[0.90] transition-transform duration-200 min-w-0"
       aria-label={label}
     >
       <div className={`transition-all duration-300 ${
-        active ? 'text-[#0B5D3B] scale-110' : 'text-gray-400'
-      } [&>svg]:h-[24px] [&>svg]:w-[24px]`}>
+        active ? 'text-[#0B5D3B] scale-110' : 'text-gray-400 opacity-80'
+      } [&>svg]:h-5 [&>svg]:w-5`}>
         {icon}
       </div>
-      <span className={`text-[10px] font-black tracking-tight transition-all duration-300 uppercase ${
+      <span className={`text-[10px] font-bold tracking-tight transition-all duration-300 uppercase ${
         active ? 'text-[#0B5D3B] opacity-100' : 'text-gray-400 opacity-60'
       }`}>
         {label}
       </span>
       {active && (
-        <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-[#0B5D3B]" />
+        <span className="absolute -bottom-1.5 w-1 h-1 rounded-full bg-[#0B5D3B]" />
       )}
     </Link>
   );
