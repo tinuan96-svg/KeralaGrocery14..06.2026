@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// Force Bolt Refresh: July 14, 2026 09:10
+// Force Bolt Refresh: August 19, 2026 19:48
 const nextConfig = {
   output: process.env.CAPACITOR_BUILD === 'true' ? 'export' : undefined,
   eslint: {
@@ -23,7 +23,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.webcontainer-api.io' },
     ],
   },
-  transpilePackages: ['lucide-react'],
+  transpilePackages: ['lucide-react', '@tanstack/react-query'],
   experimental: {
     // optimizePackageImports: ['lucide-react'],
   },
