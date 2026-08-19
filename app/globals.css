@@ -654,11 +654,20 @@
 .animate-slide-out-up   { animation: slide-out-up   0.24s ease-in  both; }
 .animate-slide-out-down { animation: slide-out-down 0.24s ease-in  both; }
 
-/* ── Capacitor / Native shell overrides ──────────────────────────────────── */
+  /* ── Capacitor / Native shell overrides ──────────────────────────────────── */
 
-/* iOS native: the web header and mobile nav ARE shown — there is no native
-   iOS chrome to replace them. Hide only presentational banners. */
-html.is-native .kg-announcement-bar,
+  /* Global page transition */
+  .app-transition-enter {
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+  }
+  .app-transition-enter-active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    transition: opacity 300ms, transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  html.is-native .kg-announcement-bar,
 html.is-native .kg-cookie-banner,
 html.is-native.is-ios .kg-google-play-section,
 html.is-native.is-ios .kg-app-links-section,

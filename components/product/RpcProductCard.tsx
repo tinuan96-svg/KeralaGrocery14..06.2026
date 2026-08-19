@@ -7,6 +7,7 @@ import { ShoppingCart, Plus, Minus, Heart } from 'lucide-react';
 import { useCart } from '@/lib/context/CartContext';
 import { useWishlist } from '@/lib/context/WishlistContext';
 import type { RpcProduct } from '@/lib/services/rpcApiClient';
+import { haptics } from '@/lib/utils/haptics';
 
 
 interface Props {
@@ -35,23 +36,27 @@ function RpcProductCardComponent({ product, priority = false }: Props) {
     e.preventDefault();
     e.stopPropagation();
     if (!product.in_stock || product.stock <= 0) return;
+    haptics.impact('medium');
     addToCart(cartProduct, 1, product.stock);
   };
   const handleIncrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (qty >= product.stock) return;
+    haptics.impact('light');
     addToCart(cartProduct, 1, product.stock);
   };
   const handleDecrease = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    haptics.impact('light');
     if (qty === 1) removeFromCart(product.id);
     else addToCart(cartProduct, -1, product.stock);
   };
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    haptics.impact('medium');
     toggleWishlist(cartProduct);
   };
 
