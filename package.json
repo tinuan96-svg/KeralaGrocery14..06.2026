@@ -1,6 +1,7 @@
 {
   "name": "nextjs",
   "version": "0.1.4",
+  "description": "Kerala Grocery Next.js App",
   "boltSync": "2026-08-19T22:45:00Z",
   "private": true,
   "scripts": {
