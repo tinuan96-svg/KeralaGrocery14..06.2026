@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Notification URL configured in Trust Payments Portal:
 //   https://keralagrocery.com/api/trustpayments/webhook
 export async function POST(req: NextRequest) {
+  if (process.env.CAPACITOR_BUILD === 'true') return new Response(null, { status: 200 });
   try {
     const body = await req.text();
 

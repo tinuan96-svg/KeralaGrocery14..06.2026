@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // After st.js processes the payment, it submits the form to this action URL.
 // The form contains the transaction result. We redirect the user based on the outcome.
 export async function POST(req: NextRequest) {
+  if (process.env.CAPACITOR_BUILD === 'true') return new Response(null, { status: 200 });
   try {
     const formData = await req.formData();
     const orderReference = (formData.get('orderreference') as string) || '';

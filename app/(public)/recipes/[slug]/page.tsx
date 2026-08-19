@@ -12,16 +12,19 @@ interface Props {
   params: { slug: string };
 }
 
-export const dynamicParams = true;
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   try {
     const recipes = await getRecipes();
+    if (!recipes || recipes.length === 0) {
+      return [{ slug: 'placeholder' }];
+    }
     return recipes.map((recipe) => ({
       slug: recipe.slug,
     }));
   } catch (err) {
-    return [];
+    return [{ slug: 'placeholder' }];
   }
 }
 

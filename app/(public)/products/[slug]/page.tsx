@@ -30,11 +30,43 @@ interface ProductRow {
   categories: { name: string } | null;
 }
 
+// In static export, we must specify all possible paths at build time
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      // Return a placeholder so the build doesn't fail due to "missing generateStaticParams"
+      return [{ slug: 'placeholder' }];
+    }
+
+    const supabase = createServerSupabaseClient();
+    const { data: products } = await supabase
+      .from('products')
+      .select('slug')
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', 'visible')
+      .limit(20); // Limit to 20 for faster build, rest can be loaded via hosted site
+
+    if (!products || products.length === 0) {
+      return [{ slug: 'placeholder' }];
+    }
+
+    return products.map((p) => ({
+      slug: p.slug,
+    }));
+  } catch (err) {
+    return [{ slug: 'placeholder' }];
+  }
+}
+
 async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
   try {
-    // Force Refresh: 2026-07-06 07:46
     const supabase = createServerSupabaseClient();
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
     let query = supabase
       .from('products')
@@ -51,33 +83,7 @@ async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
     const { data } = await query.maybeSingle();
     return (data as unknown as ProductRow) ?? null;
   } catch (err) {
-    console.error('[fetchProductBySlug] Error:', err);
     return null;
-  }
-}
-
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseKey) return [];
-
-    const supabase = createServerSupabaseClient();
-    const { data: products } = await supabase
-      .from('products')
-      .select('slug')
-      .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
-      .limit(100); // Limit static generation to first 100 for speed
-
-    return (products || []).map((p) => ({
-      slug: p.slug,
-    }));
-  } catch (err) {
-    return [];
   }
 }
 
@@ -103,10 +109,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const title = `${name}${brand ? ` | ${brand}` : ''} | Kerala Groceries UK`;
   const canonicalUrl = `https://keralagrocery.com/products/${params.slug}`;
 
-  // Use dynamic OG image for products
-  const ogImageUrl = `https://keralagrocery.com/api/og/product?slug=${params.slug}`;
-  const ogImage = [{ url: ogImageUrl, width: 1200, height: 630, alt: name }];
-
   return {
     title,
     description,
@@ -118,24 +120,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       type: 'website',
       siteName: 'Kerala Groceries UK',
       locale: 'en_GB',
-      images: ogImage,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ogImage.map(i => i.url),
-    },
-    other: {
-      ...(p.price > 0 ? {
-        'product:price:amount': p.price.toFixed(2),
-        'product:price:currency': 'GBP',
-        'product:availability': 'instock',
-        'product:brand': brand ?? 'Kerala Groceries UK',
-        'product:category': category ?? 'Grocery',
-        'product:condition': 'new',
-        'product:retailer_item_id': p.id,
-      } : {}),
     },
   };
 }

@@ -12,6 +12,7 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
+  if (process.env.CAPACITOR_BUILD === 'true') return new Response(null, { status: 200 });
   try {
     const body = await req.json();
 
