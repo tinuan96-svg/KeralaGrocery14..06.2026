@@ -1,5 +1,8 @@
 'use client';
 
+import Link from 'next/link';
+import { FallbackImage } from '@/components/ui/FallbackImage';
+import { Heart, Plus, Minus, ShoppingCart, CircleCheck as CheckCircle, Wallet } from 'lucide-react';
 import type { ProductWithDetails } from '@/lib/types/database';
 import type { RpcProduct } from '@/lib/services/rpcApiClient';
 import { useCart } from '@/lib/context/CartContext';
