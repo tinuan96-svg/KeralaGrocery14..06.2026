@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.7.2'
-        classpath 'com.google.gms:google-services:4.4.4'
+        classpath 'com.google.gms:google-services:4.4.2'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -28,17 +28,29 @@ subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             project.android {
+                if (rootProject.ext.has('compileSdkVersion')) compileSdk rootProject.ext.compileSdkVersion
+                if (project.android.hasProperty('defaultConfig')) {
+                    if (rootProject.ext.has('minSdkVersion')) project.android.defaultConfig.minSdkVersion rootProject.ext.minSdkVersion
+                    if (rootProject.ext.has('targetSdkVersion')) project.android.defaultConfig.targetSdkVersion rootProject.ext.targetSdkVersion
+                }
                 compileOptions {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
                 }
-                if (project.tasks.findByName('compileDebugJavaWithJavac')) {
-                    project.tasks.withType(JavaCompile) {
-                        sourceCompatibility = '17'
-                        targetCompatibility = '17'
-                    }
-                }
             }
+        }
+    }
+    // Ensure all subprojects see the versions defined in variables.gradle
+    // This prevents plugins from falling back to newer/unavailable SDKs or library versions
+    [
+        'minSdkVersion', 'compileSdkVersion', 'targetSdkVersion',
+        'androidxActivityVersion', 'androidxAppCompatVersion', 'androidxCoordinatorLayoutVersion',
+        'androidxCoreVersion', 'androidxFragmentVersion', 'coreSplashScreenVersion',
+        'androidxWebkitVersion', 'junitVersion', 'androidxJunitVersion',
+        'androidxEspressoCoreVersion', 'cordovaAndroidVersion'
+    ].each { varName ->
+        if (rootProject.ext.has(varName)) {
+            project.ext.set(varName, rootProject.ext.get(varName))
         }
     }
 }
