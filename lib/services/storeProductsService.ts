@@ -105,8 +105,12 @@ export async function fetchStoreProducts(
       .not('centralhub_product_id', 'is', null)
       .gt('price', 0);
 
-    // Dynamic visibility check to handle both boolean and text formats
-    query = query.or('visibility_status.eq.visible,visibility_status.eq.true');
+    // Use explicit equality for visibility to avoid issues with varying data types
+    query = query.filter('visibility_status', 'eq', 'visible');
+
+    if (_options.stockOnly) {
+      query = query.gt('stock', 0);
+    }
 
     if (_options.is_featured) query = query.eq('is_featured', true);
     if (_options.is_bestseller) query = query.eq('is_bestseller', true);
