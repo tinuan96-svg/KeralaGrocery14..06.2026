@@ -56,10 +56,29 @@ async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
   }
 }
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  return [{ slug: 'test-product' }];
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) return [];
+
+    const supabase = createServerSupabaseClient();
+    const { data: products } = await supabase
+      .from('products')
+      .select('slug')
+      .eq('approval_status', 'approved')
+      .eq('visibility_status', 'visible')
+      .limit(100); // Limit static generation to first 100 for speed
+
+    return (products || []).map((p) => ({
+      slug: p.slug,
+    }));
+  } catch (err) {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {

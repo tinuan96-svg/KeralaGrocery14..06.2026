@@ -96,8 +96,9 @@ function TrustPaymentsContent() {
     }, INIT_TIMEOUT_MS);
 
     const initPayment = () => {
+      console.log('[TrustPayments] Initializing payment form...');
       if (!window.SecureTrading || !jwt) {
-        console.error('[TrustPayments] SecureTrading not available on window');
+        console.error('[TrustPayments] SecureTrading not available on window or JWT missing');
         setError('We couldn\'t load the secure payment form. Please try again or choose another payment method.');
         setLoading(false);
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -105,6 +106,7 @@ function TrustPaymentsContent() {
       }
 
       try {
+        console.log('[TrustPayments] Calling window.SecureTrading...');
         const st = window.SecureTrading({
           jwt,
           livestatus: 1,
@@ -114,17 +116,21 @@ function TrustPaymentsContent() {
             },
           },
           submitCallback: (response: any) => {
+            console.log('[TrustPayments] Submit callback response:', response);
             // Form submitted - Trust Payments will redirect via form action
-            // This callback fires after the customer submits the payment form
             if (response && response.errorcode && response.errorcode !== '0') {
               console.error('[TrustPayments] Payment error:', response);
             }
           },
+          errorCallback: (error: any) => {
+            console.error('[TrustPayments] SDK error callback:', error);
+          }
         });
 
         st.Components({
           callbacks: {
             onPaymentFormRendered: () => {
+              console.log('[TrustPayments] Payment form rendered successfully');
               // Form is rendered - hide loading spinner
               if (timeoutRef.current) clearTimeout(timeoutRef.current);
               setLoading(false);
@@ -132,7 +138,7 @@ function TrustPaymentsContent() {
           },
         });
       } catch (err) {
-        console.error('[TrustPayments] Init error:', err);
+        console.error('[TrustPayments] Init exception:', err);
         setError('We couldn\'t load the secure payment form. Please try again or choose another payment method.');
         setLoading(false);
         if (timeoutRef.current) clearTimeout(timeoutRef.current);

@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 // Force Bolt Refresh: July 14, 2026 09:10
 const nextConfig = {
-  output: 'export',
+  output: process.env.CAPACITOR_BUILD === 'true' ? 'export' : undefined,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -41,8 +41,8 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  swcMinify: true, // Re-enabled for production
-  reactStrictMode: true, // Re-enabled for quality
+  swcMinify: true,
+  reactStrictMode: false,
 };
 
 module.exports = nextConfig;
