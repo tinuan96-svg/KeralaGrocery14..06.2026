@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { fetchStoreProducts, fetchHomepageCategories } from '@/lib/services/storeProductsService';
 import type { ProductWithDetails, Category } from '@/lib/types/database';
 
@@ -15,55 +15,45 @@ export interface HomepageData {
 }
 
 export function useHomepageData(): HomepageData {
-  const [trending, setTrending]       = useState<ProductWithDetails[]>([]);
-  const [deals, setDeals]             = useState<ProductWithDetails[]>([]);
-  const [bestsellers, setBestsellers] = useState<ProductWithDetails[]>([]);
-  const [newArrivals, setNewArrivals] = useState<ProductWithDetails[]>([]);
-  const [categories, setCategories]   = useState<Category[]>([]);
-  const [isLoading, setIsLoading]     = useState(true);
-  const [allProducts, setAllProducts] = useState<ProductWithDetails[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadData() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['homepage-data'],
+    queryFn: async () => {
       const [{ products: allItems }, cats] = await Promise.all([
         fetchStoreProducts({ limit: 100, stockOnly: true }),
         fetchHomepageCategories(),
       ]);
 
-      if (cancelled) return;
-
-      setAllProducts(allItems);
-
       const featured = allItems.filter(p => p.is_featured).slice(0, 12);
-      setTrending(featured.length > 0 ? featured : allItems.slice(0, 10));
+      const trending = featured.length > 0 ? featured : allItems.slice(0, 10);
 
       const deals = allItems.filter(p => p.is_deal).slice(0, 12);
-      setDeals(deals.length > 0 ? deals : allItems.slice(10, 20));
+      const activeDeals = deals.length > 0 ? deals : allItems.slice(10, 20);
 
       const bs = allItems.filter(p => p.is_bestseller).slice(0, 12);
-      setBestsellers(bs.length > 0 ? bs : allItems.slice(20, 30));
+      const bestsellers = bs.length > 0 ? bs : allItems.slice(20, 30);
 
       const na = allItems.filter(p => p.is_new_arrival).slice(0, 12);
-      setNewArrivals(na.length > 0 ? na : allItems.slice(30, 40));
+      const newArrivals = na.length > 0 ? na : allItems.slice(30, 40);
 
-      setCategories(cats);
-      setIsLoading(false);
-    }
-
-    loadData();
-
-    return () => { cancelled = true; };
-  }, []);
+      return {
+        allProducts: allItems,
+        trending,
+        deals: activeDeals,
+        bestsellers,
+        newArrivals,
+        categories: cats,
+      };
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
 
   return {
-    allProducts,
-    trending,
-    deals,
-    bestsellers,
-    newArrivals,
-    categories,
+    allProducts: data?.allProducts || [],
+    trending: data?.trending || [],
+    deals: data?.deals || [],
+    bestsellers: data?.bestsellers || [],
+    newArrivals: data?.newArrivals || [],
+    categories: data?.categories || [],
     isLoading,
   };
 }

@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import ProductListingPage from '@/components/product/RpcProductListingPage';
+import ProductListingPage, { GridSkeleton } from '@/components/product/RpcProductListingPage';
 
 // In static export, we don't use force-dynamic
 // export const dynamic = 'force-dynamic';
@@ -24,8 +24,8 @@ export const metadata: Metadata = {
 export default function ProductsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#F9FBFA] max-w-7xl mx-auto px-4 py-32">
+        <GridSkeleton count={12} />
       </div>
     }>
       <ProductListingPage />

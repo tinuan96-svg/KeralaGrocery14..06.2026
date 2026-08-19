@@ -17,6 +17,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getSupabase } from '@/lib/supabase/client';
 import { blurDataURL } from '@/lib/utils/image';
+import { haptics } from '@/lib/utils/haptics';
 import AddressAutocomplete, { type SelectedAddress } from '@/components/ui/AddressAutocomplete';
 import AddressSelector from '@/components/account/AddressSelector';
 import { fetchDeliverySettings, calcDelivery } from '@/lib/services/deliveryService';
@@ -358,6 +359,7 @@ export default function CheckoutPage() {
             .catch(e => console.error('[Checkout] notification failed:', e));
         }
 
+        haptics.notification('success');
         clearCart();
         router.push(`/order-success?order=${result.order.order_number}`);
         return;
@@ -381,6 +383,7 @@ export default function CheckoutPage() {
       window.location.href = `/trustpayments?${params.toString()}`;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Payment failed. Please try again.';
+      haptics.notification('error');
       toast({ title: 'Payment Failed', description: message, variant: 'destructive' });
       paymentInitiated.current = false;
       setIsProcessing(false);

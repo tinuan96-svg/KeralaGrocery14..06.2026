@@ -16,6 +16,8 @@ interface Props {
   inputClassName?: string;
 }
 
+const TRENDING_SEARCHES = ['Matta Rice', 'Coconut Oil', 'Banana Chips', 'Kerala Spices', 'Pickles'];
+
 export default function LiveSearch({ placeholder, className, onSearch, inputClassName }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<RpcProduct[]>([]);
@@ -65,7 +67,7 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
       } finally {
         setLoading(false);
       }
-    }, 300);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -116,29 +118,50 @@ export default function LiveSearch({ placeholder, className, onSearch, inputClas
 
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-          {query.length < 2 && history.length > 0 && (
+          {query.length < 2 && (
             <div className="py-2">
-              <div className="px-4 py-1.5 bg-gray-50 border-y border-gray-100 flex items-center justify-between">
+              {history.length > 0 && (
+                <>
+                  <div className="px-4 py-1.5 bg-gray-50 border-y border-gray-100 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <History className="w-3 h-3" /> Recent Searches
+                    </span>
+                    <button
+                      onClick={() => { setHistory([]); localStorage.removeItem('kg-search-history'); haptics.impact('light'); }}
+                      className="text-[10px] font-bold text-red-500 hover:underline"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                  {history.map((term, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setQuery(term); addToHistory(term); haptics.impact('light'); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left text-sm text-gray-600 transition-colors"
+                    >
+                      <Search className="w-3.5 h-3.5 text-gray-300" />
+                      <span>{term}</span>
+                    </button>
+                  ))}
+                </>
+              )}
+
+              <div className="px-4 py-1.5 bg-gray-50 border-y border-gray-100">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <History className="w-3 h-3" /> Recent Searches
+                  Trending Now
                 </span>
-                <button
-                  onClick={() => { setHistory([]); localStorage.removeItem('kg-search-history'); haptics.impact('light'); }}
-                  className="text-[10px] font-bold text-red-500 hover:underline"
-                >
-                  Clear All
-                </button>
               </div>
-              {history.map((term, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setQuery(term); addToHistory(term); haptics.impact('light'); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 text-left text-sm text-gray-600 transition-colors"
-                >
-                  <Search className="w-3.5 h-3.5 text-gray-300" />
-                  <span>{term}</span>
-                </button>
-              ))}
+              <div className="p-3 flex flex-wrap gap-2">
+                {TRENDING_SEARCHES.map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => { setQuery(term); addToHistory(term); haptics.impact('light'); }}
+                    className="px-3 py-1.5 rounded-full bg-green-50 text-[#0B5D3B] text-xs font-bold hover:bg-green-100 transition-colors border border-green-100"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

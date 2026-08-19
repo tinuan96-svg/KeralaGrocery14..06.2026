@@ -15,6 +15,7 @@ import { CapacitorProvider } from '@/components/native/CapacitorProvider';
 import { AppUpdateGuard } from '@/components/native/AppUpdateGuard';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { OfflineBanner } from '@/components/layout/OfflineBanner';
+import { QueryProvider } from '@/lib/providers/QueryProvider';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://keralagrocery.com'),
@@ -204,19 +205,21 @@ export default function RootLayout({
         <GoogleAdsRemarketing tagId={process.env.NEXT_PUBLIC_GOOGLE_ADS_ID} />
         <OfflineBanner />
         <ErrorBoundary>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <RealtimeSyncProvider>
-                  <CapacitorProvider>
-                    <AppUpdateGuard />
-                    {children}
-                    <Toaster />
-                  </CapacitorProvider>
-                </RealtimeSyncProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
+          <QueryProvider>
+            <AuthProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <RealtimeSyncProvider>
+                    <CapacitorProvider>
+                      <AppUpdateGuard />
+                      {children}
+                      <Toaster />
+                    </CapacitorProvider>
+                  </RealtimeSyncProvider>
+                </WishlistProvider>
+              </CartProvider>
+            </AuthProvider>
+          </QueryProvider>
         </ErrorBoundary>
       </body>
     </html>
