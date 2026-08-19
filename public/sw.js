@@ -59,26 +59,32 @@ self.addEventListener('fetch', (event) => {
   // ── 1. Never intercept non-GET or cross-origin API calls ──────────────────
   if (request.method !== 'GET') return;
 
-  // Skip Supabase, analytics, payment providers
+  // ── 1.5 API Cache for Products (New: Offline Browsing) ────────────────────
+  // We cache product list/detail RPC calls to ensure the shop is browsable offline
+  if (url.hostname.includes('supabase.co')) {
+     // We only cache the read-only product queries to allow offline browsing.
+     // Skip caching for auth, storage uploads, or non-product RPCs.
+     const isProductQuery = url.search.includes('select=') ||
+                           url.pathname.includes('rpc/get_products') ||
+                           url.pathname.includes('rpc/search_products') ||
+                           url.pathname.includes('rpc/get_product_detail');
+
+     if (isProductQuery) {
+        event.respondWith(staleWhileRevalidate(request, 'kg-api-cache'));
+        return;
+     }
+     // For all other Supabase calls (auth, etc), let them through normally
+     return;
+  }
+
+  // Skip other third-party noise
   if (
-    url.hostname.includes('supabase.co') ||
     url.hostname.includes('supabase.in') ||
     url.hostname.includes('stripe.com') ||
     url.hostname.includes('google-analytics.com') ||
     url.hostname.includes('googletagmanager.com')
   ) {
     return;
-  }
-
-  // ── 1.5 API Cache for Products (New: Offline Browsing) ────────────────────
-  // We cache product list/detail RPC calls to ensure the shop is browsable offline
-  if (url.pathname.startsWith('/api/') || url.hostname.includes('supabase.co')) {
-     // We only cache the read-only product queries
-     if (url.search.includes('select=') || url.pathname.includes('rpc/get_products') || url.pathname.includes('rpc/search_products')) {
-        event.respondWith(staleWhileRevalidate(request, 'kg-api-cache'));
-        return;
-     }
-     return; // Post requests (orders, etc) should never be cached
   }
 
   // ── 2. Images → cache-first (serve stale, update in background) ────────────

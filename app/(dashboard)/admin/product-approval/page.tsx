@@ -14,6 +14,7 @@ import {
   syncProductsFromKeralagroceries,
   bulkApproveDraftProducts,
   autoTaskDrafts,
+  isMissingRequiredFields,
   type AutoTaskResult,
   type ApprovalProduct,
   type ApprovalStats,
@@ -34,17 +35,6 @@ const TABS: { key: TabKey; label: string; color: string }[] = [
 ];
 
 const PAGE_SIZE = 1000;
-
-function isMissingRequiredFields(p: ApprovalProduct): string[] {
-  const missing: string[] = [];
-  if (!p.category_id) missing.push('category');
-  if (!p.image_url && !p.image_main) missing.push('image');
-  if (!p.short_description?.trim()) missing.push('short description');
-  if (!p.description?.trim()) missing.push('description');
-  const price = p.selling_price ?? p.price ?? 0;
-  if (price <= 0) missing.push('selling price');
-  return missing;
-}
 
 function SortIcon({ field, current, asc }: { field: SortField; current: SortField; asc: boolean }) {
   if (field !== current) return <ChevronsUpDown className="w-3 h-3 opacity-40" />;
