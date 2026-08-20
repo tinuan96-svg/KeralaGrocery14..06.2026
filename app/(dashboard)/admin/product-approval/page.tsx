@@ -157,6 +157,7 @@ export default function ProductApprovalPage() {
   const [autoTaskResult, setAutoTaskResult] = useState<AutoTaskResult | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: 'ok' | 'err' } | null>(null);
   const [diagnostics, setDiagnostics] = useState<{ productName: string; approvalError: ApprovalError } | null>(null);
+  const autoTaskTriggeredRef = useRef(false);
 
   const showToast = (msg: string, type: 'ok' | 'err' = 'ok') => {
     setToast({ msg, type });
@@ -182,6 +183,14 @@ export default function ProductApprovalPage() {
 
   useEffect(() => { loadStats(); }, [loadStats]);
   useEffect(() => { loadProducts(); }, [loadProducts]);
+
+  // Automatically trigger auto-task in background when page loads if there are drafts
+  useEffect(() => {
+    if (stats && stats.draft > 0 && !autoTasking && !autoTaskResult && !autoTaskTriggeredRef.current) {
+      autoTaskTriggeredRef.current = true;
+      handleAutoTask();
+    }
+  }, [stats?.draft]);
 
   const brandOptions = useMemo(() => {
     const seen = new Set<string>();
@@ -328,7 +337,7 @@ export default function ProductApprovalPage() {
       <div className="flex items-start justify-between mb-5 gap-3 flex-wrap">
         <div>
           <h1 className="text-lg font-bold text-gray-900">Product Approval</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Review and approve products before they appear on the storefront</p>
+          <p className="text-xs text-gray-500 mt-0.5">Review and approve products. <span className="text-indigo-600 font-medium">Auto-tasking runs automatically in the background.</span></p>
         </div>
         <div className="flex items-center gap-2">
           {stats && stats.draft > 0 && (
@@ -344,10 +353,10 @@ export default function ProductApprovalPage() {
           <button
             onClick={handleAutoTask}
             disabled={autoTasking}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors disabled:opacity-50"
           >
             {autoTasking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-            Auto-Task Drafts
+            Refresh Auto-Task
           </button>
           <button
             onClick={handleSync}
