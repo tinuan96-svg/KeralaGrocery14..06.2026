@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '@/lib/context/AuthContext';
 import { Search, CircleCheck as CheckCircle, Circle as XCircle, RotateCcw, CreditCard as Edit2, Eye, EyeOff, RefreshCw, CircleAlert as AlertCircle, Loader as Loader2, ChevronUp, ChevronDown, ChevronsUpDown, Info, X, Wand as Wand2 } from 'lucide-react';
 import {
