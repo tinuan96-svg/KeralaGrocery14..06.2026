@@ -186,14 +186,22 @@ Deno.serve(async (req: Request) => {
           }
         }
 
+        const productType = (hp.product_type as string) || "simple";
+        const isVariable = productType === "variable";
+
+        // Variable products (containers) must have 0 price if the products_variable_no_price constraint is active.
+        // Prices for variable products are managed at the variant level.
+        const effectiveSupplierPrice = isVariable ? 0 : supplierPrice;
+        const effectiveSellingPrice = isVariable ? 0 : sellingPrice;
+
         const commonFields = {
           source_name: hp.name,
           source_brand: hp.brand ?? null,
           brand: hp.brand ?? null,
-          supplier_price: supplierPrice,
-          cost_price: supplierPrice,
-          selling_price: sellingPrice,
-          price: sellingPrice,
+          supplier_price: effectiveSupplierPrice,
+          cost_price: effectiveSupplierPrice,
+          selling_price: effectiveSellingPrice,
+          price: effectiveSellingPrice,
           stock: hp.stock ?? 0,
           in_stock: Number(hp.stock ?? 0) > 0,
           unit: hp.unit ?? "",
@@ -206,7 +214,7 @@ Deno.serve(async (req: Request) => {
           sub_category: hp.sub_category ?? hp.subcategory ?? null,
           is_active: true,
           is_deleted: false,
-          product_type: (hp.product_type as string) || "simple",
+          product_type: productType,
           last_sync_at: now,
           updated_at: now,
         };
