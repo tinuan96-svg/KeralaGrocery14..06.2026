@@ -5,7 +5,7 @@ import { Truck, Leaf, Lock, Package, Clock, ThumbsUp } from 'lucide-react';
 const FEATURES = [
   { icon: Truck,    title: 'Fast UK Delivery',   desc: 'Dispatched in 24 hrs. Free over £45.',        color: '#1d4ed8', bg: '#eff6ff' },
   { icon: Leaf,     title: 'Authentic Products', desc: 'Sourced from trusted Kerala manufacturers.',   color: '#0B5D3B', bg: '#f4faf6' },
-  { icon: Lock,     title: 'Secure Payments',    desc: 'SSL-encrypted via Worldpay.',                  color: '#b45309', bg: '#fffbeb' },
+  { icon: Lock,     title: 'Secure Payments',    desc: 'SSL-encrypted via Trust Payments.',             color: '#b45309', bg: '#fffbeb' },
   { icon: Package,  title: 'Fresh Stock',        desc: 'Quality-checked, in-date products only.',      color: '#dc2626', bg: '#fef2f2' },
   { icon: Clock,    title: 'Same-Week Delivery', desc: 'Order by Wed, receive by the weekend.',        color: '#0d9488', bg: '#f0fdfa' },
   { icon: ThumbsUp, title: '1,000+ Customers',   desc: 'Trusted across the UK Kerala community.',     color: '#7c3aed', bg: '#f5f3ff' },

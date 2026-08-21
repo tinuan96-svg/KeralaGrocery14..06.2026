@@ -155,7 +155,7 @@ Mark the following as **Collected and used**:
 | Phone number | Account management, app functionality |
 | Precise location | NOT collected |
 | Coarse location | NOT collected (address entered by user) |
-| Payment info | Financial info — processed by Worldpay |
+| Payment info | Financial info — processed by Trust Payments |
 | Purchase history | App functionality |
 | User ID | Developer's advertising, analytics |
 | Device ID | Analytics |
