@@ -601,7 +601,7 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return {
-      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0,
+      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0, imagesAssigned: 0,
       errors: [], error: 'Missing Supabase environment variables',
     };
   }
