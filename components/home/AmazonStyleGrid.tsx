@@ -94,23 +94,26 @@ export default function AmazonStyleGrid() {
   }
 
   return (
-    <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+    <div className="max-w-[1500px] mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {cards.map((card) => (
-          <div key={card.id} className="bg-white p-3 sm:p-4 flex flex-col h-full shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.24)] rounded-md border border-gray-200 hover:shadow-[0_10px_20px_rgba(0,0,0,0.19),0_6px_6px_rgba(0,0,0,0.23)] transition-shadow duration-300">
-            <h2 className="text-[17px] sm:text-lg font-bold text-gray-900 mb-3 tracking-tight leading-tight">{card.title}</h2>
+          <div key={card.id} className="card-soft p-4 sm:p-6 flex flex-col h-full bg-white relative overflow-hidden group">
+            {/* Decorative background accent */}
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 blur-3xl pointer-events-none" />
 
-            <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-5 tracking-tighter leading-tight relative z-10">{card.title}</h2>
+
+            <div className="flex-1 relative z-10">
               {card.layout_type === 'grid_2x2' ? (
-                <div className="grid grid-cols-2 gap-2 sm:gap-3 h-full">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 h-full">
                   {card.items.slice(0, 4).map((item, idx) => (
-                    <Link key={idx} href={item.link} className="flex flex-col group active:opacity-80 transition-opacity">
-                      <div className="relative aspect-square overflow-hidden bg-white mb-1.5 rounded-lg border border-gray-100/50">
+                    <Link key={idx} href={item.link} className="flex flex-col group/item active:scale-95 transition-transform duration-300">
+                      <div className="relative aspect-square overflow-hidden bg-gray-50/50 mb-2 rounded-2xl border border-gray-100/30">
                         <Image
                           src={item.image_url}
                           alt={item.label || ''}
                           fill
-                          className="object-contain transition-transform duration-500 group-hover:scale-[1.05]"
+                          className="object-contain p-2 transition-transform duration-700 group-hover/item:scale-110"
                           sizes="(max-width: 768px) 45vw, 25vw"
                           unoptimized
                           onError={(e) => {
@@ -118,13 +121,13 @@ export default function AmazonStyleGrid() {
                           }}
                         />
                         {item.badge && (
-                          <div className="absolute top-1.5 left-1.5 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider">
+                          <div className="absolute top-2 left-2 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase tracking-wider">
                             {item.badge}
                           </div>
                         )}
                       </div>
                       {item.label && (
-                        <p className="text-[11px] sm:text-[13px] text-gray-800 font-bold group-hover:text-[#0B5D3B] truncate transition-colors">
+                        <p className="text-[12px] sm:text-[14px] text-gray-800 font-extrabold group-hover/item:text-[#0B5D3B] truncate transition-colors">
                           {item.label}
                         </p>
                       )}
@@ -132,13 +135,13 @@ export default function AmazonStyleGrid() {
                   ))}
                 </div>
               ) : (
-                <Link href={card.items[0]?.link || '#'} className="block h-full relative group active:opacity-90 transition-opacity">
-                  <div className="relative h-full min-h-[260px] sm:min-h-[300px] w-full overflow-hidden rounded-xl border border-gray-100 bg-white">
+                <Link href={card.items[0]?.link || '#'} className="block h-full relative active:scale-[0.98] transition-transform duration-500">
+                  <div className="relative h-full min-h-[260px] sm:min-h-[320px] w-full overflow-hidden rounded-[1.5rem] border border-gray-100 bg-gray-50/30">
                     <Image
                       src={card.items[0]?.image_url || '/placeholder.webp'}
                       alt={card.title}
                       fill
-                      className="object-contain p-2 transition-transform duration-700 group-hover:scale-[1.02]"
+                      className="object-contain p-4 transition-transform duration-1000 group-hover:scale-105"
                       sizes="(max-width: 1024px) 95vw, 25vw"
                       unoptimized
                       onError={(e) => {
@@ -150,14 +153,14 @@ export default function AmazonStyleGrid() {
               )}
             </div>
 
-            <div className="mt-4 pt-2">
+            <div className="mt-6 pt-4 border-t border-gray-50 relative z-10">
               <Link
                 href={card.layout_type === 'grid_2x2' ? card.items[0]?.link || '#' : card.items[0]?.link || '#'}
-                className="text-[13px] sm:text-sm text-[#0B5D3B] hover:text-emerald-700 transition-colors font-extrabold flex items-center gap-1 group/link"
+                className="text-sm text-[#0B5D3B] hover:text-emerald-700 transition-colors font-black flex items-center gap-1.5 group/link"
               >
-                {card.layout_type === 'grid_2x2' ? 'See more' : 'Shop now'}
-                <div className="w-4 h-4 rounded-full bg-emerald-50 flex items-center justify-center group-hover/link:translate-x-0.5 transition-transform">
-                  <ChevronRight className="w-2.5 h-2.5" />
+                <span className="uppercase tracking-widest text-[11px]">{card.layout_type === 'grid_2x2' ? 'See more' : 'Shop now'}</span>
+                <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center group-hover/link:translate-x-1 transition-all duration-300">
+                  <ChevronRight className="w-3 h-3 text-[#0B5D3B]" />
                 </div>
               </Link>
             </div>

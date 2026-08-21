@@ -46,7 +46,7 @@ const homepageFAQs = [
 export default function HomePage() {
   return (
     <PullToRefresh>
-      <div className="min-h-screen pb-20 md:pb-0 bg-[#f1f3f4]">
+      <div className="min-h-screen pb-20 md:pb-0 bg-[#fdfbf7]">
         <LocalBusinessSchema />
         <MerchantReturnPolicySchema />
         <ShippingPolicySchema />

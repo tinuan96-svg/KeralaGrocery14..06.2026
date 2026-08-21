@@ -33,14 +33,15 @@ export default function StickySearchBar({ sentinelId }: { sentinelId: string }) 
 
   return (
     <div
-      className={`fixed left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-md transition-transform duration-300 ${
-        visible ? 'translate-y-0' : '-translate-y-full'
+      className={`fixed left-0 right-0 z-40 bg-white/70 backdrop-blur-xl border-b border-emerald-50 shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-500 ${
+        visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}
       style={{ top: 'var(--header-height, 3.5rem)' }} /* sits just below the h-14 header */
     >
-      <div className="max-w-2xl mx-auto px-3 py-2">
+      <div className="max-w-2xl mx-auto px-4 py-3">
         <LiveSearch
           placeholder="Search Kerala groceries — rice, spices, pickles…"
+          className="shadow-sm"
         />
       </div>
     </div>

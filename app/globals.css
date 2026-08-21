@@ -201,6 +201,10 @@
     transform: translateY(-1px);
   }
 
+  .card-soft {
+    @apply bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border-none transition-all duration-500 hover:shadow-[0_30px_70px_rgba(0,0,0,0.08)] hover:-translate-y-2;
+  }
+
   .badge-lime {
     background-color: var(--kg-lime);
     color: #0a3d22;
