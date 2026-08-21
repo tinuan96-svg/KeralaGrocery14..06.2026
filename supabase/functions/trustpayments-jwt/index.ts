@@ -72,7 +72,12 @@ Deno.serve(async (req: Request) => {
     const jwtUsername = Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || Deno.env.get("WORLDPAY_USERNAME");
 
     if (!siteReference || !jwtSecret || !jwtUsername) {
-      return new Response(JSON.stringify({ error: "Trust Payments credentials not configured" }), {
+      console.error("[trustpayments-jwt] Missing credentials:", {
+        hasSiteRef: !!siteReference,
+        hasSecret: !!jwtSecret,
+        hasUser: !!jwtUsername
+      });
+      return new Response(JSON.stringify({ error: "Trust Payments credentials not configured in environment" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -81,6 +86,7 @@ Deno.serve(async (req: Request) => {
     const baseAmount = Math.round(amount * 100);
     const iat = Math.floor(Date.now() / 1000);
 
+    // Official Trust Payments JWT Payload Structure
     const jwtPayload = {
       iss: jwtUsername,
       iat,
@@ -90,6 +96,7 @@ Deno.serve(async (req: Request) => {
         currencyiso3a: "GBP",
         baseamount: baseAmount.toString(),
         orderreference: orderNumber,
+        // THREEDQUERY is required for 3D Secure 2.0 (SCA compliance in UK)
         requesttypedescriptions: ["THREEDQUERY", "AUTH"],
         ...(customerEmail ? { customeremail: customerEmail } : {}),
         ...(customerName ? { customerfirstname: customerName.split(" ")[0] || "" } : {}),
