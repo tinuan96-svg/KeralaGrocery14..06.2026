@@ -113,9 +113,13 @@ function TrustPaymentsContent() {
 
       try {
         console.log('[TrustPayments] Configuring window.SecureTrading...');
+
+        // Use live status from env if available, default to 0 (test) for safety
+        const isLive = process.env.NEXT_PUBLIC_PAYMENT_LIVE === 'true';
+
         const st = window.SecureTrading({
           jwt,
-          livestatus: 1,
+          livestatus: isLive ? 1 : 0,
           components: {
             startAnimation: {
               enabled: false,
@@ -129,6 +133,7 @@ function TrustPaymentsContent() {
           },
           errorCallback: (error: any) => {
             console.error('[TrustPayments] SDK errorCallback:', error);
+            // Don't show technical error here, let the SDK show its own error in the notification frame
           }
         });
 
@@ -140,11 +145,17 @@ function TrustPaymentsContent() {
               if (timeoutRef.current) clearTimeout(timeoutRef.current);
               setLoading(false);
             },
+            onPaymentFormError: (err: any) => {
+              console.error('[TrustPayments] onPaymentFormError:', err);
+              setError('The payment form failed to render. Please ensure your internet connection is stable.');
+              if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            }
           },
         });
       } catch (err) {
         console.error('[TrustPayments] Initialization crash:', err);
-        setError('A technical error occurred while loading the payment form.');
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        setError(`A technical error occurred while loading the payment form: ${errorMsg}`);
         setLoading(false);
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
       }

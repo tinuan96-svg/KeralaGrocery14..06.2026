@@ -67,9 +67,9 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const siteReference = Deno.env.get("TRUSTPAYMENTS_SITE_REFERENCE");
-    const jwtSecret = Deno.env.get("TRUSTPAYMENTS_JWT_SECRET");
-    const jwtUsername = Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME");
+    const siteReference = Deno.env.get("TRUSTPAYMENTS_SITE_REFERENCE") || Deno.env.get("WORLDPAY_ENTITY");
+    const jwtSecret = Deno.env.get("TRUSTPAYMENTS_JWT_SECRET") || Deno.env.get("WORLDPAY_PASSWORD");
+    const jwtUsername = Deno.env.get("TRUSTPAYMENTS_JWT_USERNAME") || Deno.env.get("WORLDPAY_USERNAME");
 
     if (!siteReference || !jwtSecret || !jwtUsername) {
       return new Response(JSON.stringify({ error: "Trust Payments credentials not configured" }), {
