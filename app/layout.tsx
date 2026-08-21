@@ -16,6 +16,7 @@ import { AppUpdateGuard } from '@/components/native/AppUpdateGuard';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { OfflineBanner } from '@/components/layout/OfflineBanner';
 import { QueryProvider } from '@/lib/providers/QueryProvider';
+import LiveActivityFeed from '@/components/layout/LiveActivityFeed';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://keralagrocery.com'),
@@ -213,6 +214,7 @@ export default function RootLayout({
                     <CapacitorProvider>
                       <AppUpdateGuard />
                       {children}
+                      <LiveActivityFeed />
                       <Toaster />
                     </CapacitorProvider>
                   </RealtimeSyncProvider>

@@ -76,8 +76,18 @@ export function resolveProductImage(
         bucket = 'category-images';
       }
 
+      // Optimization: Use Supabase image transformation if available
+      // Note: This requires Pro plan or self-hosted transformation service
+      const useTransform = true;
       const path = url.startsWith('/') ? url : `/storage/v1/object/public/${bucket}/${url}`;
-      const fullUrl = `${supabaseUrl}${path}`;
+
+      let fullUrl = `${supabaseUrl}${path}`;
+
+      if (useTransform && fullUrl.includes('/public/')) {
+        // Transforms to a resizer URL: [url]/render/image/public/[bucket]/[path]?width=...
+        fullUrl = fullUrl.replace('/public/', '/render/image/public/');
+      }
+
       const ts = updatedAt ?? product.updated_at;
       return ts ? `${fullUrl}?v=${new Date(ts).getTime()}` : fullUrl;
     }

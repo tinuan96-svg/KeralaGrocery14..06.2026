@@ -8,8 +8,13 @@ import WhyChooseUs from '@/components/home/WhyChooseUs';
 import PersonalizedRecommendations from '@/components/product/PersonalizedRecommendations';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import PullToRefresh from '@/components/home/PullToRefresh';
+import DeliveryCountdown from '@/components/home/DeliveryCountdown';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
+import { fetchSiteSettings } from '@/lib/services/siteSettingsService';
+
+// Incremental Static Regeneration — Rebuild page every hour in background
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Kerala Grocery UK | Buy Authentic Kerala Groceries Online',
@@ -24,26 +29,9 @@ const StickySearchBar = dynamic(
   { ssr: false }
 );
 
-const homepageFAQs = [
-  {
-    question: "Where do you deliver Kerala grocery in the UK?",
-    answer: "We deliver authentic Kerala grocery products across the entire United Kingdom, including England, Scotland, Wales, and Northern Ireland. Next-day delivery is available for most postcodes."
-  },
-  {
-    question: "Do you offer free delivery on Kerala grocery orders?",
-    answer: "Yes, we offer free standard delivery on all Kerala grocery orders over £45. For orders below this amount, a small delivery fee applies which is calculated at checkout."
-  },
-  {
-    question: "Is your Kerala grocery store authentically sourced?",
-    answer: "Absolutely. We work directly with trusted suppliers in Kerala to ensure our Kerala grocery store stocks only 100% authentic spices, rice, snacks, and oils."
-  },
-  {
-    question: "Can I buy Matta rice from your Kerala grocery online?",
-    answer: "Yes, our Kerala grocery online store stocks a wide range of Matta rice (Palakkadan), Banana chips, and traditional Kerala sweets for fast UK delivery."
-  }
-];
+export default async function HomePage() {
+  const settings = await fetchSiteSettings();
 
-export default function HomePage() {
   return (
     <PullToRefresh>
       <div className="min-h-screen pb-20 md:pb-0 bg-[#f1f3f4]">
@@ -51,7 +39,10 @@ export default function HomePage() {
         <MerchantReturnPolicySchema />
         <ShippingPolicySchema />
         <GroceryStoreSchema />
-        <FAQSchema items={homepageFAQs} />
+        <FAQSchema items={settings.homepage_faqs} />
+
+        {/* Sales Multiplier: Delivery Timer */}
+        <DeliveryCountdown />
 
         {/* Sticky search appears below header once hero scrolls away */}
         <StickySearchBar sentinelId="hero-end" />
