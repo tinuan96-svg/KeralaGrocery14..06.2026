@@ -125,10 +125,23 @@ export default function CheckoutPage() {
   // Auto-select default address and fill form fields
   useEffect(() => {
     if (addressesLoading) return;
+
     if (addresses.length === 0) {
       setAddressMode('manual');
+      // Fallback: if no saved addresses, pre-fill from profile
+      if (profile && profile.address) {
+        setFormData(prev => ({
+          ...prev,
+          name:     profile.name || prev.name,
+          phone:    profile.phone || prev.phone,
+          address:  profile.address,
+          city:     profile.city || prev.city,
+          postcode: profile.postcode || prev.postcode,
+        }));
+      }
       return;
     }
+
     setAddressMode('saved');
     const def = defaultAddress;
     if (def && !selectedAddressId) {
@@ -142,7 +155,7 @@ export default function CheckoutPage() {
         postcode: def.postcode,
       }));
     }
-  }, [addressesLoading, addresses.length, defaultAddress, selectedAddressId]);
+  }, [addressesLoading, addresses.length, defaultAddress, selectedAddressId, profile]);
 
   // Block checkout if not authenticated or profile/phone not set up.
   // Wait for profile to settle (undefined = fetch in-flight) before redirecting

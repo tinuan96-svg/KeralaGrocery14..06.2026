@@ -411,12 +411,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Keep the real email if this was a Google-linked account
     const realEmail = user?.email && !user.email.includes('@keralagrocery.phone')
       ? user.email
+      : profile?.email && !profile.email.includes('@keralagrocery.phone')
+      ? profile.email
       : undefined;
-    return saveProfile({
+
+    const { error } = await saveProfile({
       phone,
       phone_verified: true,
       ...(realEmail ? { email: realEmail } : {}),
     });
+
+    // Explicitly refresh after verification to ensure state is absolute
+    if (!error) await refreshProfile();
+    return { error };
   };
 
   const refreshProfile = async () => {

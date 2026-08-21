@@ -145,6 +145,7 @@ export default function UserProfileForm() {
     setSaving(true);
 
     try {
+      // 1. Save to user_profiles
       const { error } = await saveProfile({
         name: profile.name,
         email: profile.email,
@@ -156,9 +157,36 @@ export default function UserProfileForm() {
 
       if (error) throw error;
 
+      // 2. Synchronize to customer_addresses (Address Book)
+      // This ensures the address is available in the Checkout address selector.
+      const supabase = getSupabase();
+
+      // Check if a "Default" or "Home" address already exists to avoid duplicates
+      const { data: existing } = await supabase
+        .from('customer_addresses')
+        .select('id')
+        .eq('user_id', user?.id)
+        .eq('address_line_1', profile.address)
+        .eq('postcode', profile.postcode.toUpperCase())
+        .maybeSingle();
+
+      if (!existing && user?.id) {
+        await supabase.from('customer_addresses').insert({
+          user_id: user.id,
+          label: 'Home',
+          full_name: profile.name,
+          phone: profile.phone,
+          address_line_1: profile.address,
+          city: profile.city,
+          postcode: profile.postcode.toUpperCase(),
+          country: 'United Kingdom',
+          is_default: true
+        });
+      }
+
       toast({
         title: 'Profile updated',
-        description: 'Your information has been saved successfully.',
+        description: 'Your information and address book have been updated.',
       });
     } catch (error: any) {
       console.error('Error saving profile:', error);
