@@ -313,7 +313,7 @@ export async function getProducts(
       }
     }
 
-    const productsWithImages = products.filter((p) => p.image_url && p.image_url.startsWith('http'));
+    const productsWithImages = products.filter((p) => p.image_url);
 
     return { products: productsWithImages, total, page, totalPages, error: null };
   } catch (err) {

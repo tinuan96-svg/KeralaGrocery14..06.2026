@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { usePullToRefresh } from '@/hooks/useNative';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 
 export default function PullToRefresh({ children }: { children: React.ReactNode }) {
   const onRefresh = async () => {
@@ -37,5 +37,3 @@ export default function PullToRefresh({ children }: { children: React.ReactNode 
     </div>
   );
 }
-
-import { AnimatePresence } from 'framer-motion';

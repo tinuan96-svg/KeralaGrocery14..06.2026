@@ -161,6 +161,8 @@ export function usePushNotifications() {
   const router = useRouter();
 
   useEffect(() => {
+    let listeners: any[] = [];
+
     async function init() {
       try {
         const { PushNotifications } = await import('@capacitor/push-notifications');
@@ -193,17 +195,17 @@ export function usePushNotifications() {
           }
         );
 
-        return () => {
-          regListener.remove();
-          errListener.remove();
-          actionListener.remove();
-        };
+        listeners = [regListener, errListener, actionListener];
       } catch {
         // web — push not available
       }
     }
 
     init();
+
+    return () => {
+      listeners.forEach(l => l.remove());
+    };
   }, [router]);
 
   const requestPermission = useCallback(async () => {
