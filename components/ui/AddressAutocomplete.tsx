@@ -54,6 +54,7 @@ export default function AddressAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -77,6 +78,7 @@ export default function AddressAutocomplete({
     }
 
     setIsSearching(true);
+    setError(null);
     try {
       const url = `${getBase()}/functions/v1/address-lookup?action=autocomplete&term=${encodeURIComponent(term)}`;
       const res = await fetch(url, {
@@ -86,7 +88,10 @@ export default function AddressAutocomplete({
         },
       });
       const data = await res.json();
-      if (data.suggestions && data.suggestions.length > 0) {
+
+      if (data.error && (data.status === 401 || data.status === 403)) {
+        setError('Address service authentication failed. Please check API Key.');
+      } else if (data.suggestions && data.suggestions.length > 0) {
         setSuggestions(data.suggestions);
         setIsOpen(true);
         setHighlightIndex(-1);
@@ -222,6 +227,12 @@ export default function AddressAutocomplete({
             ))}
           </ul>
         </div>
+      )}
+
+      {error && (
+        <p className="mt-1 text-[10px] text-red-500 font-medium px-1 italic">
+          {error}
+        </p>
       )}
     </div>
   );
