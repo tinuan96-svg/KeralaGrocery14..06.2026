@@ -198,34 +198,40 @@ export default function AddressAutocomplete({
         </div>
       </div>
 
-      {isOpen && suggestions.length > 0 && (
+      {isOpen && (
         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
           <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
             <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
-              Select your address
+              {suggestions.length > 0 ? 'Select your address' : 'No addresses found'}
             </p>
           </div>
-          <ul className="max-h-60 overflow-y-auto py-1">
-            {suggestions.map((suggestion, i) => (
-              <li key={suggestion.id}>
-                <button
-                  type="button"
-                  className={`w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors ${
-                    i === highlightIndex
-                      ? 'bg-green-50 text-green-900'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => selectSuggestion(suggestion)}
-                  onMouseEnter={() => setHighlightIndex(i)}
-                >
-                  <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                    i === highlightIndex ? 'text-green-600' : 'text-gray-400'
-                  }`} />
-                  <span className="text-sm leading-snug">{suggestion.address}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {suggestions.length > 0 ? (
+            <ul className="max-h-60 overflow-y-auto py-1">
+              {suggestions.map((suggestion, i) => (
+                <li key={suggestion.id}>
+                  <button
+                    type="button"
+                    className={`w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors ${
+                      i === highlightIndex
+                        ? 'bg-green-50 text-green-900'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => selectSuggestion(suggestion)}
+                    onMouseEnter={() => setHighlightIndex(i)}
+                  >
+                    <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                      i === highlightIndex ? 'text-green-600' : 'text-gray-400'
+                    }`} />
+                    <span className="text-sm leading-snug">{suggestion.address}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="px-4 py-4 text-center">
+              <p className="text-xs text-gray-400">Try entering your full postcode or street name.</p>
+            </div>
+          )}
         </div>
       )}
 
