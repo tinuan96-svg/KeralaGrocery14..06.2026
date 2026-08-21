@@ -92,15 +92,19 @@ export default function CheckoutPage() {
       const realEmail = (e: string | null | undefined) =>
         e && !e.includes('@keralagrocery.phone') ? e : '';
 
-      setFormData({
-        name:     data?.name || data?.display_name || '',
-        email:    realEmail(data?.email) || realEmail(user.email) || '',
-        phone:    data?.phone    || user.phone || '',
-        address:  data?.address  || '',
-        city:     data?.city     || '',
-        postcode: data?.postcode || '',
-        notes:    '',
-      });
+      const emailToUse = realEmail(data?.email) || realEmail(user.email) || '';
+      const phoneToUse = data?.phone || user.phone || '';
+      const nameToUse = data?.name || data?.display_name || user.user_metadata?.full_name || user.user_metadata?.display_name || '';
+
+      setFormData(prev => ({
+        ...prev,
+        name:     nameToUse,
+        email:    emailToUse,
+        phone:    phoneToUse,
+        address:  data?.address  || prev.address || '',
+        city:     data?.city     || prev.city || '',
+        postcode: data?.postcode || prev.postcode || '',
+      }));
     } catch (error) {
       console.error('[Checkout] loadUserProfile unexpected error:', error);
     } finally {
@@ -216,11 +220,25 @@ export default function CheckoutPage() {
   };
 
   const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.phone ||
-        !formData.address || !formData.city || !formData.postcode) {
+    const { name, email, phone, address, city, postcode } = formData;
+
+    if (!name.trim() || !email.trim() || !phone.trim() || !address.trim() || !city.trim() || !postcode.trim()) {
       toast({ title: 'Missing details', description: 'Please fill in all required fields', variant: 'destructive' });
       return false;
     }
+
+    // Basic email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast({ title: 'Invalid Email', description: 'Please enter a valid email address', variant: 'destructive' });
+      return false;
+    }
+
+    // Basic phone validation (at least 10 digits)
+    if (phone.replace(/\D/g, '').length < 10) {
+      toast({ title: 'Invalid Phone', description: 'Please enter a valid UK phone number', variant: 'destructive' });
+      return false;
+    }
+
     return true;
   };
 
@@ -278,18 +296,18 @@ export default function CheckoutPage() {
   const buildOrderPayload = (status: 'pending' | 'paid', ref?: string) => ({
     idempotency_key:    idempotencyKey.current,
     user_id:            user?.id || null,
-    customer_name:      formData.name,
-    customer_email:     formData.email,
-    customer_phone:     formData.phone,
-    delivery_address:   formData.address,
-    delivery_city:      formData.city,
-    delivery_postcode:  formData.postcode,
+    customer_name:      formData.name.trim(),
+    customer_email:     formData.email.trim(),
+    customer_phone:     formData.phone.trim(),
+    delivery_address:   formData.address.trim(),
+    delivery_city:      formData.city.trim(),
+    delivery_postcode:  formData.postcode.trim().toUpperCase(),
     delivery_fee:       deliveryFee,
     wallet_amount:      walletAmount,
     payment_method:     'card',
     payment_status:     status,
     payment_reference:  ref,
-    notes:              formData.notes,
+    notes:              formData.notes.trim(),
     // Only product_id and quantity are authoritative — the server re-fetches
     // prices; unit_price here is only stored as a display hint in the request.
     items: cart.map((item) => ({
