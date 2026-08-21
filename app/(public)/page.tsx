@@ -8,6 +8,7 @@ import WhyChooseUs from '@/components/home/WhyChooseUs';
 import PersonalizedRecommendations from '@/components/product/PersonalizedRecommendations';
 import LocalSEOFooter from '@/components/layout/LocalSEOFooter';
 import PullToRefresh from '@/components/home/PullToRefresh';
+import CategoryBubbles from '@/components/home/CategoryBubbles';
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 
@@ -68,6 +69,9 @@ export default function HomePage() {
 
         {/* Dynamic Local City Marketing Banner */}
         <LocalCityBanner />
+
+        {/* Quick Shop Category Bubbles */}
+        <CategoryBubbles />
 
         {/* All product sections in feed order */}
         <HomepageSections />
