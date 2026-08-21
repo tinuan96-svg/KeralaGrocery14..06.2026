@@ -32,7 +32,7 @@ export default function RecipeCartActions({ ingredients }: Props) {
             .select('id, name, price, slug, image_url, image_main')
             .eq('id', ing.productId)
             .eq('approval_status', 'approved')
-            .eq('visibility_status', true)
+            .or('visibility_status.eq.visible,visibility_status.eq.true')
             .maybeSingle();
           product = data;
         }

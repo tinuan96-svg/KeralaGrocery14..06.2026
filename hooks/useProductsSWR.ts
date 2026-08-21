@@ -13,7 +13,7 @@ export function useProductsSWR(categorySlug?: string) {
       .from('products')
       .select('*')
       .eq('approval_status', 'approved')
-      .eq('visibility_status', true);
+      .or('visibility_status.eq.visible,visibility_status.eq.true');
 
     if (categorySlug) {
       // Assuming we have a join or slug filter

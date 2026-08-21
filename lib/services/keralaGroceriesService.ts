@@ -245,7 +245,7 @@ export async function getProductBySlug(slug: string): Promise<StorefrontProduct 
       .select(PRODUCT_COLUMNS)
       .eq('product_slug', slug)
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
+      .or('visibility_status.eq.visible,visibility_status.eq.true')
       .neq('is_deleted', true)
       .maybeSingle();
 
@@ -296,7 +296,7 @@ export async function getCategories(): Promise<string[]> {
       .select('category')
       .not('category', 'is', null)
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
+      .or('visibility_status.eq.visible,visibility_status.eq.true')
       .neq('is_deleted', true);
 
     if (error) {
@@ -325,7 +325,7 @@ export async function getBrands(): Promise<string[]> {
       .select('brand')
       .not('brand', 'is', null)
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
+      .or('visibility_status.eq.visible,visibility_status.eq.true')
       .neq('is_deleted', true);
 
     if (error) {
@@ -360,7 +360,7 @@ export async function getRelatedProducts(
       .neq('id', productId)
       .gt('stock', 0)
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
+      .or('visibility_status.eq.visible,visibility_status.eq.true')
       .neq('is_deleted', true)
       .limit(limit);
 

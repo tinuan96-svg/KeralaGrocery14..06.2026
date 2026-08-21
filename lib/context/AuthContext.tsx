@@ -416,10 +416,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // 1. Optimistically update local profile state to prevent race conditions/redirect loops
-      setProfile(prev => {
-        if (!prev) return prev;
-        return { ...prev, phone, phone_verified: true };
-      });
+      setProfile(prev => ({
+        id: user.id,
+        name: prev?.name || user.user_metadata?.full_name || user.user_metadata?.display_name || null,
+        email: prev?.email || user.email || null,
+        display_name: prev?.display_name || user.user_metadata?.full_name || user.user_metadata?.display_name || null,
+        avatar_url: prev?.avatar_url || user.user_metadata?.avatar_url || null,
+        address: prev?.address || null,
+        city: prev?.city || null,
+        postcode: prev?.postcode || null,
+        phone,
+        phone_verified: true
+      }));
 
       const realEmail = user?.email && !user.email.includes('@keralagrocery.phone')
         ? user.email
@@ -446,7 +454,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = async () => {
     if (!user) return;
-    setProfile(undefined);
+    // Don't set to undefined here to prevent "Loading..." flash in UIs
+    // that already have an optimistic or stale profile.
     const p = await fetchProfile(user.id);
     setProfile(p);
   };

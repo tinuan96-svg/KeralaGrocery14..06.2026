@@ -87,7 +87,7 @@ export async function getHighMarginProducts(limit: number = 5): Promise<RpcProdu
       .select('id, name, slug, image_url, image_main, price, selling_price, markup_percentage')
       .eq('approval_status', 'approved')
       .eq('is_active', true)
-      .neq('visibility_status', false)
+      .or('visibility_status.eq.visible,visibility_status.eq.true')
       .not('markup_percentage', 'is', null)
       .order('markup_percentage', { ascending: false })
       .limit(limit);

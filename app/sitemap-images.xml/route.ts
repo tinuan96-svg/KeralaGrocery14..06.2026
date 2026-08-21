@@ -29,7 +29,7 @@ export async function GET() {
         .eq('approval_status', 'approved')
         .eq('is_active', true)
         .neq('is_deleted', true)
-        .neq('visibility_status', false)
+        .or('visibility_status.eq.visible,visibility_status.eq.true')
         .not('slug', 'is', null)
         .limit(5000);
 
