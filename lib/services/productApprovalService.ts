@@ -590,6 +590,7 @@ export interface AutoTaskResult {
   categoriesAssigned: number;
   descriptionsGenerated: number;
   seoOptimized: number;
+  imagesAssigned: number;
   errors: string[];
   error: string | null;
 }
@@ -643,6 +644,7 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
       categoriesAssigned: data.categoriesAssigned ?? 0,
       descriptionsGenerated: data.descriptionsGenerated ?? 0,
       seoOptimized: data.seoOptimized ?? data.descriptionsGenerated ?? 0,
+      imagesAssigned: data.imagesAssigned ?? 0,
       errors: data.errors ?? [],
       error: null,
     };

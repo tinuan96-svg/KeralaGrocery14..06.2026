@@ -84,13 +84,13 @@ Deno.serve(async (req: Request) => {
     }
 
     // 2. Fetch draft products that need processing
-    // Including images in the check now.
+    // Including images and empty string checks.
     const { data: drafts, error: draftErr } = await supabase
       .from("products")
       .select("id, name, brand, source_brand, supplier_price, cost_price, selling_price, price, category_id, short_description, description, category, subcategory, department, unit, tags, image_url, image_main, original_image_url, image_medium")
       .eq("approval_status", "draft")
       .eq("is_deleted", false)
-      .or("category_id.is.null,short_description.is.null,description.is.null,price.eq.0,selling_price.is.null,selling_price.eq.0,image_url.is.null,image_main.is.null")
+      .or("category_id.is.null,short_description.is.null,short_description.eq.'',description.is.null,description.eq.'',price.eq.0,selling_price.is.null,selling_price.eq.0,image_url.is.null,image_url.eq.'',image_main.is.null,image_main.eq.''")
       .order("updated_at", { ascending: true })
       .limit(30);
 

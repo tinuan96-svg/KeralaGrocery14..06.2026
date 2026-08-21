@@ -288,7 +288,17 @@ export default function ProductApprovalPage() {
     setAutoTaskResult(result);
     setAutoTasking(false);
     if (result.error) showToast(result.error, 'err');
-    else showToast(`Processed ${result.processed} products: ${result.pricesUpdated} prices, ${result.categoriesAssigned} categories, ${result.descriptionsGenerated} descriptions, ${result.seoOptimized} SEO`);
+    else {
+      const parts = [
+        `${result.pricesUpdated} prices`,
+        `${result.categoriesAssigned} categories`,
+        `${result.descriptionsGenerated} descriptions`,
+        `${result.seoOptimized} SEO`
+      ];
+      if (result.imagesAssigned > 0) parts.push(`${result.imagesAssigned} images`);
+
+      showToast(`Processed ${result.processed} products: ${parts.join(', ')}`);
+    }
     await Promise.all([loadProducts(), loadStats()]);
   };
 
@@ -383,7 +393,7 @@ export default function ProductApprovalPage() {
               {' '}{autoTaskResult.categoriesAssigned} categor{autoTaskResult.categoriesAssigned !== 1 ? 'ies' : 'y'} assigned,
               {' '}{autoTaskResult.descriptionsGenerated} description{autoTaskResult.descriptionsGenerated !== 1 ? 's' : ''} generated,
               {' '}{autoTaskResult.seoOptimized} SEO field{autoTaskResult.seoOptimized !== 1 ? 's' : ''} optimized
-              {(autoTaskResult as any).imagesAssigned > 0 && `, ${(autoTaskResult as any).imagesAssigned} images linked`}.
+              {autoTaskResult.imagesAssigned > 0 && `, ${autoTaskResult.imagesAssigned} images linked`}.
             </span>
           )}
           {autoTaskResult.errors.length > 0 && (
