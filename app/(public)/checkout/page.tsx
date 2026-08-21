@@ -134,7 +134,7 @@ export default function CheckoutPage() {
           ...prev,
           name:     profile.name || prev.name,
           phone:    profile.phone || prev.phone,
-          address:  profile.address,
+          address:  profile.address || '',
           city:     profile.city || prev.city,
           postcode: profile.postcode || prev.postcode,
         }));
