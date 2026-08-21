@@ -114,7 +114,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (s?.user) {
         setProfile(undefined);
-        const p = await fetchProfile(s.user.id);
+        let p = await fetchProfile(s.user.id);
+
+        // If first fetch fails, wait 1.5s and retry once (handles DB trigger lag for new social users)
+        if (!p) {
+          await new Promise(res => setTimeout(res, 1500));
+          p = await fetchProfile(s.user.id);
+        }
+
         setProfile(p);
       } else {
         setProfile(null);

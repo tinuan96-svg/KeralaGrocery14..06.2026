@@ -118,7 +118,7 @@ export default function LoginForm() {
       return;
     }
 
-    // Signup: create account directly, save profile
+    // Signup: verify phone first if provided, or sign up directly
     if (!name.trim()) {
       toast({ title: 'Name required', description: 'Please enter your full name', variant: 'destructive' });
       return;
@@ -128,6 +128,32 @@ export default function LoginForm() {
       return;
     }
 
+    const e164Phone = toE164(phoneInput.trim());
+
+    // If phone provided, we verify it BEFORE creating the account to ensure high data quality
+    if (e164Phone) {
+      setIsSubmitting(true);
+      try {
+        const { error } = await signInWithPhoneOtp(e164Phone);
+        if (error) {
+          toast({ title: 'Failed to send code', description: error.message, variant: 'destructive' });
+          return;
+        }
+        setPendingSignup({ name: name.trim(), email, password });
+        setSentPhone(e164Phone);
+        setOtp('');
+        startCountdown();
+        setMode('verify-otp');
+        toast({ title: 'Almost there!', description: `We've sent a verification code to ${e164Phone}` });
+      } catch {
+        toast({ title: 'Error', description: 'Something went wrong.', variant: 'destructive' });
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // Direct signup if no phone provided (not recommended but allowed)
     setIsSubmitting(true);
     try {
       const { data, error: signUpErr } = await signUp(email, password, {
@@ -139,11 +165,10 @@ export default function LoginForm() {
         return;
       }
 
-      const phone = toE164(phoneInput.trim());
       await saveProfile({
         name: name.trim(),
         email,
-        phone,
+        phone: null,
         phone_verified: false,
       });
 
