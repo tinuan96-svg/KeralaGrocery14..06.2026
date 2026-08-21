@@ -1,7 +1,7 @@
 /**
  * auto-process-drafts
  *
- * Batch-processes draft products that are missing pricing, category, descriptions, or images.
+ * Batch-processes draft products that are missing pricing, category, or descriptions.
  * Processes up to 30 products per invocation to stay within edge function time limits.
  */
 
@@ -76,21 +76,18 @@ Deno.serve(async (req: Request) => {
     }
 
     const catMap = new Map<string, string>();
-    const catList: string[] = [];
     for (const c of categories ?? []) {
-      const norm = normalize(c.name);
-      catMap.set(norm, c.id);
-      catList.push(c.name);
+      catMap.set(normalize(c.name), c.id);
     }
 
     // 2. Fetch draft products that need processing
-    // Including images in the check now.
+    // Corrected column names: subcategory instead of sub_category
     const { data: drafts, error: draftErr } = await supabase
       .from("products")
-      .select("id, name, brand, source_brand, supplier_price, cost_price, selling_price, price, category_id, short_description, description, category, subcategory, department, unit, tags, image_url, image_main, original_image_url, image_medium")
+      .select("id, name, brand, source_brand, supplier_price, cost_price, selling_price, price, category_id, short_description, description, category, subcategory, department, unit, tags")
       .eq("approval_status", "draft")
       .eq("is_deleted", false)
-      .or("category_id.is.null,short_description.is.null,description.is.null,price.eq.0,selling_price.is.null,selling_price.eq.0,image_url.is.null,image_main.is.null")
+      .or("category_id.is.null,short_description.is.null,description.is.null,price.eq.0,selling_price.is.null,selling_price.eq.0")
       .order("updated_at", { ascending: true })
       .limit(30);
 
@@ -112,7 +109,6 @@ Deno.serve(async (req: Request) => {
     let categoriesAssigned = 0;
     let descriptionsGenerated = 0;
     let seoOptimized = 0;
-    let imagesAssigned = 0;
     const errors: string[] = [];
 
     // 3. Process each draft product
@@ -122,7 +118,7 @@ Deno.serve(async (req: Request) => {
       };
       let changed = false;
 
-      // --- 1. Pricing ---
+      // --- Pricing: 10% markup if price/selling_price is missing ---
       const supPrice = Number(product.supplier_price ?? product.cost_price ?? 0);
       const curPrice = Number(product.selling_price ?? product.price ?? 0);
       if (supPrice > 0 && curPrice <= 0) {
@@ -135,7 +131,7 @@ Deno.serve(async (req: Request) => {
         changed = true;
       }
 
-      // --- 2. Category Matching ---
+      // --- Category Matching ---
       if (!product.category_id) {
         const candidates = [product.category, product.subcategory, product.department].filter(Boolean);
         for (const candidate of candidates) {
@@ -146,7 +142,7 @@ Deno.serve(async (req: Request) => {
             changed = true;
             break;
           }
-          // Try partial match
+          // Try partial match if no exact match
           for (const [catNorm, catId] of catMap.entries()) {
             if (norm.includes(catNorm) || catNorm.includes(norm)) {
               updatePayload.category_id = catId;
@@ -159,37 +155,13 @@ Deno.serve(async (req: Request) => {
         }
       }
 
-      // --- 3. Image Auto-Fix ---
-      if (!product.image_url && !product.image_main) {
-        const fallbackImg = product.original_image_url || product.image_medium;
-        if (fallbackImg) {
-          updatePayload.image_url = fallbackImg;
-          updatePayload.image_main = fallbackImg;
-          imagesAssigned++;
-          changed = true;
-        }
-      }
-
-      // --- 4. OpenAI Description & Category Generation ---
-      // We call OpenAI if description is missing OR if category is still missing
-      if (openAiKey && (!product.short_description?.trim() || !product.description?.trim() || (!product.category_id && !updatePayload.category_id))) {
+      // --- OpenAI Description Generation ---
+      if (openAiKey && (!product.short_description?.trim() || !product.description?.trim())) {
         try {
-          const curCatId = updatePayload.category_id || product.category_id;
-          const categoryName = categories?.find(c => c.id === curCatId)?.name ?? "Unknown";
-          const priceStr = (updatePayload.price || product.price) ? `£${(updatePayload.price || product.price).toFixed(2)}` : "Unknown";
+          const categoryName = categories?.find(c => c.id === (updatePayload.category_id || product.category_id))?.name ?? "";
+          const priceStr = (updatePayload.price || product.price) ? `£${(updatePayload.price || product.price).toFixed(2)}` : "";
 
-          const context = `Product: ${product.name}\nBrand: ${product.brand || product.source_brand || "Unknown"}\nSource Category: ${product.category || product.subcategory || "Unknown"}\nPrice: ${priceStr}`;
-
-          const systemMsg = `You are an expert ecommerce copywriter for a UK Kerala grocery store.
-          Available categories in our store: ${catList.join(", ")}.
-          Return ONLY a JSON object.`;
-
-          const userMsg = `Generate content and assign category for this product:
-          ${context}
-
-          If the current category is "Unknown", choose the best match from our store categories list.
-
-          Return JSON keys: categoryName (must be one from the list), shortDescription, fullDescription, seoTitle, seoDescription, seoKeywords.`;
+          const context = `Product: ${product.name}\nBrand: ${product.brand || product.source_brand || ""}\nCategory: ${categoryName}\nPrice: ${priceStr}`;
 
           const res = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -197,8 +169,8 @@ Deno.serve(async (req: Request) => {
             body: JSON.stringify({
               model: "gpt-4o-mini",
               messages: [
-                { role: "system", content: systemMsg },
-                { role: "user", content: userMsg }
+                { role: "system", content: "You are an expert ecommerce copywriter for a UK Kerala grocery store. Return ONLY a JSON object with keys: shortDescription, fullDescription, seoTitle, seoDescription, seoKeywords. Use British English." },
+                { role: "user", content: `Generate content for:\n${context}` }
               ],
               temperature: 0.7
             })
@@ -210,20 +182,11 @@ Deno.serve(async (req: Request) => {
             const jsonStr = content.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
             const parsed = JSON.parse(jsonStr);
 
-            // 4a. AI Category Matching
-            if (!curCatId && parsed.categoryName) {
-              const aiNorm = normalize(parsed.categoryName);
-              if (catMap.has(aiNorm)) {
-                updatePayload.category_id = catMap.get(aiNorm);
-                categoriesAssigned++;
-                changed = true;
-              }
-            }
-
-            // 4b. AI Content
+            // Handle various possible key formats from AI
             const getVal = (keys: string[]) => {
               for (const k of keys) {
                 if (parsed[k]) return parsed[k];
+                // Case insensitive check
                 const match = Object.keys(parsed).find(pk => pk.toLowerCase() === k.toLowerCase());
                 if (match) return parsed[match];
               }
@@ -236,17 +199,19 @@ Deno.serve(async (req: Request) => {
             const sdes = getVal(['seoDescription', 'seo_description']);
             const sk = getVal(['seoKeywords', 'seo_keywords']);
 
-            if (sd && !product.short_description) { updatePayload.short_description = sd; changed = true; }
-            if (fd && !product.description) { updatePayload.description = fd; changed = true; }
+            if (sd) { updatePayload.short_description = sd; changed = true; }
+            if (fd) { updatePayload.description = fd; changed = true; }
             if (st) { updatePayload.seo_title = st; changed = true; }
             if (sdes) { updatePayload.seo_description = sdes; changed = true; }
             if (sk) { updatePayload.seo_keywords = sk; changed = true; }
 
             if (sd || fd) descriptionsGenerated++;
             if (st || sdes || sk) seoOptimized++;
+          } else {
+            errors.push(`${product.name}: OpenAI error ${res.status}`);
           }
         } catch (e) {
-          errors.push(`${product.name}: AI processing failed`);
+          errors.push(`${product.name}: AI parsing failed`);
         }
       }
 
@@ -262,7 +227,6 @@ Deno.serve(async (req: Request) => {
         categoriesAssigned,
         descriptionsGenerated,
         seoOptimized,
-        imagesAssigned,
         errors: errors.slice(0, 10),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -382,8 +382,7 @@ export default function ProductApprovalPage() {
               {' '}{autoTaskResult.pricesUpdated} price{autoTaskResult.pricesUpdated !== 1 ? 's' : ''} updated,
               {' '}{autoTaskResult.categoriesAssigned} categor{autoTaskResult.categoriesAssigned !== 1 ? 'ies' : 'y'} assigned,
               {' '}{autoTaskResult.descriptionsGenerated} description{autoTaskResult.descriptionsGenerated !== 1 ? 's' : ''} generated,
-              {' '}{autoTaskResult.seoOptimized} SEO field{autoTaskResult.seoOptimized !== 1 ? 's' : ''} optimized
-              {(autoTaskResult as any).imagesAssigned > 0 && `, ${(autoTaskResult as any).imagesAssigned} images linked`}.
+              {' '}{autoTaskResult.seoOptimized} SEO field{autoTaskResult.seoOptimized !== 1 ? 's' : ''} optimized.
             </span>
           )}
           {autoTaskResult.errors.length > 0 && (
