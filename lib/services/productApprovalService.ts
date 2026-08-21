@@ -624,7 +624,7 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
     if (!res.ok) {
       const errText = await res.text().catch(() => '');
       return {
-        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0,
+        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0, imagesAssigned: 0,
         errors: [], error: `Request failed (${res.status}): ${errText.slice(0, 200)}`,
       };
     }
@@ -633,7 +633,7 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
 
     if (data.error) {
       return {
-        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0,
+        processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0, imagesAssigned: 0,
         errors: [], error: data.error,
       };
     }
@@ -650,7 +650,7 @@ export async function autoTaskDrafts(): Promise<AutoTaskResult> {
     };
   } catch (err) {
     return {
-      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0,
+      processed: 0, pricesUpdated: 0, categoriesAssigned: 0, descriptionsGenerated: 0, seoOptimized: 0, imagesAssigned: 0,
       errors: [], error: err instanceof Error ? err.message : 'Unknown error',
     };
   }
