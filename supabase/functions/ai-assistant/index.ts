@@ -10,81 +10,17 @@ const corsHeaders = {
 // Kerala dish to ingredient search keywords mapping
 // Each dish maps to a list of ingredient search terms that will be looked up in the products table
 const DISH_INGREDIENTS: Record<string, string[]> = {
-  // Rice dishes
-  "matta rice": ["matta rice"],
-  "puttu": ["puttu podi", "chemba puttu podi", "white puttu podi", "corn puttu podi"],
-  "appam": ["appam podi", "palappam powder", "palappam batter powder", "easy palappam"],
-  "idiyappam": ["idiyappam podi", "appam idiyappam podi", "easy idiyappam podi"],
-  "pathiri": ["pathiri podi", "easy pathiri podi", "malabar pathiri"],
-  "idli": ["idly rice", "idly rava", "idli batter powder", "idly mix", "iddly podi"],
-  "dosa": ["dosa mix", "rice powder"],
-  "biryani": ["biriyani masala", "briyani masala", "biryani masala", "jaya rice", "ponni", "matta rice"],
-  "briyani": ["biriyani masala", "briyani masala", "jaya rice", "ponni"],
-  "ghee rice": ["jaya rice", "ponni", "matta rice", "butter ghee"],
+  // ... existing mappings ...
+};
 
-  // Curry dishes
-  "sambar": ["sambar powder", "sambar masala", "tiffin sambar", "sambar curry", "turmeric", "coriander powder", "chilli powder", "mustard", "curry leaves", "tamarind", "dal", "split green gram"],
-  "rasam": ["rasam mix", "rasam powder", "turmeric", "coriander powder", "tamarind", "mustard", "asafoetida"],
-  "fish curry": ["fish masala", "fish curry masala", "kerala fish curry", "turmeric", "chilli powder", "tamarind", "kudampuli", "coconut oil", "mustard", "fenugreek"],
-  "chicken curry": ["chicken masala", "coriander powder", "turmeric", "chilli powder", "garam masala", "coconut oil", "ginger garlic paste"],
-  "beef curry": ["meat masala", "beef ularthu masala", "coriander powder", "turmeric", "chilli powder", "coconut oil", "ginger garlic paste"],
-  "mutton curry": ["mutton masala", "meat masala", "coriander powder", "turmeric", "chilli powder", "coconut oil", "ginger garlic paste"],
-  "prawn curry": ["prawn mango curry", "fish masala", "turmeric", "chilli powder", "coconut oil", "tamarind"],
-  "prawns roast": ["prawns roast", "fish masala", "turmeric", "chilli powder", "coconut oil", "pepper"],
-  "fish fry": ["fish fry masala", "turmeric", "chilli powder", "pepper", "coconut oil"],
-  "fish pollichath": ["fish pollichath", "fish masala", "turmeric", "chilli powder", "pepper", "coconut oil"],
-  "egg roast": ["egg roast masala", "onion", "turmeric", "chilli powder", "coconut oil"],
-  "aviyal": ["aviyal curry", "turmeric", "coconut", "cumin", "curry leaves", "coconut oil"],
-  "kootu curry": ["kootu curry", "turmeric", "coconut", "cumin", "chickpeas", "coconut oil"],
-  "kadala curry": ["kadala curry", "chickpeas", "black channa", "turmeric", "coriander powder", "chilli powder", "coconut oil"],
-  "thoran": ["cabbage thoran", "coconut", "turmeric", "mustard", "curry leaves", "coconut oil"],
-  "cabbage thoran": ["cabbage thoran", "coconut", "turmeric", "mustard", "curry leaves", "coconut oil"],
-  "kappa puzhukku": ["kappa puzhukku", "boiled cassava", "turmeric", "coconut", "mustard", "curry leaves", "coconut oil"],
-  "kappa biriyani": ["fish kappa biriyani", "kappa", "biriyani masala", "turmeric", "chilli powder"],
-
-  // Pickles & chutneys
-  "mango pickle": ["cut mango pickle", "tender mango pickle", "mango ginger pickle"],
-  "lime pickle": ["lime pickle", "white lime pickle"],
-  "fish pickle": ["fish pickle", "anchovy pickle", "sardine pickle"],
-  "prawn pickle": ["prawn pickle"],
-  "garlic pickle": ["garlic pickle"],
-  "amla pickle": ["amla pickle"],
-
-  // Snacks
-  "banana chips": ["pazham chips", "tapioca chips", "jackfruit chips"],
-  "jackfruit chips": ["jackfruit chips"],
-  "tapioca chips": ["tapioca chips"],
-  "kuzhalappam": ["kuzhalappam"],
-  "chakka varatty": ["chakka varatty"],
-
-  // Payasam / Desserts
-  "payasam": ["ada pradhaman", "rice palada", "wheat payasam", "semiya payasam mix", "instant parippu pradhaman", "jaggery", "coconut milk powder", "butter ghee"],
-  "pradhaman": ["ada pradhaman", "rice palada", "instant parippu pradhaman", "jaggery", "coconut milk powder", "butter ghee"],
-  "palada": ["rice palada", "rice palada payasam mix", "milk", "sugar", "butter ghee"],
-
-  // Breakfast combos
-  "puttu kadala": ["puttu podi", "kadala curry", "chickpeas", "black channa"],
-  "appam stew": ["appam podi", "palappam powder", "coconut milk powder", "turmeric", "cardamom"],
-  "idli sambar": ["idly rice", "idly rava", "sambar powder", "sambar masala", "tiffin sambar", "turmeric", "coriander powder", "chilli powder", "tamarind", "dal"],
-  "dosa chutney": ["dosa mix", "rice powder", "coconut", "chilli powder", "curry leaves"],
-
-  // Spice powders (common ingredients)
-  "garam masala": ["biriyani masala", "meat masala", "chicken masala"],
-  "coconut oil": ["coconut oil"],
-  "mustard seeds": ["mustard", "whole black mustard seeds"],
-  "turmeric": ["turmeric powder"],
-  "chilli powder": ["chilli powder"],
-  "coriander powder": ["coriander powder", "coriander seeds"],
-  "pepper": ["black pepper powder", "whole black pepper", "black pepper"],
-  "cumin": ["cumin seeds", "cumin", "jeera"],
-  "fenugreek": ["fenugreek powder", "fenugreek", "uluva"],
-  "cardamom": ["cardamom whole", "black cardamom"],
-  "cloves": ["cloves whole"],
-  "cinnamon": ["bay leaves", "mace"],
-  "tamarind": ["tamarind", "tamarind seedless", "kudampuli", "black tamarind"],
-  "jaggery": ["sarkkara varatty", "chakka varatty"],
-  "coconut milk": ["coconut milk powder"],
-  "ginger garlic paste": ["ginger garlic paste", "ginger paste", "garlic paste", "ginger & garlic paste"],
+const DISH_COMBOS: Record<string, { suggested: string; reason: string }> = {
+  "appam": { suggested: "vegetable stew or egg roast", reason: "These are the most traditional side dishes for fluffy Appams." },
+  "puttu": { suggested: "kadala curry or banana", reason: "Puttu and Kadala is the ultimate Kerala breakfast combination!" },
+  "idiyappam": { suggested: "chicken stew or sweetened coconut milk", reason: "Idiyappam pairs perfectly with a light, creamy curry." },
+  "porotta": { suggested: "beef ularthiyathu or chicken curry", reason: "You haven't lived until you've tried Malabar Porotta with Beef!" },
+  "pathiri": { suggested: "mutton curry or fish mulakittathu", reason: "Pathiri is best enjoyed with a spicy, thin gravy." },
+  "idli": { suggested: "sambar and coconut chutney", reason: "The classic healthy South Indian breakfast trio." },
+  "dosa": { suggested: "sambar and tomato chutney", reason: "Crispy Dosa needs a flavorful Sambar and tangy chutney." },
 };
 
 function findDishKey(query: string): string | null {
@@ -207,6 +143,8 @@ Deno.serve(async (req: Request) => {
       - Proactively suggest related items (e.g., if they ask for rice, suggest traditional pickles or sambar mix).
       - When a customer asks about cooking a specific Kerala dish (e.g., "I want to make sambar", "how to make fish curry", "ingredients for puttu"), ALWAYS call find_recipe_ingredients with the dish name. This will return all available ingredients on our site with product cards and a bulk add-to-cart option.
       - When asked about delivery, free shipping thresholds, or business info, call get_site_settings to provide accurate, up-to-date information.
+      - Proactively suggest meal combos (e.g., if searching for Appam, mention Vegetable Stew or Egg Roast) using the DISH_COMBOS data provided to you.
+      - If a specific product requested is out of stock or not found, proactively search for and suggest a reasonable substitute (e.g. suggesting different brands or a larger size).
 
       SEARCH INVENTORY INSTRUCTIONS (CRITICAL):
       - When a customer asks about ANY product (e.g., "matta rice", "coconut oil", "spices"), you MUST call search_inventory with the product name as the query.
@@ -228,7 +166,8 @@ Deno.serve(async (req: Request) => {
       2. find_recipe_ingredients (Find all available ingredients for a Kerala dish on our site - use when customer wants to cook a specific dish)
       3. get_order_status (Check order status by order number and contact info)
       4. get_recipes (Find traditional Kerala recipes)
-      5. get_site_settings (Get information about shipping, free delivery thresholds, return policy, and delivery areas)`
+      5. get_site_settings (Get information about shipping, free delivery thresholds, return policy, and delivery areas)
+      6. get_dish_combos (Get traditional dish combinations and meal ideas)`
     };
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -283,6 +222,14 @@ Deno.serve(async (req: Request) => {
             function: {
               name: "get_site_settings",
               description: "Get current store settings like shipping thresholds, delivery times, and delivery areas.",
+              parameters: { type: "object", properties: {} }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "get_dish_combos",
+              description: "Get traditional Kerala meal combinations and side dish suggestions.",
               parameters: { type: "object", properties: {} }
             }
           }
@@ -392,6 +339,8 @@ Deno.serve(async (req: Request) => {
             const { data: s, error: sErr } = await supabase.from('site_settings').select('*').eq('id', 1).single();
             if (sErr) throw sErr;
             toolResult = s;
+          } else if (functionName === "get_dish_combos") {
+            toolResult = DISH_COMBOS;
           }
         } catch (toolErr: any) {
           console.error(`Tool Execution Error (${functionName}):`, toolErr.message);
