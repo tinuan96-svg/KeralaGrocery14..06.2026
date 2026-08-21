@@ -412,22 +412,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const markPhoneVerified = async (phone: string) => {
-    // Keep the real email if this was a Google-linked account
-    const realEmail = user?.email && !user.email.includes('@keralagrocery.phone')
-      ? user.email
-      : profile?.email && !profile.email.includes('@keralagrocery.phone')
-      ? profile.email
-      : undefined;
+    if (!user) return { error: { message: 'Not authenticated' } };
 
-    const { error } = await saveProfile({
-      phone,
-      phone_verified: true,
-      ...(realEmail ? { email: realEmail } : {}),
-    });
+    try {
+      // 1. Optimistically update local profile state to prevent race conditions/redirect loops
+      setProfile(prev => {
+        if (!prev) return prev;
+        return { ...prev, phone, phone_verified: true };
+      });
 
-    // Explicitly refresh after verification to ensure state is absolute
-    if (!error) await refreshProfile();
-    return { error };
+      const realEmail = user?.email && !user.email.includes('@keralagrocery.phone')
+        ? user.email
+        : profile?.email && !profile.email.includes('@keralagrocery.phone')
+        ? profile.email
+        : undefined;
+
+      const { error } = await saveProfile({
+        phone,
+        phone_verified: true,
+        ...(realEmail ? { email: realEmail } : {}),
+      });
+
+      if (error) return { error };
+
+      // 2. Refresh from server to ensure DB and state are in sync
+      await refreshProfile();
+
+      return { error: null };
+    } catch (err: any) {
+      return { error: err };
+    }
   };
 
   const refreshProfile = async () => {

@@ -339,7 +339,7 @@ export async function getProductDetail(
       .select('id, name, slug, description, short_description, image_url, image_main, enhanced_image_url, price, selling_price, original_price, discount_percentage, markup_percentage, brand, source_brand, category_id, brand_id, created_at, unit, weight, stock, stock_status')
       .eq('approval_status', 'approved')
       .neq('is_deleted', true)
-      .eq('visibility_status', 'visible');
+      .or('visibility_status.eq.visible,visibility_status.eq.true');
 
     if (isUuid) {
       query = query.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`);

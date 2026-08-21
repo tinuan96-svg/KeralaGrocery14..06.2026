@@ -48,7 +48,7 @@ export async function generateStaticParams() {
       .from('products')
       .select('slug')
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible')
+      .or('visibility_status.eq.visible,visibility_status.eq.true')
       .limit(20); // Limit to 20 for faster build, rest can be loaded via hosted site
 
     if (!products || products.length === 0) {
@@ -72,7 +72,7 @@ async function fetchProductBySlug(slug: string): Promise<ProductRow | null> {
       .from('products')
       .select('id, name, slug, description, short_description, image_url, image_main, price, selling_price, brand, source_brand, centralhub_product_id, rating, review_count, categories:category_id(name)')
       .eq('approval_status', 'approved')
-      .eq('visibility_status', 'visible');
+      .or('visibility_status.eq.visible,visibility_status.eq.true');
 
     if (isUuid) {
       query = query.or(`id.eq.${slug},slug.eq.${slug}`);
