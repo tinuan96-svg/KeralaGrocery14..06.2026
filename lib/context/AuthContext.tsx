@@ -278,7 +278,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // For both platforms, we go through the web callback as a "bridge"
     // to ensure deep links work reliably and because Supabase whitelists it by default.
-    const redirectTo = `${window.location.origin}/auth/callback?platform=native`;
+    const redirectTo = isApp
+      ? `${window.location.origin}/auth/callback?platform=native`
+      : `${window.location.origin}/auth/callback`;
 
     console.log('[Auth] signInWithGoogle - isApp:', isApp, 'redirectTo:', redirectTo);
 
@@ -308,7 +310,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { Browser } = await import('@capacitor/browser');
     const isApp = Capacitor.isNativePlatform();
 
-    const redirectTo = `${window.location.origin}/auth/callback?platform=native`;
+    const redirectTo = isApp
+      ? `${window.location.origin}/auth/callback?platform=native`
+      : `${window.location.origin}/auth/callback`;
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',

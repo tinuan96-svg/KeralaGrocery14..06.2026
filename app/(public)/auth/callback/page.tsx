@@ -27,7 +27,21 @@ export default function AuthCallbackPage() {
     const isNativeBridge = url.searchParams.get('platform') === 'native' ||
                           url.searchParams.get('native') === 'true';
 
+    // If we're already signed in, and we're NOT in bridge mode, just go to account
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && !isNativeBridge) {
+        router.replace('/account');
+      }
+    });
+
     if (isNativeBridge) {
+      // Check for existing session first - if we're on web with a session, just go
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          router.replace('/account');
+        }
+      });
+
       // We are in the system browser, redirected from Supabase.
       // We need to pass the auth params back to the native app via deep link.
       const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
@@ -89,11 +103,25 @@ export default function AuthCallbackPage() {
     };
   }, [router]);
 
-  const handleManualReturn = () => {
+  const handleManualReturn = async () => {
+    const supabase = getSupabase();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+      // If we already have a session in the browser, just go to account
+      router.replace('/account');
+      return;
+    }
+
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const scheme = isIOS ? 'kgapp://auth' : 'com.keralagrocery.app://auth';
     const url = new URL(window.location.href);
     window.location.href = `${scheme}${url.search}${url.hash}`;
+
+    // Safety fallback: if nothing happens after 2s, assume we're on web
+    setTimeout(() => {
+      router.replace('/account');
+    }, 2000);
   };
 
   return (
@@ -113,6 +141,12 @@ export default function AuthCallbackPage() {
               className="w-full py-3 bg-white text-[#0B5D3B] font-bold rounded-xl shadow-lg active:scale-95 transition-transform"
             >
               Return to App
+            </button>
+            <button
+              onClick={() => router.replace('/account')}
+              className="w-full py-2 text-white/50 text-xs hover:text-white transition-colors"
+            >
+              Wait, I'm using the website
             </button>
           </>
         ) : (
