@@ -206,6 +206,7 @@ Deno.serve(async (req: Request) => {
       - Help shop, track orders, and troubleshoot with a "We are here for you" attitude.
       - Proactively suggest related items (e.g., if they ask for rice, suggest traditional pickles or sambar mix).
       - When a customer asks about cooking a specific Kerala dish (e.g., "I want to make sambar", "how to make fish curry", "ingredients for puttu"), ALWAYS call find_recipe_ingredients with the dish name. This will return all available ingredients on our site with product cards and a bulk add-to-cart option.
+      - When asked about delivery, free shipping thresholds, or business info, call get_site_settings to provide accurate, up-to-date information.
 
       SEARCH INVENTORY INSTRUCTIONS (CRITICAL):
       - When a customer asks about ANY product (e.g., "matta rice", "coconut oil", "spices"), you MUST call search_inventory with the product name as the query.
@@ -226,7 +227,8 @@ Deno.serve(async (req: Request) => {
       1. search_inventory (Search for Kerala grocery products by name or keyword)
       2. find_recipe_ingredients (Find all available ingredients for a Kerala dish on our site - use when customer wants to cook a specific dish)
       3. get_order_status (Check order status by order number and contact info)
-      4. get_recipes (Find traditional Kerala recipes)`
+      4. get_recipes (Find traditional Kerala recipes)
+      5. get_site_settings (Get information about shipping, free delivery thresholds, return policy, and delivery areas)`
     };
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -274,6 +276,14 @@ Deno.serve(async (req: Request) => {
               name: "get_recipes",
               description: "Find traditional Kerala recipes by keyword",
               parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "get_site_settings",
+              description: "Get current store settings like shipping thresholds, delivery times, and delivery areas.",
+              parameters: { type: "object", properties: {} }
             }
           }
         ],
@@ -378,6 +388,10 @@ Deno.serve(async (req: Request) => {
 
             toolResult = r || [];
             actions.push(...(r || []).map((r: any) => ({ type: 'RECOMMEND_RECIPE', recipe: r })));
+          } else if (functionName === "get_site_settings") {
+            const { data: s, error: sErr } = await supabase.from('site_settings').select('*').eq('id', 1).single();
+            if (sErr) throw sErr;
+            toolResult = s;
           }
         } catch (toolErr: any) {
           console.error(`Tool Execution Error (${functionName}):`, toolErr.message);
