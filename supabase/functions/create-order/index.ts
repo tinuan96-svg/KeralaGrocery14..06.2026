@@ -69,39 +69,81 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // ── Server-side price resolution ──────────────────────────────────────────
-    // Fetch authoritative selling prices from the database.
-    // The client-submitted unit_price is NEVER trusted for financial calculations.
+    // ── Server-side price & stock resolution ──────────────────────────────────
+    // Fetch authoritative selling prices and current stock from the database.
     const productIds = orderData.items.map(i => i.product_id);
 
     const { data: products, error: productsError } = await supabase
       .from("products")
-      .select("id, selling_price, price, name")
+      .select("id, selling_price, price, name, stock, stock_quantity")
       .in("id", productIds);
 
     if (productsError) {
-      console.error("[create-order] failed to fetch product prices:", productsError);
-      return respond(500, { error: "Failed to validate product prices" });
+      console.error("[create-order] failed to fetch product details:", productsError);
+      return respond(500, { error: "Failed to validate product details" });
     }
 
     const priceMap = new Map<string, number>();
+    const stockMap = new Map<string, number>();
     for (const p of products ?? []) {
-      // Prefer selling_price; fall back to price.
-      // ALWAYS round up to nearest 0.10 for consistency.
       const rawPrice = typeof p.selling_price === "number" && p.selling_price > 0
         ? p.selling_price
         : (p.price ?? 0);
       const price = Math.ceil(rawPrice * 10) / 10;
       priceMap.set(p.id, price);
+
+      const available = Math.max(Number(p.stock || 0), Number(p.stock_quantity || 0));
+      stockMap.set(p.id, available);
     }
 
-    // Validate every item has a known price
+    // Validate every item exists and has sufficient stock
     for (const item of orderData.items) {
       if (!priceMap.has(item.product_id)) {
-        return respond(400, { error: `Product not found or unavailable: ${item.product_id}` });
+        return respond(400, { error: `Product not found or unavailable: ${item.product_name}` });
+      }
+      const available = stockMap.get(item.product_id)!;
+      if (item.quantity > available) {
+        return respond(400, {
+          error: `Insufficient stock for ${item.product_name}.`,
+          detail: `Requested ${item.quantity}, but only ${available} available.`
+        });
       }
       if (item.quantity < 1 || !Number.isInteger(item.quantity)) {
-        return respond(400, { error: `Invalid quantity for product ${item.product_id}` });
+        return respond(400, { error: `Invalid quantity for product ${item.product_name}` });
+      }
+    }
+
+    // ── Wallet Verification ──────────────────────────────────────────────────
+    const requestedWalletAmount = parseFloat((orderData.wallet_amount || 0).toFixed(2));
+    if (requestedWalletAmount > 0) {
+      if (!userId) {
+        return respond(400, { error: "Wallet usage requires authentication" });
+      }
+
+      // 1. Fetch current balance
+      const { data: wallet, error: walletErr } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (walletErr) return respond(500, { error: "Failed to verify wallet balance" });
+      const currentBalance = parseFloat(wallet?.balance ?? 0);
+
+      if (requestedWalletAmount > currentBalance) {
+        return respond(400, {
+          error: "Insufficient wallet balance.",
+          detail: `Requested £${requestedWalletAmount.toFixed(2)}, but balance is £${currentBalance.toFixed(2)}.`
+        });
+      }
+
+      // 2. Enforce 50% balance usage rule (business logic)
+      const maxFromBalance = parseFloat((currentBalance * 0.5).toFixed(2));
+      if (requestedWalletAmount > maxFromBalance) {
+        return respond(400, {
+          error: "Wallet usage limit exceeded.",
+          detail: `You can only use up to 50% of your current balance (£${maxFromBalance.toFixed(2)}) per order.`
+        });
       }
     }
 

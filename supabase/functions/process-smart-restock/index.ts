@@ -60,7 +60,8 @@ Deno.serve(async (req: Request) => {
           // 4. Log the notification
           await supabase.from("abandoned_cart_recovery_logs").insert({
             user_id: item.user_id,
-            status: "restock_reminder"
+            status: "restock_reminder",
+            last_notified_at: new Date().toISOString()
           });
           sentCount++;
         }

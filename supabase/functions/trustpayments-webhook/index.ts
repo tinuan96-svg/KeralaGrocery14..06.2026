@@ -223,83 +223,88 @@ Deno.serve(async (req: Request) => {
     if (paymentStatus === "paid") {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const promises: Promise<void>[] = [];
 
-      // CentralHub Sync
-      const centralhubSyncUrl = Deno.env.get("CENTRALHUB_SUPABASE_URL")
-        ? `${Deno.env.get("CENTRALHUB_SUPABASE_URL")}/functions/v1/sync-orders`
-        : "https://icnvrpnzjjcbvgcqgiua.supabase.co/functions/v1/sync-orders";
-      const centralhubAnonKey = Deno.env.get("CENTRALHUB_ANON_KEY") || "";
+      // Use EdgeRuntime.waitUntil to return 200 OK to the gateway quickly
+      // while performing critical post-payment tasks in the background.
+      EdgeRuntime.waitUntil((async () => {
+        const promises: Promise<void>[] = [];
 
-      const doOrderSync = async () => {
-        const res = await fetch(centralhubSyncUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${centralhubAnonKey}`,
-          },
-          body: JSON.stringify({
-            orderId: updatedOrder.id,
-            storeSlug: "keralagrocery",
-          }),
-        });
-        if (!res.ok) {
-          throw new Error(`sync-orders returned ${res.status}`);
-        }
-        console.log(`[trustpayments-webhook] Order ${updatedOrder.order_number} synced to CentralHub`);
-      };
+        // CentralHub Sync
+        const centralhubSyncUrl = Deno.env.get("CENTRALHUB_SUPABASE_URL")
+          ? `${Deno.env.get("CENTRALHUB_SUPABASE_URL")}/functions/v1/sync-orders`
+          : "https://icnvrpnzjjcbvgcqgiua.supabase.co/functions/v1/sync-orders";
+        const centralhubAnonKey = Deno.env.get("CENTRALHUB_ANON_KEY") || "";
 
-      promises.push(
-        (async () => {
-          try {
-            await doOrderSync();
-          } catch (err) {
-            console.error(`[trustpayments-webhook] CentralHub sync failed for order ${updatedOrder.id}, retrying in 5s:`, err);
-            await new Promise(resolve => setTimeout(resolve, 5000));
+        const doOrderSync = async () => {
+          const res = await fetch(centralhubSyncUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${centralhubAnonKey}`,
+            },
+            body: JSON.stringify({
+              orderId: updatedOrder.id,
+              storeSlug: "keralagrocery",
+            }),
+          });
+          if (!res.ok) {
+            throw new Error(`sync-orders returned ${res.status}`);
+          }
+          console.log(`[trustpayments-webhook] Order ${updatedOrder.order_number} synced to CentralHub`);
+        };
+
+        promises.push(
+          (async () => {
             try {
               await doOrderSync();
-            } catch (retryErr) {
-              console.error(`[trustpayments-webhook] CentralHub sync retry failed for order ${updatedOrder.id}:`, retryErr);
+            } catch (err) {
+              console.error(`[trustpayments-webhook] CentralHub sync failed for order ${updatedOrder.id}, retrying in 5s:`, err);
+              await new Promise(resolve => setTimeout(resolve, 5000));
+              try {
+                await doOrderSync();
+              } catch (retryErr) {
+                console.error(`[trustpayments-webhook] CentralHub sync retry failed for order ${updatedOrder.id}:`, retryErr);
+              }
             }
-          }
-        })()
-      );
-
-      // Wallet Payment Processing
-      const walletAmt = parseFloat(updatedOrder.wallet_amount?.toString() ?? "0");
-      if (walletAmt > 0 && updatedOrder.user_id) {
-        promises.push(
-          fetch(`${supabaseUrl}/functions/v1/wallet-payment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseKey}` },
-            body: JSON.stringify({
-              order_id: updatedOrder.id,
-              wallet_amount: walletAmt,
-              user_id: updatedOrder.user_id,
-            }),
-          }).then(() => {}).catch((e) => console.error("[trustpayments-webhook] Wallet error:", e))
+          })()
         );
-      }
 
-      // WhatsApp Notification
-      if (updatedOrder.customer_phone) {
-        promises.push(
-          fetch(`${supabaseUrl}/functions/v1/send-whatsapp-notification`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseKey}` },
-            body: JSON.stringify({
-              customer_name: updatedOrder.customer_name,
-              user_phone: updatedOrder.customer_phone,
-              order_id: updatedOrder.id,
-              order_number: updatedOrder.order_number,
-              items: (updatedOrder.order_items ?? []).map((i: any) => ({ name: i.product_name, qty: i.quantity })),
-              total_amount: updatedOrder.total,
-            }),
-          }).then(() => {}).catch((e) => console.error("[trustpayments-webhook] WhatsApp error:", e))
-        );
-      }
+        // Wallet Payment Processing
+        const walletAmt = parseFloat(updatedOrder.wallet_amount?.toString() ?? "0");
+        if (walletAmt > 0 && updatedOrder.user_id) {
+          promises.push(
+            fetch(`${supabaseUrl}/functions/v1/wallet-payment`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseKey}` },
+              body: JSON.stringify({
+                order_id: updatedOrder.id,
+                wallet_amount: walletAmt,
+                user_id: updatedOrder.user_id,
+              }),
+            }).then(() => {}).catch((e) => console.error("[trustpayments-webhook] Wallet error:", e))
+          );
+        }
 
-      await Promise.allSettled(promises);
+        // WhatsApp Notification
+        if (updatedOrder.customer_phone) {
+          promises.push(
+            fetch(`${supabaseUrl}/functions/v1/send-whatsapp-notification`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseKey}` },
+              body: JSON.stringify({
+                customer_name: updatedOrder.customer_name,
+                user_phone: updatedOrder.customer_phone,
+                order_id: updatedOrder.id,
+                order_number: updatedOrder.order_number,
+                items: (updatedOrder.order_items ?? []).map((i: any) => ({ name: i.product_name, qty: i.quantity })),
+                total_amount: updatedOrder.total,
+              }),
+            }).then(() => {}).catch((e) => console.error("[trustpayments-webhook] WhatsApp error:", e))
+          );
+        }
+
+        await Promise.allSettled(promises);
+      })());
     }
 
     return new Response("OK", { status: 200 });
